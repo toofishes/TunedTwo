@@ -28,13 +28,8 @@ final class AudioPlayer {
     }
 
     func start() throws {
-        do {
-            try engine.start()
-            player.play()
-        } catch {
-            fputs("[AudioPlayer] start error: \(error.localizedDescription)\n", stderr)
-            throw error
-        }
+        try engine.start()
+        player.play()
     }
 
     func stop() {
@@ -42,9 +37,9 @@ final class AudioPlayer {
         engine.stop()
     }
 
+    /// Stops playback and flushes any queued audio (e.g. after a program switch).
     func reset() {
-        player.stop()
-        engine.stop()
+        stop()
     }
 
     /// Accepts interleaved 16-bit signed PCM from nrsc5.

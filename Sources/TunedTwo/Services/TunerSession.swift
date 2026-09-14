@@ -7,6 +7,7 @@
 
 import Foundation
 import AVFoundation
+import os
 
 /// C function pointer cannot capture Swift state, so this top-level trampoline
 /// forwards events into the active session.
@@ -25,12 +26,13 @@ final class TunerSession {
     private var fileHandle: UnsafeMutablePointer<FILE>?
 
     /// Client-side program filter. nrsc5 emits all programs; we only render the selected one.
-    private var currentProgram: UInt32 = 0
+    /// Lock-guarded: written on the session queue, read from the nrsc5 worker thread.
+    private let currentProgram: OSAllocatedUnfairLock<UInt32>
 
     init(state: TunerState) throws {
         self.state = state
         self.audioPlayer = try AudioPlayer()
-        self.currentProgram = UInt32(state.program)
+        self.currentProgram = OSAllocatedUnfairLock(initialState: UInt32(state.program))
     }
 
     deinit {
@@ -42,7 +44,7 @@ final class TunerSession {
     func start() {
         sessionQueue.async { [weak self] in
             guard let self = self else { return }
-            self.currentProgram = UInt32(self.state.program)
+            self.currentProgram.withLock { $0 = UInt32(self.state.program) }
             do {
                 try self.startSession()
                 try self.audioPlayer.start()
@@ -77,7 +79,7 @@ final class TunerSession {
     func programChanged(to program: Int) {
         sessionQueue.async { [weak self] in
             guard let self = self else { return }
-            self.currentProgram = UInt32(program)
+            self.currentProgram.withLock { $0 = UInt32(program) }
             // Flush queued audio so the old program doesn't bleed into the new one.
             self.audioPlayer.reset()
         }
@@ -166,7 +168,8 @@ final class TunerSession {
             }
 
         case NRSC5_EVENT_AUDIO:
-            guard event.audio.program == currentProgram,
+            let program = currentProgram.withLock { $0 }
+            guard event.audio.program == program,
                   let data = event.audio.data else { return }
             let count = Int(event.audio.count)
             let samples = Array(UnsafeBufferPointer(start: data, count: count))

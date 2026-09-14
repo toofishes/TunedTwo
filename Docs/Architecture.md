@@ -35,7 +35,7 @@ TunedTwo is a native macOS app built with SwiftUI and AppKit, wrapping the `libn
 
 ## Program/subchannel selection
 
-`libnrsc5` decodes all HD Radio programs simultaneously. The app stores a `currentProgram` and filters `NRSC5_EVENT_AUDIO` / `NRSC5_EVENT_ID3` by `event.audio.program`. Switching programs flushes queued audio so the old program doesn't bleed through.
+`libnrsc5` decodes all HD Radio programs simultaneously. The app stores a `currentProgram` and filters `NRSC5_EVENT_AUDIO` by `event.audio.program`. (ID3 events carry no program field in the libnrsc5 API, so metadata updates are not program-filtered.) Switching programs flushes queued audio so the old program doesn't bleed through.
 
 ## Audio format
 

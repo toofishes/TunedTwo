@@ -42,19 +42,19 @@ xcodegen generate
 ### Build from the command line
 
 ```bash
-xcodebuild -project TunedTwo.xcodeproj -scheme TunedTwo -configuration Debug build
+xcodebuild -project TunedTwo.xcodeproj -scheme TunedTwo -configuration Debug -derivedDataPath DerivedData build
 ```
 
 ### Run
 
 ```bash
-open build/Debug/TunedTwo.app
+open DerivedData/Build/Products/Debug/TunedTwo.app
 ```
 
 Or run directly:
 
 ```bash
-./build/Debug/TunedTwo.app/Contents/MacOS/TunedTwo
+./DerivedData/Build/Products/Debug/TunedTwo.app/Contents/MacOS/TunedTwo
 ```
 
 ## Smoke test without an SDR
@@ -67,8 +67,8 @@ The project ships a build phase that extracts `Vendor/nrsc5/support/sample.xz` i
   - `Services/` – `TunerSession`, `AudioPlayer`, etc.
   - `Model/` – data models and observable app state.
   - `Views/` – SwiftUI views.
-  - `Utilities/` – helpers (ring buffer, sample extraction, etc.)
-- `Resources/` – Assets, Info.plist templates, sample files.
+  - `Utilities/` – helpers (bundled sample file lookup, etc.)
+- `Resources/` – bundled sample I/Q file.
 - `scripts/` – helper build/test scripts.
 - `Vendor/nrsc5/` – Git submodule of the decoder.
 - `Docs/` – architecture notes and references.

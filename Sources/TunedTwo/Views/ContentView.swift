@@ -111,51 +111,27 @@ struct ContentView: View {
 
     private var metadata: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Group {
-                HStack {
-                    Text("Station")
-                        .font(.caption)
+            HStack {
+                Text("Station")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 60, alignment: .leading)
+                Text(state.stationName.isEmpty ? "—" : state.stationName)
+                    .font(.headline)
+                if !state.stationSlogan.isEmpty {
+                    Text("·")
                         .foregroundStyle(.secondary)
-                        .frame(width: 60, alignment: .leading)
-                    Text(state.stationName.isEmpty ? "—" : state.stationName)
-                        .font(.headline)
-                    if !state.stationSlogan.isEmpty {
-                        Text("·")
-                            .foregroundStyle(.secondary)
-                        Text(state.stationSlogan)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                HStack {
-                    Text("Title")
-                        .font(.caption)
+                    Text(state.stationSlogan)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
-                        .frame(width: 60, alignment: .leading)
-                    Text(state.title.isEmpty ? "—" : state.title)
-                        .font(.body)
                 }
+            }
 
-                HStack {
-                    Text("Artist")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 60, alignment: .leading)
-                    Text(state.artist.isEmpty ? "—" : state.artist)
-                        .font(.body)
-                }
+            MetadataRow(label: "Title", value: state.title)
+            MetadataRow(label: "Artist", value: state.artist)
 
-                if !state.album.isEmpty {
-                    HStack {
-                        Text("Album")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 60, alignment: .leading)
-                        Text(state.album)
-                            .font(.body)
-                    }
-                }
+            if !state.album.isEmpty {
+                MetadataRow(label: "Album", value: state.album)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -188,6 +164,22 @@ struct ContentView: View {
             } catch {
                 state.status = "Error: \(error.localizedDescription)"
             }
+        }
+    }
+}
+
+/// A caption label + value row used by the metadata panel.
+private struct MetadataRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(width: 60, alignment: .leading)
+            Text(value.isEmpty ? "—" : value)
         }
     }
 }
