@@ -1,6 +1,7 @@
 # macOS / Xcode
 .DS_Store
-*.xcuserdata
+xcuserdata/
+*.xcuserstate
 *.xccheckout
 *.xcscmblueprint
 DerivedData/
