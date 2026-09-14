@@ -1,0 +1,73 @@
+name: TunedTwo
+options:
+  bundleIdPrefix: io.tunedtwo
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  defaultConfig: Debug
+  developmentLanguage: en
+  groupSortPosition: top
+settings:
+  MARKETING_VERSION: "0.1.0"
+  CURRENT_PROJECT_VERSION: "1"
+  SWIFT_VERSION: "5.0"
+  CODE_SIGN_STYLE: Automatic
+  ENABLE_HARDENED_RUNTIME: YES
+  DEAD_CODE_STRIPPING: YES
+  GENERATE_INFOPLIST_FILE: YES
+  INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+  INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 TunedTwo contributors."
+configs:
+  Debug: debug
+  Release: release
+targets:
+  TunedTwo:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources/TunedTwo
+      - path: TunedTwo-Bridging-Header.h
+        buildPhase: none
+      - path: Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.TunedTwo
+        SWIFT_OBJC_BRIDGING_HEADER: $(SRCROOT)/TunedTwo-Bridging-Header.h
+        HEADER_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/include
+        LIBRARY_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/build/src
+        OTHER_LDFLAGS: -lnrsc5
+        LD_RUNPATH_SEARCH_PATHS: $(inherited) @executable_path/../Frameworks
+    prebuildScripts:
+      - name: Prepare sample file
+        script: |
+          set -e
+          "${SRCROOT}/scripts/prepare-sample.sh"
+        inputFiles:
+          - $(SRCROOT)/Vendor/nrsc5/support/sample.xz
+        outputFiles:
+          - $(SRCROOT)/Resources/sample.bin
+      - name: Build libnrsc5
+        script: |
+          set -e
+          "${SRCROOT}/scripts/build-nrsc5.sh"
+        inputFiles:
+          - $(SRCROOT)/Vendor/nrsc5/include/nrsc5.h
+        outputFiles:
+          - $(SRCROOT)/Vendor/nrsc5/build/src/libnrsc5.dylib
+    postbuildScripts:
+      - name: Embed libnrsc5
+        script: |
+          set -e
+          DYLIB_SRC="${SRCROOT}/Vendor/nrsc5/build/src/libnrsc5.dylib"
+          FRAMEWORKS_DIR="${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}"
+          mkdir -p "${FRAMEWORKS_DIR}"
+          cp -v "${DYLIB_SRC}" "${FRAMEWORKS_DIR}/libnrsc5.dylib"
+        shell: /bin/bash
+schemes:
+  TunedTwo:
+    build:
+      targets:
+        TunedTwo: all
+    run:
+      config: Debug

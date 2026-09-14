@@ -1,0 +1,448 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		045AAB45E5F7BF1A7240BB5E /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D76EB3E5DC5A99C72CC99E4 /* AudioPlayer.swift */; };
+		3999AC1D08285656E140FDB7 /* SampleFileProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606DCF1544528ED160F9CA55 /* SampleFileProvider.swift */; };
+		69F07B71F15846540E5AB1F9 /* TunerSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8799C71253D3A9FDFABD58D9 /* TunerSession.swift */; };
+		87C489CFD6C94AA282A2040E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042CE0F4ABC83CE28BF0850C /* ContentView.swift */; };
+		C629AD84C2AECD9AE5C00090 /* sample.bin in Resources */ = {isa = PBXBuildFile; fileRef = C8B0FCC6DA140367221D851A /* sample.bin */; };
+		E3353CBD080AF8C25A8CC12A /* TunerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC456D84C66B6A488BB600F /* TunerState.swift */; };
+		FD14AAE0F8FDC463FB5E1608 /* TunedTwoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 623F1A01956FF5BE3B66382C /* TunedTwoApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		042CE0F4ABC83CE28BF0850C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		095A6FC05DBFD8042A5B9350 /* TunedTwo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TunedTwo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AC456D84C66B6A488BB600F /* TunerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerState.swift; sourceTree = "<group>"; };
+		36B3D04C157C1B54B3D6E145 /* TunedTwo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TunedTwo-Bridging-Header.h"; sourceTree = "<group>"; };
+		3D76EB3E5DC5A99C72CC99E4 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
+		606DCF1544528ED160F9CA55 /* SampleFileProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleFileProvider.swift; sourceTree = "<group>"; };
+		623F1A01956FF5BE3B66382C /* TunedTwoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunedTwoApp.swift; sourceTree = "<group>"; };
+		8799C71253D3A9FDFABD58D9 /* TunerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerSession.swift; sourceTree = "<group>"; };
+		C8B0FCC6DA140367221D851A /* sample.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = sample.bin; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0C7BE9BAA7D114ADB9DE90EE /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				DB4F1A42485BFCAEFBC9F400 /* TunedTwo */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		362B64D2063AEB32298B6A75 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C8B0FCC6DA140367221D851A /* sample.bin */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		4E1B32937EDFF8D9904015CC = {
+			isa = PBXGroup;
+			children = (
+				362B64D2063AEB32298B6A75 /* Resources */,
+				0C7BE9BAA7D114ADB9DE90EE /* Sources */,
+				36B3D04C157C1B54B3D6E145 /* TunedTwo-Bridging-Header.h */,
+				570E5FABF70267A883DE5542 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		570E5FABF70267A883DE5542 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				095A6FC05DBFD8042A5B9350 /* TunedTwo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		68AFF01BDB0249E8E847EF3C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				042CE0F4ABC83CE28BF0850C /* ContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		6D7559089CCCB3705913D774 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1AC456D84C66B6A488BB600F /* TunerState.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		8221D6024C829C9A9D12D940 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				606DCF1544528ED160F9CA55 /* SampleFileProvider.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		D7CFCC0C2699A6B62004FD35 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				3D76EB3E5DC5A99C72CC99E4 /* AudioPlayer.swift */,
+				8799C71253D3A9FDFABD58D9 /* TunerSession.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		DB4F1A42485BFCAEFBC9F400 /* TunedTwo */ = {
+			isa = PBXGroup;
+			children = (
+				6D7559089CCCB3705913D774 /* Model */,
+				D7CFCC0C2699A6B62004FD35 /* Services */,
+				8221D6024C829C9A9D12D940 /* Utilities */,
+				68AFF01BDB0249E8E847EF3C /* Views */,
+				623F1A01956FF5BE3B66382C /* TunedTwoApp.swift */,
+			);
+			path = TunedTwo;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C217569EDF9D1B057F5FAC46 /* TunedTwo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5139A7A111CD5518278B1F5F /* Build configuration list for PBXNativeTarget "TunedTwo" */;
+			buildPhases = (
+				487ED3351F78AD0FF52FC466 /* Prepare sample file */,
+				5DD34DD89EC51C4016C2ACD1 /* Build libnrsc5 */,
+				1A5591DBF20034D6E49DFFA1 /* Sources */,
+				D0124B8C3717D38F5C34569B /* Resources */,
+				B6A2422D6A80880C96C120AA /* Embed libnrsc5 */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TunedTwo;
+			packageProductDependencies = (
+			);
+			productName = TunedTwo;
+			productReference = 095A6FC05DBFD8042A5B9350 /* TunedTwo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CFA5C02AC7F02CFC776B321C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					C217569EDF9D1B057F5FAC46 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = FFD0840526DA4C462F3EB114 /* Build configuration list for PBXProject "TunedTwo" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4E1B32937EDFF8D9904015CC;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 570E5FABF70267A883DE5542 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C217569EDF9D1B057F5FAC46 /* TunedTwo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D0124B8C3717D38F5C34569B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C629AD84C2AECD9AE5C00090 /* sample.bin in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		487ED3351F78AD0FF52FC466 /* Prepare sample file */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Vendor/nrsc5/support/sample.xz",
+			);
+			name = "Prepare sample file";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Resources/sample.bin",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\"${SRCROOT}/scripts/prepare-sample.sh\"\n";
+		};
+		5DD34DD89EC51C4016C2ACD1 /* Build libnrsc5 */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Vendor/nrsc5/include/nrsc5.h",
+			);
+			name = "Build libnrsc5";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Vendor/nrsc5/build/src/libnrsc5.dylib",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\"${SRCROOT}/scripts/build-nrsc5.sh\"\n";
+		};
+		B6A2422D6A80880C96C120AA /* Embed libnrsc5 */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed libnrsc5";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "set -e\nDYLIB_SRC=\"${SRCROOT}/Vendor/nrsc5/build/src/libnrsc5.dylib\"\nFRAMEWORKS_DIR=\"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\nmkdir -p \"${FRAMEWORKS_DIR}\"\ncp -v \"${DYLIB_SRC}\" \"${FRAMEWORKS_DIR}/libnrsc5.dylib\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A5591DBF20034D6E49DFFA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				045AAB45E5F7BF1A7240BB5E /* AudioPlayer.swift in Sources */,
+				87C489CFD6C94AA282A2040E /* ContentView.swift in Sources */,
+				3999AC1D08285656E140FDB7 /* SampleFileProvider.swift in Sources */,
+				FD14AAE0F8FDC463FB5E1608 /* TunedTwoApp.swift in Sources */,
+				69F07B71F15846540E5AB1F9 /* TunerSession.swift in Sources */,
+				E3353CBD080AF8C25A8CC12A /* TunerState.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		32200B05266CB4B03B5002E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/include";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/build/src";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				OTHER_LDFLAGS = "-lnrsc5";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tunedtwo.TunedTwo;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/TunedTwo-Bridging-Header.h";
+			};
+			name = Release;
+		};
+		36D4D49222088087AAB2FB5D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 TunedTwo contributors.";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		9C02C355DF9496C9EFF2560B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/include";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/build/src";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				OTHER_LDFLAGS = "-lnrsc5";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tunedtwo.TunedTwo;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/TunedTwo-Bridging-Header.h";
+			};
+			name = Debug;
+		};
+		A680EF3D58D694A4C54DBD8F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 TunedTwo contributors.";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5139A7A111CD5518278B1F5F /* Build configuration list for PBXNativeTarget "TunedTwo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9C02C355DF9496C9EFF2560B /* Debug */,
+				32200B05266CB4B03B5002E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FFD0840526DA4C462F3EB114 /* Build configuration list for PBXProject "TunedTwo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A680EF3D58D694A4C54DBD8F /* Debug */,
+				36D4D49222088087AAB2FB5D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CFA5C02AC7F02CFC776B321C /* Project object */;
+}
