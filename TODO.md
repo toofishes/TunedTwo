@@ -5,16 +5,16 @@
 - [x] Vendor `nrsc5` as a Git submodule and build it as a dynamic library.
 - [x] Clean up duplicate reference checkouts.
 - [x] Create XcodeGen-based native macOS app project.
-- [ ] Create SwiftUI views: frequency, program/subchannel, play/stop, status.
-- [ ] Implement `TunerSession` wrapper around `libnrsc5`:
-  - [ ] C callback trampoline.
-  - [ ] File playback (`nrsc5_open_file`).
-  - [ ] RTL-SDR playback (`nrsc5_open` + `set_frequency`).
-  - [ ] Program switching (client-side filter of audio/ID3 events).
-- [ ] Implement `AudioPlayer` using `AVAudioEngine` + `AVAudioPlayerNode`.
-- [ ] Basic metadata model: station name, slogan, title/artist, MER/BER.
-- [ ] Sample-file extraction build phase / runtime helper.
-- [ ] Compile and run smoke test from sample file.
+- [x] Create SwiftUI views: frequency, program/subchannel, play/stop, status.
+- [x] Implement `TunerSession` wrapper around `libnrsc5`:
+  - [x] C callback trampoline.
+  - [x] File playback (`nrsc5_open_file`).
+  - [x] RTL-SDR playback (`nrsc5_open` + `set_frequency`).
+  - [x] Program switching (client-side filter of audio/ID3 events).
+- [x] Implement `AudioPlayer` using `AVAudioEngine` + `AVAudioPlayerNode`.
+- [x] Basic metadata model: station name, slogan, title/artist, MER/BER.
+- [x] Sample-file extraction build phase / runtime helper.
+- [x] Compile and run smoke test from sample file.
 
 ## Next (metadata & UX polish)
 

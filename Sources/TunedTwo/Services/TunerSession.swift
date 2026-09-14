@@ -61,13 +61,16 @@ final class TunerSession {
     }
 
     func stop() {
-        sessionQueue.async { [weak self] in
+        // Close synchronously so the caller can safely release this session
+        // once stop() returns.
+        sessionQueue.sync { [weak self] in
             guard let self = self else { return }
             self.closeSession()
-            DispatchQueue.main.async {
-                self.state.isPlaying = false
-                self.state.status = "Stopped"
-            }
+        }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.state.isPlaying = false
+            self.state.status = "Stopped"
         }
     }
 

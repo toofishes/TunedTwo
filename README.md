@@ -30,9 +30,14 @@ See [`TODO.md`](TODO.md) for the full roadmap and known loose ends.
 
 ### Generate the Xcode project
 
+The sample file must exist before XcodeGen runs so the resource reference is created:
+
 ```bash
+scripts/prepare-sample.sh
 xcodegen generate
 ```
+
+(The checked-in `TunedTwo.xcodeproj` already includes the reference, so you only need to regenerate after changing `project.yml` or after a clean checkout without `Resources/sample.bin`.)
 
 ### Build from the command line
 
