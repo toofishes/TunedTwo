@@ -14,6 +14,7 @@
 		87C489CFD6C94AA282A2040E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042CE0F4ABC83CE28BF0850C /* ContentView.swift */; };
 		C1DB02403059C10800C37D92 /* EventLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DB023F3059C10800C37D92 /* EventLogView.swift */; };
 		C1DB02423059C51B00C37D92 /* LogEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DB02413059C51B00C37D92 /* LogEvent.swift */; };
+		C1DB02443059D87600C37D92 /* ByteImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DB02433059D87600C37D92 /* ByteImageView.swift */; };
 		C629AD84C2AECD9AE5C00090 /* sample.bin in Resources */ = {isa = PBXBuildFile; fileRef = C8B0FCC6DA140367221D851A /* sample.bin */; };
 		E3353CBD080AF8C25A8CC12A /* TunerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC456D84C66B6A488BB600F /* TunerState.swift */; };
 		FD14AAE0F8FDC463FB5E1608 /* TunedTwoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 623F1A01956FF5BE3B66382C /* TunedTwoApp.swift */; };
@@ -31,6 +32,7 @@
 		8799C71253D3A9FDFABD58D9 /* TunerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerSession.swift; sourceTree = "<group>"; };
 		C1DB023F3059C10800C37D92 /* EventLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLogView.swift; sourceTree = "<group>"; };
 		C1DB02413059C51B00C37D92 /* LogEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEvent.swift; sourceTree = "<group>"; };
+		C1DB02433059D87600C37D92 /* ByteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteImageView.swift; sourceTree = "<group>"; };
 		C8B0FCC6DA140367221D851A /* sample.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = sample.bin; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -72,6 +74,7 @@
 		68AFF01BDB0249E8E847EF3C /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C1DB02433059D87600C37D92 /* ByteImageView.swift */,
 				C1DB023F3059C10800C37D92 /* EventLogView.swift */,
 				042CE0F4ABC83CE28BF0850C /* ContentView.swift */,
 			);
@@ -254,6 +257,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1DB02443059D87600C37D92 /* ByteImageView.swift in Sources */,
 				045AAB45E5F7BF1A7240BB5E /* AudioPlayer.swift in Sources */,
 				87C489CFD6C94AA282A2040E /* ContentView.swift in Sources */,
 				3999AC1D08285656E140FDB7 /* SampleFileProvider.swift in Sources */,

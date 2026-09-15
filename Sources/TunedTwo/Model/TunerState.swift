@@ -53,6 +53,8 @@ final class TunerState {
         return Float(mhz * 1_000_000)
     }
 
+    var latestImageData: [UInt8] = []
+
     var logEntries: [LogEvent] = []
 }
 
@@ -101,6 +103,14 @@ extension TunerState: TunerEventSink {
             artist = newArtist
             album = newAlbum
             genre = newGenre
+        case .lotHeader(_, _, let size, _, let name, _, _, _):
+            logEntries.append(LogEvent(timestamp: Date(), title: "LOT Header", description: "File: \(name) Size: \(size)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .lot(_, _, let size, let mime, let name, let data, _, _, _):
+            if mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG {
+                latestImageData = data
+            }
+            let mimeString = String(format:"%08X", mime)
+            logEntries.append(LogEvent(timestamp: Date(), title: "LOT File", description: "File: \(name) Size: \(size), Mime: \(mimeString)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .audio:
             break // Consumed inside TunerSession; never reaches the UI.
         default:

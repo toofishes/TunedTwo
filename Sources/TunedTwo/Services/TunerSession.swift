@@ -86,8 +86,8 @@ private final class Nrsc5Context {
                          data: copyBytes(raw.hdc.data, count: raw.hdc.count),
                          flags: Int(raw.hdc.flags))
         case NRSC5_EVENT_IQ:
-            event = .iq(samples: copyBytes(raw.iq.data.assumingMemoryBound(to: UInt8.self),
-                                           count: raw.iq.count))
+            // Omitting for now; this is a very low level raw data capture.
+            event = nil
         case NRSC5_EVENT_AUDIO:
             event = .audio(program: Int(raw.audio.program),
                            samples: copyInt16(raw.audio.data, count: raw.audio.count))
@@ -119,15 +119,8 @@ private final class Nrsc5Context {
                                service: raw.lot.service.map { copySigService($0.pointee) },
                                component: raw.lot.component.map { copySigComponent($0.pointee) })
         case NRSC5_EVENT_LOT_FRAGMENT:
-            event = .lotFragment(lotID: Int(raw.lot_fragment.lot),
-                                 seq: Int(raw.lot_fragment.seq),
-                                 repeatCount: Int(raw.lot_fragment.repeat),
-                                 size: Int(raw.lot_fragment.size),
-                                 bytesSoFar: Int(raw.lot_fragment.bytes_so_far),
-                                 isDuplicate: raw.lot_fragment.is_duplicate != 0,
-                                 data: copyBytes(raw.lot_fragment.data, count: Int(raw.lot_fragment.size)),
-                                 service: raw.lot_fragment.service.map { copySigService($0.pointee) },
-                                 component: raw.lot_fragment.component.map { copySigComponent($0.pointee) })
+            // Omitting for now; we don't currently need individual fragments.
+            event = nil
         case NRSC5_EVENT_SIS:
             // Deprecated by nrsc5. The same information is delivered through
             // the NRSC5_EVENT_STATION_* and *_SERVICE_DESCRIPTOR events below,

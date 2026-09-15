@@ -141,11 +141,15 @@ struct ContentView: View {
             MetadataRow(label: "Title", value: state.title)
             MetadataRow(label: "Artist", value: state.artist)
 
-            if !state.album.isEmpty {
+            if !state.album.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 MetadataRow(label: "Album", value: state.album)
             }
-            if !state.genre.isEmpty {
+            if !state.genre.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 MetadataRow(label: "Genre", value: state.genre)
+            }
+
+            if !state.latestImageData.isEmpty {
+                ByteImageView(imageBytes: state.latestImageData)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

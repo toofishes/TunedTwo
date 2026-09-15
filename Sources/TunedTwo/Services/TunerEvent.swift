@@ -48,13 +48,11 @@ enum TunerEvent: Sendable {
     case dataServiceDescriptor([TunerDataServiceDescriptor])
 
     // Data / file delivery
-    case iq(samples: [UInt8])
     case hdc(program: Int, data: [UInt8], flags: Int)
     case stream(port: Int, seq: Int, size: Int, mime: UInt32, data: [UInt8], service: TunerSigService?, component: TunerSigComponent?)
     case packet(port: Int, seq: Int, size: Int, mime: UInt32, data: [UInt8], service: TunerSigService?, component: TunerSigComponent?)
     case lot(port: Int, lotID: Int, size: Int, mime: UInt32, name: String, data: [UInt8], expiry: Date?, service: TunerSigService?, component: TunerSigComponent?)
     case lotHeader(port: Int, lotID: Int, size: Int, mime: UInt32, name: String, expiry: Date?, service: TunerSigService?, component: TunerSigComponent?)
-    case lotFragment(lotID: Int, seq: Int, repeatCount: Int, size: Int, bytesSoFar: Int, isDuplicate: Bool, data: [UInt8], service: TunerSigService?, component: TunerSigComponent?)
     case hereImage(type: Int, seq: Int, n1: Int, n2: Int, timeUTC: Date?, boundingBox: TunerBoundingBox, name: String, data: [UInt8])
 
     // Alerts and infrastructure info
