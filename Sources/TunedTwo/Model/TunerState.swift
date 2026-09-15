@@ -36,9 +36,12 @@ final class TunerState {
 
     var stationName: String = ""
     var stationSlogan: String = ""
+    var stationMessage: String = ""
+
     var title: String = ""
     var artist: String = ""
     var album: String = ""
+    var genre: String = ""
 
     var merLower: Float = 0
     var merUpper: Float = 0
@@ -49,6 +52,8 @@ final class TunerState {
         guard let mhz = Double(trimmed), mhz > 0 else { return nil }
         return Float(mhz * 1_000_000)
     }
+
+    var logEntries: [LogEvent] = []
 }
 
 // MARK: - TunerEventSink
@@ -70,6 +75,7 @@ extension TunerState: TunerEventSink {
             isPlaying = false
         case .syncAchieved:
             status = "Synchronized"
+            logEntries.append(LogEvent(timestamp: Date(), title: "Synchronized", description: "Synchronized", systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .lostSync:
             status = "Lost sync"
         case .mer(let lower, let upper):
@@ -79,12 +85,22 @@ extension TunerState: TunerEventSink {
             ber = cber
         case .stationName(let name):
             stationName = name
+            logEntries.append(LogEvent(timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .stationSlogan(let slogan):
             stationSlogan = slogan
-        case .id3(_, let newTitle, let newArtist, let newAlbum):
+            logEntries.append(LogEvent(timestamp: Date(), title: "Station Slogan", description: slogan, systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .stationMessage(let message):
+            stationMessage = message
+            logEntries.append(LogEvent(timestamp: Date(), title: "Station Message", description: message, systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .stationID(let countryCode, let fccFacilityID):
+            logEntries.append(LogEvent(timestamp: Date(), title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .stationLocation(let latitude, let longitude, let altitude):
+            logEntries.append(LogEvent(timestamp: Date(), title: "Station Location", description: "Lat \(latitude) Lon \(longitude) Alt \(altitude)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .id3(_, let newTitle, let newArtist, let newAlbum, let newGenre):
             title = newTitle
             artist = newArtist
             album = newAlbum
+            genre = newGenre
         case .audio:
             break // Consumed inside TunerSession; never reaches the UI.
         default:

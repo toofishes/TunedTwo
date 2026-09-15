@@ -39,7 +39,7 @@ enum TunerEvent: Sendable {
     case stationLocation(latitude: Float, longitude: Float, altitude: Int)
 
     // Audio / program metadata
-    case id3(program: Int, title: String, artist: String, album: String)
+    case id3(program: Int, title: String, artist: String, album: String, genre: String)
     case audioService(program: Int, access: Int, type: Int, codecMode: Int, blendControl: Int, digitalAudioGain: Int, commonDelay: Int, latency: Int)
 
     // Service Information Guide and descriptors

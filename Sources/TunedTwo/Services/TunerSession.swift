@@ -77,26 +77,26 @@ private final class Nrsc5Context {
         let event: TunerEvent?
         switch Int(raw.event) {
         case NRSC5_EVENT_LOST_DEVICE: event = .lostDevice
-        case NRSC5_EVENT_IQ:
-            event = .iq(samples: copyBytes(raw.iq.data, count: Int(raw.iq.count)))
         case NRSC5_EVENT_SYNC: event = .syncAchieved
         case NRSC5_EVENT_LOST_SYNC: event = .lostSync
         case NRSC5_EVENT_MER: event = .mer(lower: raw.mer.lower, upper: raw.mer.upper)
         case NRSC5_EVENT_BER: event = .ber(cber: raw.ber.cber)
         case NRSC5_EVENT_HDC:
             event = .hdc(program: Int(raw.hdc.program),
-                         data: copyBytes(raw.hdc.data, count: Int(raw.hdc.count)),
+                         data: copyBytes(raw.hdc.data, count: raw.hdc.count),
                          flags: Int(raw.hdc.flags))
+        case NRSC5_EVENT_IQ:
+            event = .iq(samples: copyBytes(raw.iq.data.assumingMemoryBound(to: UInt8.self),
+                                           count: raw.iq.count))
         case NRSC5_EVENT_AUDIO:
-            guard let data = raw.audio.data else { event = nil; return }
-            let count = Int(raw.audio.count)
             event = .audio(program: Int(raw.audio.program),
-                           samples: Array(UnsafeBufferPointer(start: data, count: count)))
+                           samples: copyInt16(raw.audio.data, count: raw.audio.count))
         case NRSC5_EVENT_ID3:
             event = .id3(program: Int(raw.id3.program),
                          title: makeString(raw.id3.title),
                          artist: makeString(raw.id3.artist),
-                         album: makeString(raw.id3.album))
+                         album: makeString(raw.id3.album),
+                         genre: makeString(raw.id3.genre))
         case NRSC5_EVENT_SIG:
             event = .sig(services: copySigServices(raw.sig.services))
         case NRSC5_EVENT_LOT:
@@ -293,9 +293,14 @@ private extension Nrsc5Context {
         return Calendar(identifier: .gregorian).date(from: components)
     }
 
-    func copyBytes(_ ptr: UnsafeRawPointer?, count: Int) -> [UInt8] {
+    func copyBytes(_ ptr: UnsafePointer<UInt8>?, count: Int) -> [UInt8] {
         guard let ptr, count > 0 else { return [] }
-        return Array(UnsafeBufferPointer(start: ptr.assumingMemoryBound(to: UInt8.self), count: count))
+        return Array(UnsafeBufferPointer(start: ptr, count: count))
+    }
+
+    func copyInt16(_ ptr: UnsafePointer<Int16>?, count: Int) -> [Int16] {
+        guard let ptr, count > 0 else { return [] }
+        return Array(UnsafeBufferPointer(start: ptr, count: count))
     }
 
     func copyIntArray(_ ptr: UnsafePointer<Int32>?, count: Int) -> [Int] {
@@ -458,7 +463,7 @@ actor TunerSession {
             guard isRunning, program == currentProgram else { return }
             await audioPlayer.feed(samples)
 
-        case .id3(let program, _, _, _):
+        case .id3(let program, _, _, _, _):
             guard program == currentProgram else { return }
             await sink?.tunerSessionDidEmit(event)
 

@@ -18,11 +18,13 @@ struct ContentView: View {
             controls
             Divider()
             metadata
+            Divider()
+            EventLogView(events: state.logEntries)
             Spacer()
             statusBar
         }
         .padding()
-        .frame(minWidth: 520, minHeight: 380)
+        .frame(minWidth: 480, minHeight: 440)
         .onChange(of: state.program) { _, newProgram in
             guard let session else { return }
             Task { await session.setProgram(newProgram) }
@@ -54,6 +56,7 @@ struct ContentView: View {
         HStack {
             Image(systemName: "radio")
                 .font(.largeTitle)
+                .fontWeight(.bold)
                 .foregroundStyle(Color.accentColor)
             VStack(alignment: .leading) {
                 Text("TunedTwo")
@@ -127,6 +130,12 @@ struct ContentView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+                if !state.stationMessage.isEmpty {
+                    Text("·")
+                        .foregroundStyle(.secondary)
+                    Text(state.stationMessage)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             MetadataRow(label: "Title", value: state.title)
@@ -134,6 +143,9 @@ struct ContentView: View {
 
             if !state.album.isEmpty {
                 MetadataRow(label: "Album", value: state.album)
+            }
+            if !state.genre.isEmpty {
+                MetadataRow(label: "Genre", value: state.genre)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
