@@ -10,16 +10,16 @@ import Combine
 
 final class TunerState: ObservableObject {
     enum Source: String, CaseIterable, Identifiable {
-        case sampleFile = "Sample File"
         case rtlSDR = "RTL-SDR"
+        case sampleFile = "Sample File"
 
         var id: String { rawValue }
     }
 
-    @Published var source: Source = .sampleFile
+    @Published var source: Source = .rtlSDR
 
     /// Frequency in MHz when using an RTL-SDR.
-    @Published var frequencyMHz: String = "90.7"
+    @Published var frequencyMHz: String = "103.5"
 
     /// Selected HD Radio program (0 = HD1, 7 = HD8).
     @Published var program: Int = 0

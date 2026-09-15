@@ -176,6 +176,8 @@ final class TunerSession {
             audioPlayer.feed(samples)
 
         case NRSC5_EVENT_ID3:
+            let program = currentProgram.withLock { $0 }
+            guard event.id3.program == program else { return }
             // Copy C strings immediately; the event pointers are only valid during the callback.
             let title = event.id3.title.map { String(cString: $0) } ?? ""
             let artist = event.id3.artist.map { String(cString: $0) } ?? ""
