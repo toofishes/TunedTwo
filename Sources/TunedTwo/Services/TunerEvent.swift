@@ -29,14 +29,82 @@ enum TunerEvent: Sendable {
     // Signal metrics
     case mer(lower: Float, upper: Float)
     case ber(cber: Float)
+    case agc(gainDB: Float, peakDBFS: Float, isFinal: Bool)
 
     // Station metadata
     case stationName(String)
     case stationSlogan(String)
+    case stationMessage(String)
+    case stationID(countryCode: String, fccFacilityID: Int)
+    case stationLocation(latitude: Float, longitude: Float, altitude: Int)
+
+    // Audio / program metadata
     case id3(program: Int, title: String, artist: String, album: String)
+    case audioService(program: Int, access: Int, type: Int, codecMode: Int, blendControl: Int, digitalAudioGain: Int, commonDelay: Int, latency: Int)
+
+    // Service Information Guide and descriptors
+    case sig(services: [TunerSigService])
+    case audioServiceDescriptor([TunerAudioServiceDescriptor])
+    case dataServiceDescriptor([TunerDataServiceDescriptor])
+
+    // Data / file delivery
+    case iq(samples: [UInt8])
+    case hdc(program: Int, data: [UInt8], flags: Int)
+    case stream(port: Int, seq: Int, size: Int, mime: UInt32, data: [UInt8], service: TunerSigService?, component: TunerSigComponent?)
+    case packet(port: Int, seq: Int, size: Int, mime: UInt32, data: [UInt8], service: TunerSigService?, component: TunerSigComponent?)
+    case lot(port: Int, lotID: Int, size: Int, mime: UInt32, name: String, data: [UInt8], expiry: Date?, service: TunerSigService?, component: TunerSigComponent?)
+    case lotHeader(port: Int, lotID: Int, size: Int, mime: UInt32, name: String, expiry: Date?, service: TunerSigService?, component: TunerSigComponent?)
+    case lotFragment(lotID: Int, seq: Int, repeatCount: Int, size: Int, bytesSoFar: Int, isDuplicate: Bool, data: [UInt8], service: TunerSigService?, component: TunerSigComponent?)
+    case hereImage(type: Int, seq: Int, n1: Int, n2: Int, timeUTC: Date?, boundingBox: TunerBoundingBox, name: String, data: [UInt8])
+
+    // Alerts and infrastructure info
+    case emergencyAlert(message: String, controlData: [UInt8], category1: Int, category2: Int, locationFormat: Int, locations: [Int])
+    case exciterInfo(manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int], manufacturerStatus: Int, importerConnected: Bool)
+    case importerInfo(manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int], manufacturerStatus: Int)
+    case leapSecondOffset(pendingOffset: Int, currentOffset: Int, pendingALFN: UInt)
+    case localTime(utcOffsetMinutes: Int, dstRegional: Bool, dstLocal: Bool, dstSchedule: Int)
 
     // Decoded audio (consumed by the session, forwarded to the audio actor)
     case audio(program: Int, samples: [Int16])
+}
+
+/// A service entry from an NRSC5 SIG (Service Information Guide) table.
+struct TunerSigService: Sendable {
+    let type: Int
+    let number: Int
+    let name: String
+    let components: [TunerSigComponent]
+    let audioComponent: TunerSigComponent?
+}
+
+/// A component belonging to a SIG service.
+enum TunerSigComponent: Sendable {
+    case data(id: Int, port: UInt16, serviceDataType: UInt16, aasType: Int, mime: UInt32)
+    case audio(id: Int, port: UInt8, programType: Int, mime: UInt32)
+    case unknown(id: Int)
+}
+
+/// SIS audio service descriptor (ASD).
+struct TunerAudioServiceDescriptor: Sendable {
+    let program: Int
+    let access: Int
+    let type: Int
+    let soundExp: Int
+}
+
+/// SIS data service descriptor (DSD).
+struct TunerDataServiceDescriptor: Sendable {
+    let access: Int
+    let type: Int
+    let mimeType: UInt32
+}
+
+/// Geographic bounding box for HERE traffic/weather images.
+struct TunerBoundingBox: Sendable {
+    let latitude1: Float
+    let longitude1: Float
+    let latitude2: Float
+    let longitude2: Float
 }
 
 /// Receives tuner events. Conformers run on the MainActor (typically

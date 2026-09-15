@@ -77,10 +77,16 @@ private final class Nrsc5Context {
         let event: TunerEvent?
         switch Int(raw.event) {
         case NRSC5_EVENT_LOST_DEVICE: event = .lostDevice
+        case NRSC5_EVENT_IQ:
+            event = .iq(samples: copyBytes(raw.iq.data, count: Int(raw.iq.count)))
         case NRSC5_EVENT_SYNC: event = .syncAchieved
         case NRSC5_EVENT_LOST_SYNC: event = .lostSync
         case NRSC5_EVENT_MER: event = .mer(lower: raw.mer.lower, upper: raw.mer.upper)
         case NRSC5_EVENT_BER: event = .ber(cber: raw.ber.cber)
+        case NRSC5_EVENT_HDC:
+            event = .hdc(program: Int(raw.hdc.program),
+                         data: copyBytes(raw.hdc.data, count: Int(raw.hdc.count)),
+                         flags: Int(raw.hdc.flags))
         case NRSC5_EVENT_AUDIO:
             guard let data = raw.audio.data else { event = nil; return }
             let count = Int(raw.audio.count)
@@ -88,13 +94,143 @@ private final class Nrsc5Context {
                            samples: Array(UnsafeBufferPointer(start: data, count: count)))
         case NRSC5_EVENT_ID3:
             event = .id3(program: Int(raw.id3.program),
-                         title: raw.id3.title.map { String(cString: $0) } ?? "",
-                         artist: raw.id3.artist.map { String(cString: $0) } ?? "",
-                         album: raw.id3.album.map { String(cString: $0) } ?? "")
+                         title: makeString(raw.id3.title),
+                         artist: makeString(raw.id3.artist),
+                         album: makeString(raw.id3.album))
+        case NRSC5_EVENT_SIG:
+            event = .sig(services: copySigServices(raw.sig.services))
+        case NRSC5_EVENT_LOT:
+            event = .lot(port: Int(raw.lot.port),
+                         lotID: Int(raw.lot.lot),
+                         size: Int(raw.lot.size),
+                         mime: raw.lot.mime,
+                         name: makeString(raw.lot.name),
+                         data: copyBytes(raw.lot.data, count: Int(raw.lot.size)),
+                         expiry: makeDate(raw.lot.expiry_utc),
+                         service: raw.lot.service.map { copySigService($0.pointee) },
+                         component: raw.lot.component.map { copySigComponent($0.pointee) })
+        case NRSC5_EVENT_LOT_HEADER:
+            event = .lotHeader(port: Int(raw.lot.port),
+                               lotID: Int(raw.lot.lot),
+                               size: Int(raw.lot.size),
+                               mime: raw.lot.mime,
+                               name: makeString(raw.lot.name),
+                               expiry: makeDate(raw.lot.expiry_utc),
+                               service: raw.lot.service.map { copySigService($0.pointee) },
+                               component: raw.lot.component.map { copySigComponent($0.pointee) })
+        case NRSC5_EVENT_LOT_FRAGMENT:
+            event = .lotFragment(lotID: Int(raw.lot_fragment.lot),
+                                 seq: Int(raw.lot_fragment.seq),
+                                 repeatCount: Int(raw.lot_fragment.repeat),
+                                 size: Int(raw.lot_fragment.size),
+                                 bytesSoFar: Int(raw.lot_fragment.bytes_so_far),
+                                 isDuplicate: raw.lot_fragment.is_duplicate != 0,
+                                 data: copyBytes(raw.lot_fragment.data, count: Int(raw.lot_fragment.size)),
+                                 service: raw.lot_fragment.service.map { copySigService($0.pointee) },
+                                 component: raw.lot_fragment.component.map { copySigComponent($0.pointee) })
+        case NRSC5_EVENT_SIS:
+            // Deprecated by nrsc5. The same information is delivered through
+            // the NRSC5_EVENT_STATION_* and *_SERVICE_DESCRIPTOR events below,
+            // so we intentionally do not emit a Swift event for this case.
+            event = nil
+        case NRSC5_EVENT_STREAM:
+            event = .stream(port: Int(raw.stream.port),
+                            seq: Int(raw.stream.seq),
+                            size: Int(raw.stream.size),
+                            mime: raw.stream.mime,
+                            data: copyBytes(raw.stream.data, count: Int(raw.stream.size)),
+                            service: raw.stream.service.map { copySigService($0.pointee) },
+                            component: raw.stream.component.map { copySigComponent($0.pointee) })
+        case NRSC5_EVENT_PACKET:
+            event = .packet(port: Int(raw.packet.port),
+                            seq: Int(raw.packet.seq),
+                            size: Int(raw.packet.size),
+                            mime: raw.packet.mime,
+                            data: copyBytes(raw.packet.data, count: Int(raw.packet.size)),
+                            service: raw.packet.service.map { copySigService($0.pointee) },
+                            component: raw.packet.component.map { copySigComponent($0.pointee) })
+        case NRSC5_EVENT_AUDIO_SERVICE:
+            event = .audioService(program: Int(raw.audio_service.program),
+                                  access: Int(raw.audio_service.access),
+                                  type: Int(raw.audio_service.type),
+                                  codecMode: Int(raw.audio_service.codec_mode),
+                                  blendControl: Int(raw.audio_service.blend_control),
+                                  digitalAudioGain: Int(raw.audio_service.digital_audio_gain),
+                                  commonDelay: Int(raw.audio_service.common_delay),
+                                  latency: Int(raw.audio_service.latency))
+        case NRSC5_EVENT_STATION_ID:
+            event = .stationID(countryCode: makeString(raw.station_id.country_code),
+                               fccFacilityID: Int(raw.station_id.fcc_facility_id))
         case NRSC5_EVENT_STATION_NAME:
-            event = .stationName(raw.station_name.name.map { String(cString: $0) } ?? "")
+            event = .stationName(makeString(raw.station_name.name))
         case NRSC5_EVENT_STATION_SLOGAN:
-            event = .stationSlogan(raw.station_slogan.slogan.map { String(cString: $0) } ?? "")
+            event = .stationSlogan(makeString(raw.station_slogan.slogan))
+        case NRSC5_EVENT_STATION_MESSAGE:
+            event = .stationMessage(makeString(raw.station_message.message))
+        case NRSC5_EVENT_STATION_LOCATION:
+            event = .stationLocation(latitude: raw.station_location.latitude,
+                                     longitude: raw.station_location.longitude,
+                                     altitude: Int(raw.station_location.altitude))
+        case NRSC5_EVENT_AUDIO_SERVICE_DESCRIPTOR:
+            event = .audioServiceDescriptor([TunerAudioServiceDescriptor(
+                program: Int(raw.asd.program),
+                access: Int(raw.asd.access),
+                type: Int(raw.asd.type),
+                soundExp: Int(raw.asd.sound_exp)
+            )])
+        case NRSC5_EVENT_DATA_SERVICE_DESCRIPTOR:
+            event = .dataServiceDescriptor([TunerDataServiceDescriptor(
+                access: Int(raw.dsd.access),
+                type: Int(raw.dsd.type),
+                mimeType: raw.dsd.mime_type
+            )])
+        case NRSC5_EVENT_EMERGENCY_ALERT:
+            event = .emergencyAlert(message: makeString(raw.emergency_alert.message),
+                                    controlData: copyBytes(raw.emergency_alert.control_data,
+                                                           count: Int(raw.emergency_alert.control_data_length)),
+                                    category1: Int(raw.emergency_alert.category1),
+                                    category2: Int(raw.emergency_alert.category2),
+                                    locationFormat: Int(raw.emergency_alert.location_format),
+                                    locations: copyIntArray(raw.emergency_alert.locations,
+                                                            count: Int(raw.emergency_alert.num_locations)))
+        case NRSC5_EVENT_HERE_IMAGE:
+            event = .hereImage(type: Int(raw.here_image.image_type),
+                               seq: Int(raw.here_image.seq),
+                               n1: Int(raw.here_image.n1),
+                               n2: Int(raw.here_image.n2),
+                               timeUTC: makeDate(raw.here_image.time_utc),
+                               boundingBox: TunerBoundingBox(latitude1: raw.here_image.latitude1,
+                                                             longitude1: raw.here_image.longitude1,
+                                                             latitude2: raw.here_image.latitude2,
+                                                             longitude2: raw.here_image.longitude2),
+                               name: makeString(raw.here_image.name),
+                               data: copyBytes(raw.here_image.data, count: Int(raw.here_image.size)))
+        case NRSC5_EVENT_AGC:
+            event = .agc(gainDB: raw.agc.gain_db,
+                         peakDBFS: raw.agc.peak_dbfs,
+                         isFinal: raw.agc.is_final != 0)
+        case NRSC5_EVENT_EXCITER_INFO:
+            event = .exciterInfo(manufacturerID: makeString(raw.exciter_info.manufacturer_id),
+                                 coreVersion: copyCIntTuple(raw.exciter_info.core_version),
+                                 coreStatus: Int(raw.exciter_info.core_status),
+                                 manufacturerVersion: copyCIntTuple(raw.exciter_info.manufacturer_version),
+                                 manufacturerStatus: Int(raw.exciter_info.manufacturer_status),
+                                 importerConnected: raw.exciter_info.importer_connected != 0)
+        case NRSC5_EVENT_IMPORTER_INFO:
+            event = .importerInfo(manufacturerID: makeString(raw.importer_info.manufacturer_id),
+                                  coreVersion: copyCIntTuple(raw.importer_info.core_version),
+                                  coreStatus: Int(raw.importer_info.core_status),
+                                  manufacturerVersion: copyCIntTuple(raw.importer_info.manufacturer_version),
+                                  manufacturerStatus: Int(raw.importer_info.manufacturer_status))
+        case NRSC5_EVENT_LEAP_SECOND_OFFSET:
+            event = .leapSecondOffset(pendingOffset: Int(raw.leap_second_offset.pending_offset),
+                                      currentOffset: Int(raw.leap_second_offset.current_offset),
+                                      pendingALFN: UInt(raw.leap_second_offset.pending_alfn))
+        case NRSC5_EVENT_LOCAL_TIME:
+            event = .localTime(utcOffsetMinutes: Int(raw.local_time.utc_offset),
+                               dstRegional: raw.local_time.dst_regional != 0,
+                               dstLocal: raw.local_time.dst_local != 0,
+                               dstSchedule: Int(raw.local_time.dst_schedule))
         default: event = nil
         }
         guard let event else { return }
@@ -133,6 +269,91 @@ private final class Nrsc5Context {
             nrsc5_close(st)
         }
         st = nil
+    }
+}
+
+// MARK: - C event copying helpers
+
+private extension Nrsc5Context {
+    func makeString(_ ptr: UnsafePointer<CChar>?) -> String {
+        ptr.map { String(cString: $0) } ?? ""
+    }
+
+    func makeDate(_ ptr: UnsafePointer<tm>?) -> Date? {
+        guard let ptr else { return nil }
+        let t = ptr.pointee
+        var components = DateComponents()
+        components.timeZone = TimeZone(identifier: "UTC")
+        components.year = Int(t.tm_year) + 1900
+        components.month = Int(t.tm_mon) + 1
+        components.day = Int(t.tm_mday)
+        components.hour = Int(t.tm_hour)
+        components.minute = Int(t.tm_min)
+        components.second = Int(t.tm_sec)
+        return Calendar(identifier: .gregorian).date(from: components)
+    }
+
+    func copyBytes(_ ptr: UnsafeRawPointer?, count: Int) -> [UInt8] {
+        guard let ptr, count > 0 else { return [] }
+        return Array(UnsafeBufferPointer(start: ptr.assumingMemoryBound(to: UInt8.self), count: count))
+    }
+
+    func copyIntArray(_ ptr: UnsafePointer<Int32>?, count: Int) -> [Int] {
+        guard let ptr, count > 0 else { return [] }
+        return Array(UnsafeBufferPointer(start: ptr, count: count)).map(Int.init)
+    }
+
+    func copyCIntTuple(_ tuple: some Any) -> [Int] {
+        withUnsafeBytes(of: tuple) { ptr in
+            ptr.bindMemory(to: Int32.self).map(Int.init)
+        }
+    }
+
+    func copySigService(_ s: nrsc5_sig_service_t) -> TunerSigService {
+        TunerSigService(
+            type: Int(s.type),
+            number: Int(s.number),
+            name: makeString(s.name),
+            components: copySigComponents(s.components),
+            audioComponent: s.audio_component.map { copySigComponent($0.pointee) }
+        )
+    }
+
+    func copySigServices(_ service: UnsafeMutablePointer<nrsc5_sig_service_t>?) -> [TunerSigService] {
+        var result: [TunerSigService] = []
+        var current = service
+        while let s = current {
+            result.append(copySigService(s.pointee))
+            current = s.pointee.next
+        }
+        return result
+    }
+
+    func copySigComponent(_ c: nrsc5_sig_component_t) -> TunerSigComponent {
+        if Int(c.type) == NRSC5_SIG_SERVICE_DATA {
+            return .data(id: Int(c.id),
+                         port: c.data.port,
+                         serviceDataType: c.data.service_data_type,
+                         aasType: Int(c.data.type),
+                         mime: c.data.mime)
+        } else if Int(c.type) == NRSC5_SIG_SERVICE_AUDIO {
+            return .audio(id: Int(c.id),
+                          port: c.audio.port,
+                          programType: Int(c.audio.type),
+                          mime: c.audio.mime)
+        } else {
+            return .unknown(id: Int(c.id))
+        }
+    }
+
+    func copySigComponents(_ component: UnsafeMutablePointer<nrsc5_sig_component_t>?) -> [TunerSigComponent] {
+        var result: [TunerSigComponent] = []
+        var current = component
+        while let c = current {
+            result.append(copySigComponent(c.pointee))
+            current = c.pointee.next
+        }
+        return result
     }
 }
 
@@ -237,7 +458,7 @@ actor TunerSession {
             guard isRunning, program == currentProgram else { return }
             await audioPlayer.feed(samples)
 
-        case .id3(let program, let title, let artist, let album):
+        case .id3(let program, _, _, _):
             guard program == currentProgram else { return }
             await sink?.tunerSessionDidEmit(event)
 

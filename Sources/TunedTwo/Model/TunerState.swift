@@ -87,6 +87,10 @@ extension TunerState: TunerEventSink {
             album = newAlbum
         case .audio:
             break // Consumed inside TunerSession; never reaches the UI.
+        default:
+            // Newly-added nrsc5 events are forwarded to the sink but not
+            // yet displayed in the UI.
+            break
         }
     }
 }
