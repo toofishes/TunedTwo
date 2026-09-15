@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var state = TunerState()
     @State private var session: TunerSession?
-    @State private var smokeTestTimer: Timer?
+    @State private var retuneTask: Task<Void, Never>?
 
     var body: some View {
         VStack(spacing: 16) {
@@ -24,25 +24,27 @@ struct ContentView: View {
         .padding()
         .frame(minWidth: 520, minHeight: 380)
         .onChange(of: state.program) { _, newProgram in
-            session?.programChanged(to: newProgram)
+            guard let session else { return }
+            Task { await session.setProgram(newProgram) }
+        }
+        .onChange(of: state.frequencyMHz) { _, _ in
+            scheduleRetune()
+        }
+        .onChange(of: state.isPlaying) { _, playing in
+            if !playing {
+                // Sessions that are no longer playing can't produce more
+                // audio; dropping the reference lets the session's deinit
+                // perform any remaining teardown.
+                session = nil
+            }
         }
         .onAppear {
             if ProcessInfo.processInfo.environment["TUNEDTWO_SMOKE_TEST"] == "1" {
-                state.source = .sampleFile
-                togglePlayback()
-                smokeTestTimer = Timer.scheduledTimer(withTimeInterval: 8.0, repeats: false) { _ in
-                    if !self.state.stationName.isEmpty || !self.state.title.isEmpty {
-                        fputs("SMOKE_OK: station='\(self.state.stationName)' title='\(self.state.title)'\n", stderr)
-                    } else {
-                        fputs("SMOKE_FAIL: no metadata received\n", stderr)
-                    }
-                    NSApp.terminate(nil)
-                }
+                Task { await runSmokeTest() }
             }
         }
         .onDisappear {
-            smokeTestTimer?.invalidate()
-            session?.stop()
+            retuneTask?.cancel()
         }
     }
 
@@ -143,7 +145,7 @@ struct ContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(String(format: "MER %.1f / %.1f dB  ·  BER %.4f",
+            Text(String(format: "MER %.1f / %.1f dB  ·  BER %.6f",
                         state.merLower, state.merUpper, state.ber))
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -153,18 +155,69 @@ struct ContentView: View {
 
     // MARK: - Actions
 
+    /// Play/stop is inherently asynchronous: commands flow down into the
+    /// tuner actor, and results (started/stopped/failed) flow back up as
+    /// events that update `state`.
     private func togglePlayback() {
+        Task { await togglePlaybackAsync() }
+    }
+
+    private func togglePlaybackAsync() async {
         if state.isPlaying {
-            session?.stop()
+            guard let current = session else { return }
+            session = nil
+            await current.stop()
         } else {
-            do {
-                let newSession = try TunerSession(state: state)
-                session = newSession
-                newSession.start()
-            } catch {
-                state.status = "Error: \(error.localizedDescription)"
-            }
+            await startPlayback()
         }
+    }
+
+    private func startPlayback() async {
+        let configuration = TunerConfiguration(
+            source: state.source == .rtlSDR ? .rtlSDR(deviceIndex: 0) : .sampleFile,
+            frequencyHz: state.frequencyHz,
+            program: state.program)
+
+        do {
+            let newSession = try TunerSession(sink: state)
+            session = newSession
+            // Optimistic, so the button feels immediate; the .failed event
+            // corrects this if the tuner cannot start.
+            state.isPlaying = true
+            await newSession.start(configuration)
+        } catch {
+            session = nil
+            state.status = "Error: \(error.localizedDescription)"
+        }
+    }
+
+    /// Retunes a running RTL-SDR session when the frequency field changes.
+    /// Debounced because each keystroke would otherwise reopen the demodulator.
+    private func scheduleRetune() {
+        retuneTask?.cancel()
+        retuneTask = Task {
+            try? await Task.sleep(for: .milliseconds(600))
+            guard !Task.isCancelled else { return }
+            guard state.source == .rtlSDR, state.isPlaying,
+                  let session, let frequencyHz = state.frequencyHz else { return }
+            await session.retune(frequencyHz: frequencyHz)
+        }
+    }
+
+    // MARK: - Smoke test
+
+    /// Plays the bundled sample file and self-terminates, printing
+    /// `SMOKE_OK` if metadata was received.
+    private func runSmokeTest() async {
+        state.source = .sampleFile
+        await startPlayback()
+        try? await Task.sleep(for: .seconds(8))
+        if !state.stationName.isEmpty || !state.title.isEmpty {
+            fputs("SMOKE_OK: station='\(state.stationName)' title='\(state.title)'\n", stderr)
+        } else {
+            fputs("SMOKE_FAIL: no metadata received\n", stderr)
+        }
+        NSApp.terminate(nil)
     }
 }
 

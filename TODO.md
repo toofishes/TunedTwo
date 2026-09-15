@@ -40,5 +40,5 @@
 - [ ] Evaluate linking statically vs. dynamically. Currently dynamic per request; the dylib is copied into the app bundle.
 - [ ] Bundle or document runtime dependencies (`libfftw3f`, `librtlsdr`) for distribution.
 - [ ] Add a minimal XCTest smoke test target that verifies `libnrsc5` loads and decodes a sample to PCM.
-- [ ] Swift concurrency: currently targeting Swift 5 mode; revisit strict concurrency once the callback/threading story is cleaner.
+- [x] Swift 6 strict concurrency: `TunerSession`/`AudioPlayer` are actors, C callback events flow through an `AsyncStream`, UI state is `@MainActor` and only reached via an awaited event sink. No `@unchecked Sendable` anywhere.
 - [ ] Decide on a persistence strategy (`@AppStorage`, `UserDefaults`, or a small JSON file).

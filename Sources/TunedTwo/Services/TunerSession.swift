@@ -2,214 +2,292 @@
 //  TunerSession.swift
 //  TunedTwo
 //
-//  Wraps libnrsc5 and feeds the native audio pipeline.
+//  Wraps libnrsc5 behind a Swift actor.
+//
+//  Concurrency model:
+//  - All libnrsc5 API calls are confined to this actor. The UI layer only
+//    reaches it through async calls with Sendable values.
+//  - The nrsc5 C callback runs on the library's worker thread. Its only job
+//    is to copy each C event into a Sendable `TunerEvent` value (while the
+//    C pointers are still valid) and yield it into an `AsyncStream`; it
+//    never touches mutable Swift state.
+//  - A single long-lived consumer task drains the stream into the actor.
+//    It holds the session weakly so the session can deinit while it runs:
+//    the context tears the C session down, finishes the stream, the loop
+//    ends, and every resource (worker thread, C session, audio) is
+//    reclaimed — no leaks, no retain cycles.
+//  - UI state is only ever touched via the awaited `TunerEventSink`
+//    (MainActor), held weakly.
 //
 
 import Foundation
 import AVFoundation
 import os
 
-/// C function pointer cannot capture Swift state, so this top-level trampoline
-/// forwards events into the active session.
-private func nrsc5EventCallback(event: UnsafePointer<nrsc5_event_t>?, opaque: UnsafeMutableRawPointer?) {
-    guard let event = event, let opaque = opaque else { return }
-    let session = Unmanaged<TunerSession>.fromOpaque(opaque).takeUnretainedValue()
-    session.handle(event.pointee)
+/// Configuration snapshot taken on the MainActor when playback starts, so
+/// the session never reads UI-owned state directly.
+struct TunerConfiguration: Sendable {
+    enum Source: Sendable {
+        case rtlSDR(deviceIndex: Int)
+        case sampleFile
+    }
+
+    let source: Source
+    let frequencyHz: Float?
+    let program: Int
 }
 
-final class TunerSession {
-    private let state: TunerState
-    private let audioPlayer: AudioPlayer
-    private let sessionQueue = DispatchQueue(label: "io.tunedtwo.nrsc5", qos: .userInitiated)
+// MARK: - C bridge
 
+/// Bridge for the raw libnrsc5 session, handed to the library as the
+/// callback's opaque pointer.
+///
+/// A plain (non-Sendable) class by design. The mutable C state below is
+/// only ever touched from the session actor's methods and from this
+/// class's own `deinit` (plain-class deinits have no Sendable
+/// restrictions), which can never overlap: an in-flight actor method keeps
+/// the session — and therefore this context — alive. The nrsc5 worker
+/// thread only calls `emit`, which reads the immutable stream continuation.
+/// This removes the need for locks or `@unchecked Sendable` entirely.
+private final class Nrsc5Context {
+    /// The raw C session. The IQ file (if any) is owned by libnrsc5 once
+    /// passed to `nrsc5_open_file` — `nrsc5_close` fcloses it.
     private var st: OpaquePointer?
-    private var fileHandle: UnsafeMutablePointer<FILE>?
 
-    /// Client-side program filter. nrsc5 emits all programs; we only render the selected one.
-    /// Lock-guarded: written on the session queue, read from the nrsc5 worker thread.
-    private let currentProgram: OSAllocatedUnfairLock<UInt32>
+    private let continuation: AsyncStream<TunerEvent>.Continuation
+    let events: AsyncStream<TunerEvent>
 
-    init(state: TunerState) throws {
-        self.state = state
-        self.audioPlayer = try AudioPlayer()
-        self.currentProgram = OSAllocatedUnfairLock(initialState: UInt32(state.program))
+    init() {
+        (events, continuation) = AsyncStream.makeStream(of: TunerEvent.self)
     }
 
+    /// RAII teardown: releasing the last reference to this context stops the
+    /// callback, joins the library's worker thread, frees the C session, and
+    /// finishes the event stream so the consumer task can wind down. So a
+    /// dropped session can never leak the worker or the device.
     deinit {
-        stop()
+        close()
+        continuation.finish()
     }
 
-    // MARK: - Public control
-
-    func start() {
-        sessionQueue.async { [weak self] in
-            guard let self = self else { return }
-            self.currentProgram.withLock { $0 = UInt32(self.state.program) }
-            do {
-                try self.startSession()
-                try self.audioPlayer.start()
-                DispatchQueue.main.async {
-                    self.state.isPlaying = true
-                    self.state.status = "Playing"
-                }
-            } catch {
-                fputs("[TunerSession] start error: \(error.localizedDescription)\n", stderr)
-                DispatchQueue.main.async {
-                    self.state.isPlaying = false
-                    self.state.status = "Error: \(error.localizedDescription)"
-                }
-            }
+    /// Called on the nrsc5 worker thread. Copies every byte out of the C
+    /// event while its pointers are still valid, then yields a value.
+    /// Reads no mutable state.
+    func emit(_ raw: nrsc5_event_t) {
+        let event: TunerEvent?
+        switch Int(raw.event) {
+        case NRSC5_EVENT_LOST_DEVICE: event = .lostDevice
+        case NRSC5_EVENT_SYNC: event = .syncAchieved
+        case NRSC5_EVENT_LOST_SYNC: event = .lostSync
+        case NRSC5_EVENT_MER: event = .mer(lower: raw.mer.lower, upper: raw.mer.upper)
+        case NRSC5_EVENT_BER: event = .ber(cber: raw.ber.cber)
+        case NRSC5_EVENT_AUDIO:
+            guard let data = raw.audio.data else { event = nil; return }
+            let count = Int(raw.audio.count)
+            event = .audio(program: Int(raw.audio.program),
+                           samples: Array(UnsafeBufferPointer(start: data, count: count)))
+        case NRSC5_EVENT_ID3:
+            event = .id3(program: Int(raw.id3.program),
+                         title: raw.id3.title.map { String(cString: $0) } ?? "",
+                         artist: raw.id3.artist.map { String(cString: $0) } ?? "",
+                         album: raw.id3.album.map { String(cString: $0) } ?? "")
+        case NRSC5_EVENT_STATION_NAME:
+            event = .stationName(raw.station_name.name.map { String(cString: $0) } ?? "")
+        case NRSC5_EVENT_STATION_SLOGAN:
+            event = .stationSlogan(raw.station_slogan.slogan.map { String(cString: $0) } ?? "")
+        default: event = nil
         }
+        guard let event else { return }
+        continuation.yield(event)
     }
 
-    func stop() {
-        // Close synchronously so the caller can safely release this session
-        // once stop() returns.
-        sessionQueue.sync { [weak self] in
-            guard let self = self else { return }
-            self.closeSession()
-        }
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.state.isPlaying = false
-            self.state.status = "Stopped"
-        }
+    /// Installs a freshly opened C session, registers the callback, and
+    /// starts demodulation.
+    func activate(st: OpaquePointer) {
+        self.st = st
+        // The context outlives the C session: close() unregisters the
+        // callback and joins the worker thread before the context can be
+        // released.
+        nrsc5_set_callback(st, nrsc5EventCallback, Unmanaged.passUnretained(self).toOpaque())
+        nrsc5_start(st)
     }
 
-    func programChanged(to program: Int) {
-        sessionQueue.async { [weak self] in
-            guard let self = self else { return }
-            self.currentProgram.withLock { $0 = UInt32(program) }
-            // Flush queued audio so the old program doesn't bleed into the new one.
-            self.audioPlayer.reset()
-        }
+    /// Live retune. `nrsc5_set_frequency` may only be called while the
+    /// worker is stopped, so stop demodulation, tune, and resume.
+    func retune(frequencyHz: Float) -> Bool {
+        guard let st else { return false }
+        nrsc5_stop(st)
+        let tuned = nrsc5_set_frequency(st, frequencyHz) == 0
+        nrsc5_start(st)
+        return tuned
     }
 
-    // MARK: - Session lifecycle
-
-    private func startSession() throws {
-        closeSession()
-
-        var newSt: OpaquePointer?
-
-        switch state.source {
-        case .sampleFile:
-            let path = try SampleFileProvider.shared.sampleFilePath()
-            fputs("[TunerSession] opening sample file: \(path)\n", stderr)
-            guard let fp = fopen(path, "rb") else {
-                throw TunerError.cannotOpenSample
-            }
-            self.fileHandle = fp
-            guard nrsc5_open_file(&newSt, fp) == 0 else {
-                fclose(fp)
-                self.fileHandle = nil
-                throw TunerError.nrsc5OpenFailed
-            }
-
-        case .rtlSDR:
-            guard nrsc5_open(&newSt, 0) == 0 else {
-                throw TunerError.noSDR
-            }
-            guard nrsc5_set_mode(newSt, Int32(NRSC5_MODE_FM)) == 0 else {
-                nrsc5_close(newSt)
-                throw TunerError.modeSetFailed
-            }
-            guard let freqHz = state.frequencyHz else {
-                nrsc5_close(newSt)
-                throw TunerError.invalidFrequency
-            }
-            guard nrsc5_set_frequency(newSt, freqHz) == 0 else {
-                nrsc5_close(newSt)
-                throw TunerError.tuneFailed
-            }
-            nrsc5_set_auto_gain(newSt, 1)
-        }
-
-        self.st = newSt
-        let opaque = Unmanaged.passUnretained(self).toOpaque()
-        nrsc5_set_callback(newSt, nrsc5EventCallback, opaque)
-        nrsc5_start(newSt)
-    }
-
-    private func closeSession() {
-        if let st = st {
+    /// Idempotent C teardown: unregisters the callback, joins the worker
+    /// thread, and releases the C session (nrsc5_close fcloses the IQ file).
+    /// Does *not* finish the event stream — that happens once, in `deinit`,
+    /// so a session may stop and start again on the same stream.
+    func close() {
+        if let st {
+            nrsc5_set_callback(st, nil, nil)
             nrsc5_stop(st)
             nrsc5_close(st)
         }
         st = nil
-        fileHandle = nil
-        audioPlayer.stop()
+    }
+}
+
+/// C function pointers cannot capture Swift context; this trampoline forwards
+/// to the context object passed as `opaque`.
+private func nrsc5EventCallback(event: UnsafePointer<nrsc5_event_t>?, opaque: UnsafeMutableRawPointer?) {
+    guard let event, let opaque else { return }
+    Unmanaged<Nrsc5Context>.fromOpaque(opaque).takeUnretainedValue().emit(event.pointee)
+}
+
+// MARK: - Session
+
+actor TunerSession {
+    private static let logger = Logger(subsystem: "io.tunedtwo.TunedTwo", category: "tuner")
+
+    private weak var sink: TunerEventSink?
+    private let audioPlayer: AudioPlayer
+    private let context = Nrsc5Context()
+
+    /// Client-side program filter. nrsc5 emits all programs; we only render
+    /// the selected one. Plain actor state — no lock needed.
+    private var currentProgram: Int
+    private var isRunning = false
+
+    init(sink: TunerEventSink) throws {
+        self.sink = sink
+        self.audioPlayer = try AudioPlayer()
+        self.currentProgram = 0
+
+        // Drain C callback events into the actor. The task holds the session
+        // weakly so a released session can deinit while it runs; the context's
+        // deinit finishes the stream, which ends this loop and lets every
+        // resource be reclaimed.
+        let events = context.events
+        Task { [weak self, events] in
+            for await event in events {
+                await self?.handle(event)
+            }
+        }
     }
 
-    // MARK: - Event handling (called from nrsc5 worker thread)
+    deinit {
+        // No C access here: releasing `context` performs the teardown
+        // (its deinit unregisters the callback, joins the worker thread,
+        // and closes the session), so even a running session that is
+        // dropped without stop() cannot leak the worker or the device.
+        // The audio player is an actor (Sendable), so its reference can be
+        // captured here; the task keeps it alive long enough to stop the
+        // engine, which must not happen on an arbitrary deinit thread.
+        let player = audioPlayer
+        Task { await player.stop() }
+    }
 
-    func handle(_ event: nrsc5_event_t) {
-        switch Int(event.event) {
-        case NRSC5_EVENT_SYNC:
-            fputs("[TunerSession] sync achieved\n", stderr)
-            DispatchQueue.main.async {
-                self.state.status = "Synchronized"
-            }
+    // MARK: - Public control (called from the UI, asynchronous by design)
 
-        case NRSC5_EVENT_LOST_SYNC:
-            DispatchQueue.main.async {
-                self.state.status = "Lost sync"
-            }
+    func start(_ configuration: TunerConfiguration) async {
+        currentProgram = configuration.program
+        context.close() // idempotent; every start gets a fresh C session
 
-        case NRSC5_EVENT_MER:
-            DispatchQueue.main.async {
-                self.state.merLower = event.mer.lower
-                self.state.merUpper = event.mer.upper
-            }
+        do {
+            let st = try Self.openRawSession(configuration)
+            context.activate(st: st)
+            try await audioPlayer.start()
+            isRunning = true
+            Self.logger.debug("Session started")
+            await sink?.tunerSessionDidEmit(.started)
+        } catch {
+            context.close()
+            await audioPlayer.stop()
+            await sink?.tunerSessionDidEmit(.failed(message: error.localizedDescription))
+        }
+    }
 
-        case NRSC5_EVENT_BER:
-            DispatchQueue.main.async {
-                self.state.ber = event.ber.cber
-            }
+    func stop() async {
+        isRunning = false
+        context.close()
+        await audioPlayer.stop()
+        await sink?.tunerSessionDidEmit(.stopped)
+    }
 
-        case NRSC5_EVENT_AUDIO:
-            let program = currentProgram.withLock { $0 }
-            guard event.audio.program == program,
-                  let data = event.audio.data else { return }
-            let count = Int(event.audio.count)
-            let samples = Array(UnsafeBufferPointer(start: data, count: count))
-            audioPlayer.feed(samples)
+    /// Switches the decoded program (HD1–HD8) and flushes queued audio so the
+    /// old program does not bleed into the new one.
+    func setProgram(_ program: Int) async {
+        currentProgram = program
+        await audioPlayer.flush()
+    }
 
-        case NRSC5_EVENT_ID3:
-            let program = currentProgram.withLock { $0 }
-            guard event.id3.program == program else { return }
-            // Copy C strings immediately; the event pointers are only valid during the callback.
-            let title = event.id3.title.map { String(cString: $0) } ?? ""
-            let artist = event.id3.artist.map { String(cString: $0) } ?? ""
-            let album = event.id3.album.map { String(cString: $0) } ?? ""
-            fputs("[TunerSession] ID3: \(title)\n", stderr)
-            DispatchQueue.main.async {
-                self.state.title = title
-                self.state.artist = artist
-                self.state.album = album
-            }
+    /// Live retune while playing (RTL-SDR only).
+    func retune(frequencyHz: Float) async {
+        guard context.retune(frequencyHz: frequencyHz) else {
+            await sink?.tunerSessionDidEmit(.failed(message: "Could not tune to the requested frequency."))
+            return
+        }
+        await audioPlayer.flush()
+    }
 
-        case NRSC5_EVENT_STATION_NAME:
-            let name = event.station_name.name.map { String(cString: $0) } ?? ""
-            fputs("[TunerSession] station name: \(name)\n", stderr)
-            DispatchQueue.main.async {
-                self.state.stationName = name
-            }
+    // MARK: - Event handling (actor-isolated, fed by the event stream)
 
-        case NRSC5_EVENT_STATION_SLOGAN:
-            let slogan = event.station_slogan.slogan.map { String(cString: $0) } ?? ""
-            DispatchQueue.main.async {
-                self.state.stationSlogan = slogan
-            }
+    private func handle(_ event: TunerEvent) async {
+        switch event {
+        case .audio(let program, let samples):
+            guard isRunning, program == currentProgram else { return }
+            await audioPlayer.feed(samples)
 
-        case NRSC5_EVENT_LOST_DEVICE:
-            DispatchQueue.main.async {
-                self.state.status = "Device lost"
-                self.state.isPlaying = false
-            }
+        case .id3(let program, let title, let artist, let album):
+            guard program == currentProgram else { return }
+            await sink?.tunerSessionDidEmit(event)
 
         default:
-            break
+            // Station-level events (sync, metrics, station name/slogan,
+            // device loss) pass straight through to the UI.
+            await sink?.tunerSessionDidEmit(event)
+        }
+    }
+
+    // MARK: - C session lifecycle
+
+    /// Opens a new libnrsc5 session for the given configuration. Pure C
+    /// calls on a not-yet-shared handle, so this is safe off-actor.
+    private static func openRawSession(_ configuration: TunerConfiguration) throws -> OpaquePointer {
+        var st: OpaquePointer?
+
+        switch configuration.source {
+        case .sampleFile:
+            let path = try SampleFileProvider.sampleFilePath()
+            Self.logger.debug("Opening sample file: \(path, privacy: .public)")
+            guard let fp = fopen(path, "rb") else {
+                throw TunerError.cannotOpenSample
+            }
+            // On success the file is owned by libnrsc5 (nrsc5_close fcloses it).
+            guard nrsc5_open_file(&st, fp) == 0 else {
+                fclose(fp)
+                throw TunerError.nrsc5OpenFailed
+            }
+            return st!
+
+        case .rtlSDR(let deviceIndex):
+            guard nrsc5_open(&st, Int32(deviceIndex)) == 0 else {
+                throw TunerError.noSDR
+            }
+            let handle = st!
+            guard nrsc5_set_mode(handle, Int32(NRSC5_MODE_FM)) == 0 else {
+                nrsc5_close(handle)
+                throw TunerError.modeSetFailed
+            }
+            guard let frequencyHz = configuration.frequencyHz else {
+                nrsc5_close(handle)
+                throw TunerError.invalidFrequency
+            }
+            guard nrsc5_set_frequency(handle, frequencyHz) == 0 else {
+                nrsc5_close(handle)
+                throw TunerError.tuneFailed
+            }
+            nrsc5_set_auto_gain(handle, 1)
+            return handle
         }
     }
 

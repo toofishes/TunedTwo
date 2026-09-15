@@ -3,15 +3,24 @@
 //  TunedTwo
 //
 //  Locates the uncompressed sample I/Q file bundled with the app.
+//  A caseless enum: stateless and callable from any isolation context.
 //
 
 import Foundation
 
-final class SampleFileProvider {
-    static let shared = SampleFileProvider()
+enum SampleFileProvider {
+    enum SampleError: LocalizedError {
+        case sampleNotFound
+
+        var errorDescription: String? {
+            switch self {
+            case .sampleNotFound: return "sample.bin could not be found in the bundle."
+            }
+        }
+    }
 
     /// Returns a path to the bundled `sample.bin`.
-    func sampleFilePath() throws -> String {
+    static func sampleFilePath() throws -> String {
         let bundle = Bundle.main
         if let url = bundle.url(forResource: "sample", withExtension: "bin") {
             return url.path
@@ -25,15 +34,5 @@ final class SampleFileProvider {
         }
 
         throw SampleError.sampleNotFound
-    }
-
-    enum SampleError: LocalizedError {
-        case sampleNotFound
-
-        var errorDescription: String? {
-            switch self {
-            case .sampleNotFound: return "sample.bin could not be found in the bundle."
-            }
-        }
     }
 }
