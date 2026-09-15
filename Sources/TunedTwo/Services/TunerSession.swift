@@ -77,7 +77,7 @@ private final class Nrsc5Context {
         let event: TunerEvent?
         switch Int(raw.event) {
         case NRSC5_EVENT_LOST_DEVICE: event = .lostDevice
-        case NRSC5_EVENT_SYNC: event = .syncAchieved
+        case NRSC5_EVENT_SYNC: event = .syncAchieved(freqOffset: raw.sync.freq_offset, psmi: Int(raw.sync.psmi), pli: Int(raw.sync.pli), hppi: Int(raw.sync.hppi), aabi: Int(raw.sync.aabi), rdbi: Int(raw.sync.rdbi))
         case NRSC5_EVENT_LOST_SYNC: event = .lostSync
         case NRSC5_EVENT_MER: event = .mer(lower: raw.mer.lower, upper: raw.mer.upper)
         case NRSC5_EVENT_BER: event = .ber(cber: raw.ber.cber)
@@ -100,8 +100,7 @@ private final class Nrsc5Context {
         case NRSC5_EVENT_SIG:
             event = .sig(services: copySigServices(raw.sig.services))
         case NRSC5_EVENT_LOT:
-            event = .lot(port: Int(raw.lot.port),
-                         lotID: Int(raw.lot.lot),
+            event = .lot(lotID: Int(raw.lot.lot),
                          size: Int(raw.lot.size),
                          mime: raw.lot.mime,
                          name: makeString(raw.lot.name),
@@ -110,8 +109,7 @@ private final class Nrsc5Context {
                          service: raw.lot.service.map { copySigService($0.pointee) },
                          component: raw.lot.component.map { copySigComponent($0.pointee) })
         case NRSC5_EVENT_LOT_HEADER:
-            event = .lotHeader(port: Int(raw.lot.port),
-                               lotID: Int(raw.lot.lot),
+            event = .lotHeader(lotID: Int(raw.lot.lot),
                                size: Int(raw.lot.size),
                                mime: raw.lot.mime,
                                name: makeString(raw.lot.name),
@@ -127,18 +125,14 @@ private final class Nrsc5Context {
             // so we intentionally do not emit a Swift event for this case.
             event = nil
         case NRSC5_EVENT_STREAM:
-            event = .stream(port: Int(raw.stream.port),
-                            seq: Int(raw.stream.seq),
+            event = .stream(seq: Int(raw.stream.seq),
                             size: Int(raw.stream.size),
-                            mime: raw.stream.mime,
                             data: copyBytes(raw.stream.data, count: Int(raw.stream.size)),
                             service: raw.stream.service.map { copySigService($0.pointee) },
                             component: raw.stream.component.map { copySigComponent($0.pointee) })
         case NRSC5_EVENT_PACKET:
-            event = .packet(port: Int(raw.packet.port),
-                            seq: Int(raw.packet.seq),
+            event = .packet(seq: Int(raw.packet.seq),
                             size: Int(raw.packet.size),
-                            mime: raw.packet.mime,
                             data: copyBytes(raw.packet.data, count: Int(raw.packet.size)),
                             service: raw.packet.service.map { copySigService($0.pointee) },
                             component: raw.packet.component.map { copySigComponent($0.pointee) })

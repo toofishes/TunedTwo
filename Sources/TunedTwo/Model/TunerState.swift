@@ -103,9 +103,9 @@ extension TunerState: TunerEventSink {
             artist = newArtist
             album = newAlbum
             genre = newGenre
-        case .lotHeader(_, _, let size, _, let name, _, _, _):
+        case .lotHeader(_, let size, _, let name, _, _, _):
             logEntries.append(LogEvent(timestamp: Date(), title: "LOT Header", description: "File: \(name) Size: \(size)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .lot(_, _, let size, let mime, let name, let data, _, _, _):
+        case .lot(_, let size, let mime, let name, let data, _, _, _):
             if mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG {
                 latestImageData = data
             }
