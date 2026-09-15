@@ -1,8 +1,10 @@
 name: TunedTwo
+attributes:
+  LastUpgradeCheck: "2660"
 options:
   bundleIdPrefix: io.tunedtwo
   deploymentTarget:
-    macOS: "14.0"
+    macOS: "15.0"
   createIntermediateGroups: true
   defaultConfig: Debug
   developmentLanguage: en
@@ -10,12 +12,15 @@ options:
 settings:
   MARKETING_VERSION: "0.1.0"
   CURRENT_PROJECT_VERSION: "1"
-  SWIFT_VERSION: "5.0"
+  SWIFT_VERSION: "6.0"
   CODE_SIGN_STYLE: Automatic
   ENABLE_HARDENED_RUNTIME: YES
+  ENABLE_USER_SCRIPT_SANDBOXING: NO
   DEAD_CODE_STRIPPING: YES
   GENERATE_INFOPLIST_FILE: YES
-  INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+  ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+  STRING_CATALOG_GENERATE_SYMBOLS: YES
+  INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
   INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 TunedTwo contributors."
 configs:
   Debug: debug
@@ -24,7 +29,7 @@ targets:
   TunedTwo:
     type: application
     platform: macOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "15.0"
     sources:
       - path: Sources/TunedTwo
       - path: TunedTwo-Bridging-Header.h
@@ -37,21 +42,26 @@ targets:
         HEADER_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/include
         LIBRARY_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/build/src
         OTHER_LDFLAGS: -lnrsc5
-        LD_RUNPATH_SEARCH_PATHS: $(inherited) @executable_path/../Frameworks
+        LD_RUNPATH_SEARCH_PATHS:
+          - $(inherited)
+          - "@executable_path/../Frameworks"
     prebuildScripts:
       - name: Prepare sample file
         script: |
           set -e
           "${SRCROOT}/scripts/prepare-sample.sh"
         inputFiles:
+          - $(SRCROOT)/scripts/prepare-sample.sh
           - $(SRCROOT)/Vendor/nrsc5/support/sample.xz
         outputFiles:
           - $(SRCROOT)/Resources/sample.bin
       - name: Build libnrsc5
         script: |
           set -e
+          export PATH="$PATH:/opt/homebrew/bin"
           "${SRCROOT}/scripts/build-nrsc5.sh"
         inputFiles:
+          - $(SRCROOT)/scripts/build-nrsc5.sh
           - $(SRCROOT)/Vendor/nrsc5/include/nrsc5.h
         outputFiles:
           - $(SRCROOT)/Vendor/nrsc5/build/src/libnrsc5.dylib
@@ -63,6 +73,8 @@ targets:
           FRAMEWORKS_DIR="${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}"
           mkdir -p "${FRAMEWORKS_DIR}"
           cp -v "${DYLIB_SRC}" "${FRAMEWORKS_DIR}/libnrsc5.dylib"
+        inputFiles:
+          - $(SRCROOT)/Vendor/nrsc5/build/src/libnrsc5.dylib
         shell: /bin/bash
 schemes:
   TunedTwo:

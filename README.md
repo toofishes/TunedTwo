@@ -30,14 +30,22 @@ See [`TODO.md`](TODO.md) for the full roadmap and known loose ends.
 
 ### Generate the Xcode project
 
-The sample file must exist before XcodeGen runs so the resource reference is created:
+The Xcode project is generated from [`project.yml`](project.yml) using [XcodeGen](https://github.com/yonaskolb/XcodeGen). **`project.yml` is the source of truth** for deployment target, build settings, script phases, search paths, etc. — the checked-in `.xcodeproj` is a generated artifact.
+
+Regenerate whenever you change `project.yml`:
 
 ```bash
 scripts/prepare-sample.sh
 xcodegen generate
 ```
 
-(The checked-in `TunedTwo.xcodeproj` already includes the reference, so you only need to regenerate after changing `project.yml` or after a clean checkout without `Resources/sample.bin`.)
+Notable settings:
+
+- `ENABLE_USER_SCRIPT_SANDBOXING: NO` — required so script phases can find `/opt/homebrew/bin` (cmake, etc.)
+- `export PATH="$PATH:/opt/homebrew/bin"` — prepended in the build-nrsc5 script phase
+- Script `.sh` sources listed as `inputFiles` (dependency tracking)
+
+After running `xcodegen generate`, diff the result (`git diff TunedTwo.xcodeproj/`) and verify these settings are preserved before committing.
 
 ### Build from the command line
 
