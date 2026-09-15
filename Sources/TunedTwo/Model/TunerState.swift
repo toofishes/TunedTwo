@@ -13,7 +13,8 @@ import Foundation
 import Combine
 
 @MainActor
-final class TunerState: ObservableObject {
+@Observable
+final class TunerState {
     enum Source: String, CaseIterable, Identifiable {
         case rtlSDR = "RTL-SDR"
         case sampleFile = "Sample File"
@@ -21,27 +22,27 @@ final class TunerState: ObservableObject {
         var id: String { rawValue }
     }
 
-    @Published var source: Source = .rtlSDR
+    var source: Source = .rtlSDR
 
     /// Frequency in MHz when using an RTL-SDR.
-    @Published var frequencyMHz: String = "103.5"
+    var frequencyMHz: String = "103.5"
 
     /// Selected HD Radio program (0 = HD1, 7 = HD8).
-    @Published var program: Int = 0
+    var program: Int = 0
 
-    @Published var isPlaying: Bool = false
+    var isPlaying: Bool = false
 
-    @Published var status: String = "Ready"
+    var status: String = "Ready"
 
-    @Published var stationName: String = ""
-    @Published var stationSlogan: String = ""
-    @Published var title: String = ""
-    @Published var artist: String = ""
-    @Published var album: String = ""
+    var stationName: String = ""
+    var stationSlogan: String = ""
+    var title: String = ""
+    var artist: String = ""
+    var album: String = ""
 
-    @Published var merLower: Float = 0
-    @Published var merUpper: Float = 0
-    @Published var ber: Float = 0
+    var merLower: Float = 0
+    var merUpper: Float = 0
+    var ber: Float = 0
 
     var frequencyHz: Float? {
         let trimmed = frequencyMHz.trimmingCharacters(in: .whitespaces)

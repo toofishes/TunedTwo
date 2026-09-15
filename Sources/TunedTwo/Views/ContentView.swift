@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var state = TunerState()
+    @State private var state = TunerState()
     @State private var session: TunerSession?
     @State private var retuneTask: Task<Void, Never>?
 
