@@ -89,8 +89,10 @@ private final class Nrsc5Context {
         case NRSC5_EVENT_MER: event = .mer(lower: raw.mer.lower, upper: raw.mer.upper)
         case NRSC5_EVENT_BER: event = .ber(cber: raw.ber.cber)
         case NRSC5_EVENT_HDC:
+            // We have `data` available but don't copy it since we never use it.
+            // Instead, just pass along the received byte count so bitrate can be calculated.
             event = .hdc(program: Int(raw.hdc.program),
-                         data: copyBytes(raw.hdc.data, count: raw.hdc.count),
+                         size: Int(raw.hdc.count),
                          flags: Int(raw.hdc.flags))
         case NRSC5_EVENT_IQ:
             // Omitting for now; this is a very low level raw data capture.
@@ -108,7 +110,6 @@ private final class Nrsc5Context {
             event = .sig(services: copySigServices(raw.sig.services))
         case NRSC5_EVENT_LOT:
             event = .lot(lotID: Int(raw.lot.lot),
-                         size: Int(raw.lot.size),
                          mime: raw.lot.mime,
                          name: makeString(raw.lot.name),
                          data: copyBytes(raw.lot.data, count: Int(raw.lot.size)),
@@ -117,9 +118,9 @@ private final class Nrsc5Context {
                          component: raw.lot.component.map { copySigComponent($0.pointee) })
         case NRSC5_EVENT_LOT_HEADER:
             event = .lotHeader(lotID: Int(raw.lot.lot),
-                               size: Int(raw.lot.size),
                                mime: raw.lot.mime,
                                name: makeString(raw.lot.name),
+                               size: Int(raw.lot.size),
                                expiry: makeDate(raw.lot.expiry_utc),
                                service: raw.lot.service.map { copySigService($0.pointee) },
                                component: raw.lot.component.map { copySigComponent($0.pointee) })

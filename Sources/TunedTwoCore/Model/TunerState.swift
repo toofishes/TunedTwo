@@ -93,8 +93,8 @@ extension TunerState: TunerEventSink {
             merUpper = upper
         case .ber(let cber):
             ber = cber
-        case .hdc(_, let data, _):
-            bitsPerSecond = data.count * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES);
+        case .hdc(_, let size, _):
+            bitsPerSecond = size * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES);
         case .stationName(let name):
             stationName = name
             logEntries.append(LogEvent(timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill", tintColor: .blue))
@@ -113,7 +113,7 @@ extension TunerState: TunerEventSink {
             artist = newArtist
             album = newAlbum
             genre = newGenre
-        case .lot(let id, let size, let mime, let name, let data, _, let service, let component):
+        case .lot(let id, let mime, let name, let data, _, let service, let component):
             if mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG {
                 latestImageData = data
             }
@@ -136,7 +136,7 @@ extension TunerState: TunerEventSink {
                 }
             }
 
-            logEntries.append(LogEvent(timestamp: Date(), title: "LOT File", description: "ID: \(id), File: \(name), Size: \(size), Mime: \(mimeString), Service: \(String(describing: service)), Component: \(String(describing: component)), Component Mime: \(compMime)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
+            logEntries.append(LogEvent(timestamp: Date(), title: "LOT File", description: "ID: \(id), File: \(name), Size: \(data.count), Mime: \(mimeString), Service: \(String(describing: service)), Component: \(String(describing: component)), Component Mime: \(compMime)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .audio:
             break // Consumed inside TunerSession; never reaches the UI.
         default:
