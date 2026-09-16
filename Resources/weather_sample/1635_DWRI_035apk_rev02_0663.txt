@@ -1,0 +1,8 @@
+DopplerWeatherRadarProtocolVersionID="1.0"
+DWR_Area_ID="035apk"
+StationList="(pIDH3Q,FM107.5)";"(pIERmg,FM93.9)";"(pIEhwg,FM103.5)";"(pIDS0w,FM95.5)";"(pIAZvA,FM102.7)"
+Coordinates="(43.69360,-90.68990)";"(39.67031,-85.30001)"
+Legend_Rain="(1,(0,255,0))";"(2,(0,170,0))";"(3,(0,102,0))";"(4,(255,238,0))";"(5,(238,119,0))";"(6,(221,0,0))"
+Legend_MixIce="(1,(255,170,255))";"(2,(244,85,176))"
+Legend_Snow="(1,(0,255,255))";"(2,(0,0,255))"
+CopyrightNotice="Copyright © 2026 iHeartMedia, Inc. All rights reserved."
