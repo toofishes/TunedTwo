@@ -27,6 +27,10 @@ struct ContentView: View {
                     TrafficView(map: state.traffic)
                 }
 
+                Tab("Weather", systemImage: "sun.rain") {
+                    WeatherView(map: state.weather)
+                }
+
                 Tab("Logs", systemImage: "list.bullet.rectangle") {
                     EventLogView(events: state.logEntries)
                 }

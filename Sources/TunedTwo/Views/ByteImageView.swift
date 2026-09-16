@@ -16,10 +16,12 @@ struct ByteImageView: View {
             swiftUIImage
                 .resizable()
                 .scaledToFit()
+                .frame(maxWidth: 100, maxHeight: 100)
         } else {
             Image(systemName: "music.note")
                 .resizable()
                 .scaledToFit()
+                .frame(maxWidth: 100, maxHeight: 100)
         }
     }
     

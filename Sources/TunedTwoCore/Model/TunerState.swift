@@ -63,6 +63,7 @@ public final class TunerState {
     public var latestCoverArt: [UInt8] = []
     public var latestImageData: [UInt8] = []
     public var traffic = TrafficMap()
+    public var weather = WeatherMap()
 
     public var logEntries: [LogEvent] = []
 
@@ -139,6 +140,8 @@ extension TunerState: TunerEventSink {
                         latestStationImage = data
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
                         traffic.processLOTFile(name: name, data: data)
+                    } else if mime == NRSC5_MIME_TTN_STM_WEATHER {
+                        weather.processLOTFile(name: name, data: data)
                     }
                 default:
                     break
