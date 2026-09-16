@@ -19,33 +19,21 @@ struct ContentView: View {
             controls
             Divider()
             TabView {
-                metadata
-                    .tabItem {
-                        Image(systemName: "radio")
-                        Text("Radio")
-                    }
+                Tab("Radio", systemImage: "radio") {
+                    metadata
+                }
 
-                EventLogView(events: state.logEntries)
-                    .tabItem {
-                        Image(systemName: "list.bullet.rectangle")
-                        Text("Logs")
+                Tab("Traffic", systemImage: "map") {
+                    if let composite = state.traffic.composite {
+                        Image(composite, scale: 1.0, orientation: .up, label: Text("Traffic"))
+                            .resizable().scaledToFit()
+                    } else {
+                        Image(systemName: "map").resizable().scaledToFit()
                     }
+                }
 
-                if let composite = state.traffic.composite {
-                    // TODO: skip nsImage, direct from cgImage?
-                    Image(nsImage: NSImage(cgImage: composite,
-                                           size: NSSize(width: composite.width, height: composite.height)))
-                        .resizable().scaledToFit()
-                        .tabItem {
-                            Image(systemName: "map")
-                            Text("Traffic")
-                        }
-                } else {
-                    Image(systemName: "map").resizable().scaledToFit()
-                        .tabItem {
-                            Image(systemName: "map")
-                            Text("Traffic")
-                        }
+                Tab("Logs", systemImage: "list.bullet.rectangle") {
+                    EventLogView(events: state.logEntries)
                 }
             }
             Divider()

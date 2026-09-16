@@ -141,7 +141,8 @@ public struct TrafficMap {
         guard let info = Self.parseLOTName(name) else { return .notTrafficMapFile }
         guard (1...Self.rowCount).contains(info.row),
               (1...Self.columnCount).contains(info.column) else { return .outOfGrid }
-        guard let image = Self.decodeImage(Data(data)) else { return .undecodableImage }
+        guard let source = CGImageSourceCreateWithData(Data(data) as CFData, nil) else { return .undecodableImage }
+        guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
 
         if let currentProvider = provider, currentProvider != info.provider {
             tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
@@ -156,13 +157,6 @@ public struct TrafficMap {
 
         tiles[index] = TrafficMapTile(info: info, image: image)
         return .stored
-    }
-
-    /// Decode image bytes via ImageIO. Works for any format ImageIO knows
-    /// (in practice TMT files are PNGs).
-    static func decodeImage(_ data: Data) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        return CGImageSourceCreateImageAtIndex(source, 0, nil)
     }
 
     // MARK: - Composite
