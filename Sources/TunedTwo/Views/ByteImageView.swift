@@ -17,14 +17,16 @@ struct ByteImageView: View {
                 .resizable()
                 .scaledToFit()
         } else {
-            Text("Invalid image data")
-                .foregroundColor(.red)
+            Image(systemName: "music.note")
+                .resizable()
+                .scaledToFit()
         }
     }
     
     // Helper function to handle the conversion
     private func createSwiftUIImage(from bytes: [UInt8]) -> Image? {
-        // 1. Convert [UInt8] array to standard foundation Data
+        guard !bytes.isEmpty else { return nil }
+
         let data = Data(bytes)
         
         #if os(macOS)
