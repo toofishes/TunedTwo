@@ -45,6 +45,9 @@ public final class TunerState {
     public var album: String = ""
     public var genre: String = ""
 
+    private var byteCount: Int = 0
+    private var receiveCount: Int = 0
+
     public var bitsPerSecond: Int = 0
     public var merLower: Float = 0
     public var merUpper: Float = 0
@@ -94,7 +97,13 @@ extension TunerState: TunerEventSink {
         case .ber(let cber):
             ber = cber
         case .hdc(_, let size, _):
-            bitsPerSecond = size * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES);
+            byteCount += size
+            receiveCount += 1
+            if receiveCount >= 32 || bitsPerSecond == 0 {
+                bitsPerSecond = byteCount * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES) / receiveCount;
+                byteCount = 0
+                receiveCount = 0
+            }
         case .stationName(let name):
             stationName = name
             logEntries.append(LogEvent(timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill", tintColor: .blue))
