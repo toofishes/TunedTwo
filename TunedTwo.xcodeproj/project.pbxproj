@@ -29,6 +29,7 @@
 		9078F4CD5F8B9A468EC1C5D8 /* TunedTwoCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B35FCB308E4BA71B1B52CFA4 /* TunerSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B759207AB087B3539A256F5B /* TunerSession.swift */; };
 		B3FEDE293E78013E612B6095 /* TrafficMapCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 086F2700FB67DFF25409853E /* TrafficMapCommand.swift */; };
+		C1DB0248305B018700C37D92 /* TrafficView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DB0247305B018500C37D92 /* TrafficView.swift */; };
 		C629AD84C2AECD9AE5C00090 /* sample.bin in Resources */ = {isa = PBXBuildFile; fileRef = C8B0FCC6DA140367221D851A /* sample.bin */; };
 		CE4715B1C012854E966275CF /* 311_TMT_035apk_1_2_20260915_2014_0137.png in Resources */ = {isa = PBXBuildFile; fileRef = 52911DD67315732EA1D64EA1 /* 311_TMT_035apk_1_2_20260915_2014_0137.png */; };
 		D613A1A1F51A2BC03B620DEE /* EventLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2521732EF44489A43C3DE1 /* EventLogView.swift */; };
@@ -106,7 +107,7 @@
 		086F2700FB67DFF25409853E /* TrafficMapCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficMapCommand.swift; sourceTree = "<group>"; };
 		095A6FC05DBFD8042A5B9350 /* TunedTwo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TunedTwo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C1595897753D74598DC2AB0 /* 310_TMT_035apk_1_3_20260915_2014_0136.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 310_TMT_035apk_1_3_20260915_2014_0136.png; sourceTree = "<group>"; };
-		133752B5A74A306027F74D9A /* tunedtwo-cli */ = {isa = PBXFileReference; includeInIndex = 0; path = "tunedtwo-cli"; sourceTree = BUILT_PRODUCTS_DIR; };
+		133752B5A74A306027F74D9A /* tunedtwo-cli */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = "tunedtwo-cli"; sourceTree = BUILT_PRODUCTS_DIR; };
 		23F23A923CD5B2736FA6B0DA /* TrafficMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficMapTests.swift; sourceTree = "<group>"; };
 		2699E8479EE28565DDF0997C /* SampleFileProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleFileProvider.swift; sourceTree = "<group>"; };
 		2BB548ACD951BBF95DFAE16D /* 307_TMT_035apk_2_3_20260915_2014_0133.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 307_TMT_035apk_2_3_20260915_2014_0133.png; sourceTree = "<group>"; };
@@ -126,6 +127,7 @@
 		AE679F3E7B4D9019CB3BC0EB /* ByteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteImageView.swift; sourceTree = "<group>"; };
 		B3CD96B521BC8D9A3698BD9E /* TrafficMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficMap.swift; sourceTree = "<group>"; };
 		B759207AB087B3539A256F5B /* TunerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerSession.swift; sourceTree = "<group>"; };
+		C1DB0247305B018500C37D92 /* TrafficView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficView.swift; sourceTree = "<group>"; };
 		C8B0FCC6DA140367221D851A /* sample.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = sample.bin; sourceTree = "<group>"; };
 		CA8BBF93F0DADCF0A7743135 /* 308_TMT_035apk_2_2_20260915_2014_0134.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 308_TMT_035apk_2_2_20260915_2014_0134.png; sourceTree = "<group>"; };
 		D4F7F4D153F3903A827FE829 /* CLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLI.swift; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 		68AFF01BDB0249E8E847EF3C /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C1DB0247305B018500C37D92 /* TrafficView.swift */,
 				AE679F3E7B4D9019CB3BC0EB /* ByteImageView.swift */,
 				042CE0F4ABC83CE28BF0850C /* ContentView.swift */,
 				8A2521732EF44489A43C3DE1 /* EventLogView.swift */,
@@ -523,6 +526,7 @@
 			files = (
 				2736D0A662CF0A2E9D34F4F6 /* ByteImageView.swift in Sources */,
 				87C489CFD6C94AA282A2040E /* ContentView.swift in Sources */,
+				C1DB0248305B018700C37D92 /* TrafficView.swift in Sources */,
 				D613A1A1F51A2BC03B620DEE /* EventLogView.swift in Sources */,
 				FD14AAE0F8FDC463FB5E1608 /* TunedTwoApp.swift in Sources */,
 			);

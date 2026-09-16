@@ -159,6 +159,20 @@ public struct TrafficMap {
         return .stored
     }
 
+    // MARK: - Timestamps
+
+    /// The earliest timestamp among the collected tiles, or nil if no
+    /// tiles have been ingested.
+    public func minimumTimestamp() -> Date? {
+        tiles.compactMap { $0?.info.timestamp }.min()
+    }
+
+    /// The latest timestamp among the collected tiles, or nil if no
+    /// tiles have been ingested.
+    public func maximumTimestamp() -> Date? {
+        tiles.compactMap { $0?.info.timestamp }.max()
+    }
+
     // MARK: - Composite
 
     /// Stitch the available tiles into a single image: a 3×3 grid at the

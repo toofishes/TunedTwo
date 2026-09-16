@@ -24,12 +24,7 @@ struct ContentView: View {
                 }
 
                 Tab("Traffic", systemImage: "map") {
-                    if let composite = state.traffic.composite {
-                        Image(composite, scale: 1.0, orientation: .up, label: Text("Traffic"))
-                            .resizable().scaledToFit()
-                    } else {
-                        Image(systemName: "map").resizable().scaledToFit()
-                    }
+                    TrafficView(map: state.traffic)
                 }
 
                 Tab("Logs", systemImage: "list.bullet.rectangle") {
