@@ -27,7 +27,8 @@ public struct WeatherInfo: Equatable, Sendable {
     public let hex: UInt16
 }
 
-/// Outcome of offering one LOT file to `WeatherMap.processLOTFile(name:data:)`.
+/// Outcome of offering one LOT file to `WeatherMap.processImageFile(name:data:)`
+/// or `WeatherMap.processConfigFile(data:)`.
 /// Used by the CLI for reporting and by tests for exact assertions.
 public enum WeatherMapIngestOutcome: Equatable, Sendable {
     /// The image was decoded and stored (a new slot, or an update whose
@@ -132,50 +133,17 @@ public struct WeatherMap {
 
     // MARK: - Filename parsing
 
-    /// Parse a DWRI text config filename and return its provider ID.
-    ///
-    /// Accepts both `DWRI_{provider}_rev{N}_{hex}.txt` and the
-    /// sequence-number-prefixed form `1635_DWRI_{provider}_rev{N}_{hex}.txt`.
-    public static func parseConfigName(_ lotName: String) -> String? {
-        guard lotName.hasSuffix(".txt") else { return nil }
-
-        let baseName = String(lotName.dropLast(4))
-        let components = baseName.components(separatedBy: "_")
-        guard components.count >= 4 else { return nil }
-
-        let dwriIndex: Int
-        if components[0] == "DWRI" {
-            dwriIndex = 0
-        } else if components.count >= 5 && components[1] == "DWRI" {
-            dwriIndex = 1
-        } else {
-            return nil
-        }
-
-        let provider = components[dwriIndex + 1]
-        guard !provider.isEmpty else { return nil }
-        return provider
-    }
-
     // MARK: - Ingest
 
-    /// Offer one LOT file to the map.
+    /// Parse and store a text config file.
     @discardableResult
-    public mutating func processLOTFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
-        if name.hasSuffix(".txt") {
-            return processConfigFile(name: name, data: data)
-        } else {
-            return processImageFile(name: name, data: data)
-        }
-    }
-
-    private mutating func processConfigFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
-        guard let provider = Self.parseConfigName(name) else { return .notWeatherMapFile }
+    public mutating func processConfigFile(data: [UInt8]) -> WeatherMapIngestOutcome {
         guard let text = String(bytes: data, encoding: .utf8),
               let newConfig = try? TTNSTMWeatherConfigParser.parse(text) else {
             return .invalidConfig
         }
 
+        let provider = newConfig.areaID
         if let currentProvider = self.provider, currentProvider != provider {
             info = nil
             image = nil
@@ -185,7 +153,9 @@ public struct WeatherMap {
         return .storedConfig
     }
 
-    private mutating func processImageFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
+    /// Parse and store a radar image.
+    @discardableResult
+    public mutating func processImageFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
         guard let newInfo = Self.parseLOTName(name) else { return .notWeatherMapFile }
         guard let source = CGImageSourceCreateWithData(Data(data) as CFData, nil) else { return .undecodableImage }
         guard let newImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }

@@ -73,8 +73,7 @@ struct TrafficMapTests {
         var map = TrafficMap()
         let png = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
 
-        let outcome = map.processLOTFile(name: "STN_035apk_2_1_20260914_1514_036f.png",
-                                         data: Array(png))
+        let outcome = map.processImageFile(name: "STN_035apk_2_1_20260914_1514_036f.png", data: Array(png))
         #expect(outcome == .notTrafficMapFile)
         #expect(map.tiles.allSatisfy { $0 == nil })
         #expect(map.provider == nil)
@@ -83,8 +82,7 @@ struct TrafficMapTests {
     @Test("rejects undecodable image bytes")
     func rejectsUndecodableBytes() {
         var map = TrafficMap()
-        let outcome = map.processLOTFile(name: "TMT_prov_1_1_20260914_1514_0001.png",
-                                         data: Array("not a png".utf8))
+        let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1514_0001.png", data: Array("not a png".utf8))
         #expect(outcome == .undecodableImage)
         #expect(map.tiles.allSatisfy { $0 == nil })
     }
@@ -94,12 +92,9 @@ struct TrafficMapTests {
         var map = TrafficMap()
 
         // Row/column of 0 parse fine but are outside the grid.
-        #expect(map.processLOTFile(name: "TMT_prov_0_0_20260914_1514_0001.png",
-                                   data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
-        #expect(map.processLOTFile(name: "TMT_prov_4_1_20260914_1514_0001.png",
-                                   data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
-        #expect(map.processLOTFile(name: "TMT_prov_1_4_20260914_1514_0001.png",
-                                   data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
+        #expect(map.processImageFile(name: "TMT_prov_0_0_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
+        #expect(map.processImageFile(name: "TMT_prov_4_1_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
+        #expect(map.processImageFile(name: "TMT_prov_1_4_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
         #expect(map.tiles.allSatisfy { $0 == nil })
     }
 
@@ -107,7 +102,7 @@ struct TrafficMapTests {
     func retainsTileInfo() throws {
         var map = TrafficMap()
         let png = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        map.processLOTFile(name: "TMT_035apk_2_1_20260914_1514_036f.png", data: Array(png))
+        map.processImageFile(name: "TMT_035apk_2_1_20260914_1514_036f.png", data: Array(png))
 
         let tile = try #require(map.tiles[(2 - 1) * 3 + (1 - 1)])
         #expect(tile.info.provider == "035apk")
@@ -125,8 +120,8 @@ struct TrafficMapTests {
         let newer = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
         let older = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
 
-        map.processLOTFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: Array(newer))
-        let outcome = map.processLOTFile(name: "TMT_prov_1_1_20260913_1500_0002.png", data: Array(older))
+        map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: Array(newer))
+        let outcome = map.processImageFile(name: "TMT_prov_1_1_20260913_1500_0002.png", data: Array(older))
 
         #expect(outcome == .ignoredStale(existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 0),
                                          incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 13, hour: 15, minute: 0)))
@@ -139,8 +134,8 @@ struct TrafficMapTests {
         let first = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
         let retransmission = try #require(Self.pngData(color: Self.green, width: 8, height: 8))
 
-        map.processLOTFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: Array(first))
-        let outcome = map.processLOTFile(name: "TMT_prov_1_1_20260914_1500_0002.png", data: Array(retransmission))
+        map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: Array(first))
+        let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0002.png", data: Array(retransmission))
 
         #expect(outcome == .stored)
         #expect(map.tiles[0]?.info.hex == 0x0002)
@@ -155,8 +150,8 @@ struct TrafficMapTests {
         let older = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
         let newer = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
 
-        map.processLOTFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: Array(older))
-        let outcome = map.processLOTFile(name: "TMT_prov_1_1_20260914_1600_0002.png", data: Array(newer))
+        map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: Array(older))
+        let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1600_0002.png", data: Array(newer))
 
         #expect(outcome == .stored)
         #expect(map.tiles[0]?.info.hex == 0x0002)
@@ -173,12 +168,12 @@ struct TrafficMapTests {
         let tileA = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
         let tileB = try #require(Self.pngData(color: Self.cyan, width: 8, height: 8))
 
-        map.processLOTFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tileA))
-        map.processLOTFile(name: "TMT_035apk_3_3_20260914_1500_0002.png", data: Array(tileA))
+        map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tileA))
+        map.processImageFile(name: "TMT_035apk_3_3_20260914_1500_0002.png", data: Array(tileA))
         #expect(map.tiles.compactMap { $0 }.count == 2)
 
         // A tile from a different provider wipes the previous map.
-        let outcome = map.processLOTFile(name: "TMT_941xyz_2_2_20260914_1600_0003.png", data: Array(tileB))
+        let outcome = map.processImageFile(name: "TMT_941xyz_2_2_20260914_1600_0003.png", data: Array(tileB))
         #expect(outcome == .stored)
         #expect(map.provider == "941xyz")
         #expect(map.tiles.compactMap { $0 }.count == 1)
@@ -192,28 +187,10 @@ struct TrafficMapTests {
 
     // MARK: - Config files
 
-    @Test("parses a TMI config filename")
-    func parseConfigName() {
-        #expect(TrafficMap.parseConfigName("TMI_035apk_rev5_014a.txt") == "035apk")
-    }
-
-    @Test("parses a sequence-prefixed TMI config filename")
-    func parsePrefixedConfigName() {
-        #expect(TrafficMap.parseConfigName("330_TMI_035apk_rev5_014a.txt") == "035apk")
-    }
-
-    @Test("returns nil for non-config filenames")
-    func rejectsNonConfigNames() {
-        #expect(TrafficMap.parseConfigName("TMT_035apk_1_1_20260914_1514_0001.png") == nil)
-        #expect(TrafficMap.parseConfigName("TMI_035apk_rev5_014a.jpg") == nil)
-        #expect(TrafficMap.parseConfigName("random.txt") == nil)
-    }
-
     @Test("stores a parsed config file")
     func storesConfigFile() {
         var map = TrafficMap()
-        let outcome = map.processLOTFile(name: "TMI_035apk_rev5_014a.txt",
-                                         data: Array(Self.sampleConfig.utf8))
+        let outcome = map.processConfigFile(data: Array(Self.sampleConfig.utf8))
         #expect(outcome == .storedConfig)
         #expect(map.provider == "035apk")
         #expect(map.config?.trafficMapID == "035apk")
@@ -223,8 +200,7 @@ struct TrafficMapTests {
     @Test("reports an invalid config file")
     func invalidConfigFile() {
         var map = TrafficMap()
-        let outcome = map.processLOTFile(name: "TMI_035apk_rev5_014a.txt",
-                                         data: Array("not a config".utf8))
+        let outcome = map.processConfigFile(data: Array("not a config".utf8))
         #expect(outcome == .invalidConfig)
         #expect(map.config == nil)
     }
@@ -233,11 +209,23 @@ struct TrafficMapTests {
     func configProviderChangeResets() throws {
         var map = TrafficMap()
         let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        map.processLOTFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tile))
+        map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tile))
         #expect(map.tiles.compactMap { $0 }.count == 1)
 
-        let outcome = map.processLOTFile(name: "TMI_941xyz_rev1_0001.txt",
-                                         data: Array(Self.sampleConfig.utf8))
+        let config = """
+            TrafficMapProtocolVersionID="1.3"
+            TrafficMapID="941xyz"
+            StationList="(pIDH3Q,FM107.5)"
+            NumRows="3"
+            NumColumns="3"
+            NumTransmittedTiles="9"
+            CoordinatesRow1="(0,0)";"(1,1)";"(2,2)";"(3,3)"
+            CoordinatesRow2="(0,0)";"(1,1)";"(2,2)";"(3,3)"
+            CoordinatesRow3="(0,0)";"(1,1)";"(2,2)";"(3,3)"
+            BackgroundRGBColor="(194,187,96)"
+            CopyrightNotice="n/a"
+            """
+        let outcome = map.processConfigFile(data: Array(config.utf8))
         #expect(outcome == .storedConfig)
         #expect(map.provider == "941xyz")
         #expect(map.tiles.compactMap { $0 }.count == 0)
@@ -247,7 +235,7 @@ struct TrafficMapTests {
     func configBackgroundColorOverride() throws {
         var map = TrafficMap()
         let tile = try #require(Self.pngData(color: Self.red, width: 10, height: 10))
-        map.processLOTFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tile))
+        map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tile))
 
         let config = """
             TrafficMapProtocolVersionID="1.3"
@@ -262,7 +250,7 @@ struct TrafficMapTests {
             BackgroundRGBColor="(255,0,0)"
             CopyrightNotice="n/a"
             """
-        map.processLOTFile(name: "TMI_035apk_rev5_014a.txt", data: Array(config.utf8))
+        map.processConfigFile(data: Array(config.utf8))
 
         let composite = try #require(map.composite)
         // Bottom-right background cell should now be red instead of the default tan.
@@ -299,7 +287,7 @@ struct TrafficMapTests {
         let tileData = try #require(Self.pngData(color: Self.red, width: 10, height: 10))
 
         // 1_1 is the upper-left tile.
-        map.processLOTFile(name: "TMT_prov_1_1_20260914_1514_0001.png", data: Array(tileData))
+        map.processImageFile(name: "TMT_prov_1_1_20260914_1514_0001.png", data: Array(tileData))
 
         let composite = try #require(map.composite)
         #expect(composite.width == 30)
@@ -327,7 +315,7 @@ struct TrafficMapTests {
                 let color = colors[row - 1][column - 1]
                 let tileData = try #require(Self.pngData(color: color, width: 8, height: 8))
                 let name = String(format: "TMT_prov_%d_%d_20260914_1514_%04x.png", row, column, (row - 1) * 3 + (column - 1))
-                map.processLOTFile(name: name, data: Array(tileData))
+                map.processImageFile(name: name, data: Array(tileData))
             }
         }
 

@@ -131,9 +131,9 @@ struct TrafficMapCommand: CLICommand {
         for url in files {
             let fileName = url.lastPathComponent
             let lotName = Self.stripNumericPrefix(fileName)
-            guard TrafficMap.parseConfigName(lotName) != nil else { continue }
+            guard lotName.hasSuffix(".txt") else { continue }
             let data = try Data(contentsOf: url)
-            let outcome = map.processLOTFile(name: lotName, data: [UInt8](data))
+            let outcome = map.processConfigFile(data: [UInt8](data))
             ingester.recordConfig(outcome: outcome, fileName: fileName, verbose: verbose)
         }
     }
@@ -217,7 +217,7 @@ struct TrafficMapCommand: CLICommand {
 
         mutating func ingest(_ map: inout TrafficMap, candidate: Candidate) throws {
             let data = try Data(contentsOf: candidate.url)
-            let outcome = map.processLOTFile(name: candidate.lotName, data: [UInt8](data))
+            let outcome = map.processImageFile(name: candidate.lotName, data: [UInt8](data))
 
             switch outcome {
             case .stored:

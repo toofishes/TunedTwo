@@ -124,7 +124,8 @@ extension TunerState: TunerEventSink {
             album = newAlbum
             genre = newGenre
         case .lot(let id, let mime, let name, let data, _, let service, let component):
-            if mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG {
+            let isImage = mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG
+            if isImage {
                 latestImageData = data
             }
             let mimeString = String(format: "%08X", mime)
@@ -139,9 +140,17 @@ extension TunerState: TunerEventSink {
                     } else if mime == NRSC5_MIME_STATION_LOGO {
                         latestStationImage = data
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
-                        traffic.processLOTFile(name: name, data: data)
+                        if isImage {
+                            traffic.processImageFile(name: name, data: data)
+                        } else {
+                            traffic.processConfigFile(data: data)
+                        }
                     } else if mime == NRSC5_MIME_TTN_STM_WEATHER {
-                        weather.processLOTFile(name: name, data: data)
+                        if isImage {
+                            weather.processImageFile(name: name, data: data)
+                        } else {
+                            weather.processConfigFile(data: data)
+                        }
                     }
                 default:
                     break

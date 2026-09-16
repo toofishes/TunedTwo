@@ -37,7 +37,8 @@ public struct TrafficMapTile {
     public let image: CGImage
 }
 
-/// Outcome of offering one LOT file to `TrafficMap.processLOTFile(name:data:)`.
+/// Outcome of offering one LOT file to `TrafficMap.processImageFile(name:data:)`
+/// or `TrafficMap.processConfigFile(data:)`.
 /// Used by the CLI for reporting and by tests for exact assertions.
 public enum TrafficMapIngestOutcome: Equatable, Sendable {
     /// The tile was decoded and stored (a new slot, or an update whose
@@ -145,50 +146,17 @@ public struct TrafficMap {
 
     // MARK: - Filename parsing
 
-    /// Parse a TMI text config filename and return its provider ID.
-    ///
-    /// Accepts both `TMI_{provider}_rev{N}_{hex}.txt` and the
-    /// sequence-number-prefixed form `304_TMI_{provider}_rev{N}_{hex}.txt`.
-    public static func parseConfigName(_ lotName: String) -> String? {
-        guard lotName.hasSuffix(".txt") else { return nil }
-
-        let baseName = String(lotName.dropLast(4))
-        let components = baseName.components(separatedBy: "_")
-        guard components.count >= 4 else { return nil }
-
-        let tmiIndex: Int
-        if components[0] == "TMI" {
-            tmiIndex = 0
-        } else if components.count >= 5 && components[1] == "TMI" {
-            tmiIndex = 1
-        } else {
-            return nil
-        }
-
-        let provider = components[tmiIndex + 1]
-        guard !provider.isEmpty else { return nil }
-        return provider
-    }
-
     // MARK: - Ingest
 
-    /// Offer one LOT file to the map.
+    /// Parse and store a text config file.
     @discardableResult
-    public mutating func processLOTFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
-        if name.hasSuffix(".txt") {
-            return processConfigFile(name: name, data: data)
-        } else {
-            return processImageFile(name: name, data: data)
-        }
-    }
-
-    private mutating func processConfigFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
-        guard let provider = Self.parseConfigName(name) else { return .notTrafficMapFile }
+    public mutating func processConfigFile(data: [UInt8]) -> TrafficMapIngestOutcome {
         guard let text = String(bytes: data, encoding: .utf8),
               let newConfig = try? TTNSTMTrafficConfigParser.parse(text) else {
             return .invalidConfig
         }
 
+        let provider = newConfig.trafficMapID
         if let currentProvider = self.provider, currentProvider != provider {
             tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
         }
@@ -197,7 +165,9 @@ public struct TrafficMap {
         return .storedConfig
     }
 
-    private mutating func processImageFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
+    /// Parse and store a single tile image.
+    @discardableResult
+    public mutating func processImageFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
         guard let info = Self.parseLOTName(name) else { return .notTrafficMapFile }
         guard (1...Self.rowCount).contains(info.row),
               (1...Self.columnCount).contains(info.column) else { return .outOfGrid }
