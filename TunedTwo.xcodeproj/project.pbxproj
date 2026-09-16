@@ -8,32 +8,47 @@
 
 /* Begin PBXBuildFile section */
 		045AAB45E5F7BF1A7240BB5E /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D76EB3E5DC5A99C72CC99E4 /* AudioPlayer.swift */; };
+		2736D0A662CF0A2E9D34F4F6 /* ByteImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE679F3E7B4D9019CB3BC0EB /* ByteImageView.swift */; };
+		34F02391401F5582086093F3 /* TrafficMapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23F23A923CD5B2736FA6B0DA /* TrafficMapTests.swift */; };
 		372D9023CFEFBC167F65F7A4 /* TunerEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CAF6FBDD0BAAB092E815D26 /* TunerEvent.swift */; };
 		3999AC1D08285656E140FDB7 /* SampleFileProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606DCF1544528ED160F9CA55 /* SampleFileProvider.swift */; };
 		69F07B71F15846540E5AB1F9 /* TunerSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8799C71253D3A9FDFABD58D9 /* TunerSession.swift */; };
+		6D92DAD49B7F0AE1E3B8A836 /* LogEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356070159AC851DD4FC56FA3 /* LogEvent.swift */; };
 		87C489CFD6C94AA282A2040E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042CE0F4ABC83CE28BF0850C /* ContentView.swift */; };
-		C1DB02403059C10800C37D92 /* EventLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DB023F3059C10800C37D92 /* EventLogView.swift */; };
-		C1DB02423059C51B00C37D92 /* LogEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DB02413059C51B00C37D92 /* LogEvent.swift */; };
-		C1DB02443059D87600C37D92 /* ByteImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DB02433059D87600C37D92 /* ByteImageView.swift */; };
 		C629AD84C2AECD9AE5C00090 /* sample.bin in Resources */ = {isa = PBXBuildFile; fileRef = C8B0FCC6DA140367221D851A /* sample.bin */; };
+		D613A1A1F51A2BC03B620DEE /* EventLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2521732EF44489A43C3DE1 /* EventLogView.swift */; };
+		E22CB85B78D2C2C0CF4512FF /* TrafficMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCE2C9A443954C9531CCA30F /* TrafficMap.swift */; };
 		E3353CBD080AF8C25A8CC12A /* TunerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC456D84C66B6A488BB600F /* TunerState.swift */; };
 		FD14AAE0F8FDC463FB5E1608 /* TunedTwoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 623F1A01956FF5BE3B66382C /* TunedTwoApp.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		70958AA50F039C4FDCA52CD5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CFA5C02AC7F02CFC776B321C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C217569EDF9D1B057F5FAC46;
+			remoteInfo = TunedTwo;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		042CE0F4ABC83CE28BF0850C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		095A6FC05DBFD8042A5B9350 /* TunedTwo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TunedTwo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CAF6FBDD0BAAB092E815D26 /* TunerEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerEvent.swift; sourceTree = "<group>"; };
 		1AC456D84C66B6A488BB600F /* TunerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerState.swift; sourceTree = "<group>"; };
+		23F23A923CD5B2736FA6B0DA /* TrafficMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficMapTests.swift; sourceTree = "<group>"; };
+		356070159AC851DD4FC56FA3 /* LogEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEvent.swift; sourceTree = "<group>"; };
 		36B3D04C157C1B54B3D6E145 /* TunedTwo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TunedTwo-Bridging-Header.h"; sourceTree = "<group>"; };
 		3D76EB3E5DC5A99C72CC99E4 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
+		5731CBB48B8C3B63621F311B /* TunedTwoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TunedTwoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		606DCF1544528ED160F9CA55 /* SampleFileProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleFileProvider.swift; sourceTree = "<group>"; };
 		623F1A01956FF5BE3B66382C /* TunedTwoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunedTwoApp.swift; sourceTree = "<group>"; };
 		8799C71253D3A9FDFABD58D9 /* TunerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunerSession.swift; sourceTree = "<group>"; };
-		C1DB023F3059C10800C37D92 /* EventLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLogView.swift; sourceTree = "<group>"; };
-		C1DB02413059C51B00C37D92 /* LogEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEvent.swift; sourceTree = "<group>"; };
-		C1DB02433059D87600C37D92 /* ByteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteImageView.swift; sourceTree = "<group>"; };
+		8A2521732EF44489A43C3DE1 /* EventLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLogView.swift; sourceTree = "<group>"; };
+		AE679F3E7B4D9019CB3BC0EB /* ByteImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteImageView.swift; sourceTree = "<group>"; };
 		C8B0FCC6DA140367221D851A /* sample.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = sample.bin; sourceTree = "<group>"; };
+		CCE2C9A443954C9531CCA30F /* TrafficMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficMap.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -53,11 +68,20 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		3928A950F79A892FB9BAAC1F /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				AEFCF4701937B2DAFE6AFC5B /* TunedTwoTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
 		4E1B32937EDFF8D9904015CC = {
 			isa = PBXGroup;
 			children = (
 				362B64D2063AEB32298B6A75 /* Resources */,
 				0C7BE9BAA7D114ADB9DE90EE /* Sources */,
+				3928A950F79A892FB9BAAC1F /* Tests */,
 				36B3D04C157C1B54B3D6E145 /* TunedTwo-Bridging-Header.h */,
 				570E5FABF70267A883DE5542 /* Products */,
 			);
@@ -67,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				095A6FC05DBFD8042A5B9350 /* TunedTwo.app */,
+				5731CBB48B8C3B63621F311B /* TunedTwoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -74,9 +99,9 @@
 		68AFF01BDB0249E8E847EF3C /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C1DB02433059D87600C37D92 /* ByteImageView.swift */,
-				C1DB023F3059C10800C37D92 /* EventLogView.swift */,
+				AE679F3E7B4D9019CB3BC0EB /* ByteImageView.swift */,
 				042CE0F4ABC83CE28BF0850C /* ContentView.swift */,
+				8A2521732EF44489A43C3DE1 /* EventLogView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -84,7 +109,8 @@
 		6D7559089CCCB3705913D774 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				C1DB02413059C51B00C37D92 /* LogEvent.swift */,
+				356070159AC851DD4FC56FA3 /* LogEvent.swift */,
+				CCE2C9A443954C9531CCA30F /* TrafficMap.swift */,
 				1AC456D84C66B6A488BB600F /* TunerState.swift */,
 			);
 			path = Model;
@@ -96,6 +122,14 @@
 				606DCF1544528ED160F9CA55 /* SampleFileProvider.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		AEFCF4701937B2DAFE6AFC5B /* TunedTwoTests */ = {
+			isa = PBXGroup;
+			children = (
+				23F23A923CD5B2736FA6B0DA /* TrafficMapTests.swift */,
+			);
+			path = TunedTwoTests;
 			sourceTree = "<group>";
 		};
 		D7CFCC0C2699A6B62004FD35 /* Services */ = {
@@ -144,6 +178,24 @@
 			productReference = 095A6FC05DBFD8042A5B9350 /* TunedTwo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E8769073253B2E80BFE79863 /* TunedTwoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3BF62C78E43934B35B398CC0 /* Build configuration list for PBXNativeTarget "TunedTwoTests" */;
+			buildPhases = (
+				2460878D9B36F6525A965567 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AB8F93AE90EE8D6211BC82FD /* PBXTargetDependency */,
+			);
+			name = TunedTwoTests;
+			packageProductDependencies = (
+			);
+			productName = TunedTwoTests;
+			productReference = 5731CBB48B8C3B63621F311B /* TunedTwoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -155,6 +207,10 @@
 				TargetAttributes = {
 					C217569EDF9D1B057F5FAC46 = {
 						ProvisioningStyle = Automatic;
+					};
+					E8769073253B2E80BFE79863 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = C217569EDF9D1B057F5FAC46;
 					};
 				};
 			};
@@ -173,6 +229,7 @@
 			projectRoot = "";
 			targets = (
 				C217569EDF9D1B057F5FAC46 /* TunedTwo */,
+				E8769073253B2E80BFE79863 /* TunedTwoTests */,
 			);
 		};
 /* End PBXProject section */
@@ -257,20 +314,37 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C1DB02443059D87600C37D92 /* ByteImageView.swift in Sources */,
 				045AAB45E5F7BF1A7240BB5E /* AudioPlayer.swift in Sources */,
+				2736D0A662CF0A2E9D34F4F6 /* ByteImageView.swift in Sources */,
 				87C489CFD6C94AA282A2040E /* ContentView.swift in Sources */,
+				D613A1A1F51A2BC03B620DEE /* EventLogView.swift in Sources */,
+				6D92DAD49B7F0AE1E3B8A836 /* LogEvent.swift in Sources */,
 				3999AC1D08285656E140FDB7 /* SampleFileProvider.swift in Sources */,
+				E22CB85B78D2C2C0CF4512FF /* TrafficMap.swift in Sources */,
 				FD14AAE0F8FDC463FB5E1608 /* TunedTwoApp.swift in Sources */,
-				C1DB02423059C51B00C37D92 /* LogEvent.swift in Sources */,
 				372D9023CFEFBC167F65F7A4 /* TunerEvent.swift in Sources */,
-				C1DB02403059C10800C37D92 /* EventLogView.swift in Sources */,
 				69F07B71F15846540E5AB1F9 /* TunerSession.swift in Sources */,
 				E3353CBD080AF8C25A8CC12A /* TunerState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2460878D9B36F6525A965567 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34F02391401F5582086093F3 /* TrafficMapTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AB8F93AE90EE8D6211BC82FD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C217569EDF9D1B057F5FAC46 /* TunedTwo */;
+			targetProxy = 70958AA50F039C4FDCA52CD5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		32200B05266CB4B03B5002E9 /* Release */ = {
@@ -358,6 +432,25 @@
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
+		};
+		81BA4DCB4DC30590C503E4A0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/include";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.tunedtwo.TunedTwoTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TunedTwo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TunedTwo";
+			};
+			name = Debug;
 		};
 		9C02C355DF9496C9EFF2560B /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -452,9 +545,37 @@
 			};
 			name = Debug;
 		};
+		DA2C4979B353D0498B6A82D0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/include";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.tunedtwo.TunedTwoTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TunedTwo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TunedTwo";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3BF62C78E43934B35B398CC0 /* Build configuration list for PBXNativeTarget "TunedTwoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				81BA4DCB4DC30590C503E4A0 /* Debug */,
+				DA2C4979B353D0498B6A82D0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		5139A7A111CD5518278B1F5F /* Build configuration list for PBXNativeTarget "TunedTwo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -76,6 +76,24 @@ targets:
         inputFiles:
           - $(SRCROOT)/Vendor/nrsc5/build/src/libnrsc5.dylib
         shell: /bin/bash
+  TunedTwoTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Tests/TunedTwoTests
+    dependencies:
+      - target: TunedTwo
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/TunedTwo.app/Contents/MacOS/TunedTwo"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        HEADER_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/include
+    scheme:
+      testTargets:
+        - TunedTwoTests
+      gatherCoverageData: true
 schemes:
   TunedTwo:
     build:
@@ -83,3 +101,7 @@ schemes:
         TunedTwo: all
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - TunedTwoTests

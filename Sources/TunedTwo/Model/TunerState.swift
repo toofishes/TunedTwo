@@ -43,6 +43,7 @@ final class TunerState {
     var album: String = ""
     var genre: String = ""
 
+    var bitsPerSecond: Int = 0
     var merLower: Float = 0
     var merUpper: Float = 0
     var ber: Float = 0
@@ -53,7 +54,10 @@ final class TunerState {
         return Float(mhz * 1_000_000)
     }
 
+    var latestStationImage: [UInt8] = []
+    var latestCoverArt: [UInt8] = []
     var latestImageData: [UInt8] = []
+    var traffic = TrafficMap()
 
     var logEntries: [LogEvent] = []
 }
@@ -85,6 +89,8 @@ extension TunerState: TunerEventSink {
             merUpper = upper
         case .ber(let cber):
             ber = cber
+        case .hdc(_, let data, _):
+            bitsPerSecond = data.count * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES);
         case .stationName(let name):
             stationName = name
             logEntries.append(LogEvent(timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill", tintColor: .blue))
@@ -103,14 +109,30 @@ extension TunerState: TunerEventSink {
             artist = newArtist
             album = newAlbum
             genre = newGenre
-        case .lotHeader(_, let size, _, let name, _, _, _):
-            logEntries.append(LogEvent(timestamp: Date(), title: "LOT Header", description: "File: \(name) Size: \(size)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .lot(_, let size, let mime, let name, let data, _, _, _):
+        case .lot(let id, let size, let mime, let name, let data, _, let service, let component):
             if mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG {
                 latestImageData = data
             }
-            let mimeString = String(format:"%08X", mime)
-            logEntries.append(LogEvent(timestamp: Date(), title: "LOT File", description: "File: \(name) Size: \(size), Mime: \(mimeString)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
+            let mimeString = String(format: "%08X", mime)
+
+            var compMime = "Unknown"
+            if let component {
+                switch component {
+                case .data(_, _, _, _, let mime):
+                    compMime = String(format: "%08X", mime)
+                    if mime == NRSC5_MIME_PRIMARY_IMAGE {
+                        latestCoverArt = data
+                    } else if mime == NRSC5_MIME_STATION_LOGO {
+                        latestStationImage = data
+                    } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
+                        traffic.processLOTFile(name: name, data: data)
+                    }
+                default:
+                    break
+                }
+            }
+
+            logEntries.append(LogEvent(timestamp: Date(), title: "LOT File", description: "ID: \(id), File: \(name), Size: \(size), Mime: \(mimeString), Service: \(service), Component: \(component), Component Mime: \(compMime)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .audio:
             break // Consumed inside TunerSession; never reaches the UI.
         default:

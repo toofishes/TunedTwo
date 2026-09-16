@@ -19,7 +19,16 @@ struct ContentView: View {
             Divider()
             metadata
             Divider()
-            EventLogView(events: state.logEntries)
+            HStack {
+                EventLogView(events: state.logEntries)
+                Divider()
+                if state.traffic.composite != nil {
+                    Image(nsImage: state.traffic.composite!)
+                        .resizable().scaledToFit()
+                } else {
+                    Image(systemName: "map").resizable().scaledToFit()
+                }
+            }
             Spacer()
             statusBar
         }
@@ -77,27 +86,23 @@ struct ContentView: View {
                         Text(source.rawValue).tag(source)
                     }
                 }
-                .pickerStyle(.segmented)
 
                 HStack {
-                    Text("Frequency")
-                    TextField("MHz", text: $state.frequencyMHz)
+                    TextField("Frequency", text: $state.frequencyMHz)
                         .textFieldStyle(.roundedBorder)
                         .disabled(state.source == .sampleFile)
-                        .frame(width: 80)
+                        .frame(width: 120)
                     Text("MHz")
                         .foregroundStyle(.secondary)
                 }
+                //.fixedSize(horizontal: true, vertical: false)
 
-                HStack {
-                    Text("Program")
-                    Picker("Program", selection: $state.program) {
-                        ForEach(0..<8) { i in
-                            Text("HD\(i + 1)").tag(i)
-                        }
+                Picker("Program", selection: $state.program) {
+                    ForEach(0..<8) { i in
+                        Text("HD\(i + 1)").tag(i)
                     }
-                    .pickerStyle(.segmented)
                 }
+                .pickerStyle(.segmented)
             }
 
             HStack {
@@ -116,43 +121,36 @@ struct ContentView: View {
 
     private var metadata: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Station")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 60, alignment: .leading)
-                Text(state.stationName.isEmpty ? "—" : state.stationName)
-                    .font(.headline)
-                if !state.stationSlogan.isEmpty {
-                    Text("·")
-                        .foregroundStyle(.secondary)
-                    Text(state.stationSlogan)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                if !state.stationMessage.isEmpty {
-                    Text("·")
-                        .foregroundStyle(.secondary)
-                    Text(state.stationMessage)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            MetadataRow(label: "Title", value: state.title)
-            MetadataRow(label: "Artist", value: state.artist)
-
-            if !state.album.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                MetadataRow(label: "Album", value: state.album)
-            }
-            if !state.genre.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                MetadataRow(label: "Genre", value: state.genre)
-            }
-
-            if !state.latestImageData.isEmpty {
-                ByteImageView(imageBytes: state.latestImageData)
-            }
+            stationMetadata
+            Divider()
+            nowPlaying
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var stationMetadata: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 12) {
+                MetadataRow(label: "Station", value: state.stationName)
+                MetadataRow(label: "Slogan", value: state.stationSlogan)
+                MetadataRow(label: "Message", value: state.stationMessage)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            ByteImageView(imageBytes: state.latestStationImage)
+        }
+    }
+
+    private var nowPlaying: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 12) {
+                MetadataRow(label: "Title", value: state.title)
+                MetadataRow(label: "Artist", value: state.artist)
+                MetadataRow(label: "Album", value: state.album)
+                MetadataRow(label: "Genre", value: state.genre)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            ByteImageView(imageBytes: state.latestCoverArt)
+        }
     }
 
     private var statusBar: some View {
@@ -161,7 +159,11 @@ struct ContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(String(format: "MER %.1f / %.1f dB  ·  BER %.6f",
+            Text(String(format: "%.1f kbps", Double(state.bitsPerSecond) / 1000.0))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            Text(String(format: "MER %.1f / %.1f dB · BER %.6f",
                         state.merLower, state.merUpper, state.ber))
                 .font(.caption)
                 .foregroundStyle(.secondary)
