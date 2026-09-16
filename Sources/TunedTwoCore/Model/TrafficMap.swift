@@ -2,7 +2,7 @@
 //  TrafficMap.swift
 //  TunedTwo
 //
-//  Assembles HERE traffic-map tiles (TMT files) delivered over LOT into a
+//  Assembles traffic-map tiles (TMT files) delivered over LOT into a
 //  single composite image.
 //
 
@@ -54,7 +54,7 @@ public enum TrafficMapIngestOutcome: Equatable, Sendable {
     case outOfGrid
 }
 
-/// The 3×3 HERE traffic map.
+/// The 3×3 traffic map.
 ///
 /// Ingest rules:
 ///
@@ -168,7 +168,7 @@ public struct TrafficMap {
     // MARK: - Composite
 
     /// Stitch the available tiles into a single image: a 3×3 grid at the
-    /// first tile's resolution, with missing slots filled using the HERE
+    /// first tile's resolution, with missing slots filled using the
     /// map background color (194, 187, 96).
     public var composite: CGImage? {
         guard let sample = tiles.compactMap({ $0 }).first else { return nil }

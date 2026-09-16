@@ -2,7 +2,7 @@
 //  TrafficMapCommand.swift
 //  tunedtwo-cli
 //
-//  `tunedtwo-cli traffic-map <directory>`: scans a directory for HERE
+//  `tunedtwo-cli traffic-map <directory>`: scans a directory for
 //  traffic-map tiles (TMT_*.png, optionally prefixed with a numeric
 //  sequence number as exported from a capture), ingests them through
 //  `TrafficMap`, and writes the stitched composite as a PNG — to stdout by
@@ -16,7 +16,7 @@ import TunedTwoCore
 
 struct TrafficMapCommand: CLICommand {
     static let name = "traffic-map"
-    static let abstract = "Stitch HERE traffic-map tiles (TMT PNGs) into one composite image."
+    static let abstract = "Stitch traffic-map tiles (TMT PNGs) into one composite image."
     static let usageLine = "usage: \(CLI.programName) traffic-map <directory> [--output <file|->] [--provider <id>] [--verbose]"
 
     private let parser = ArgumentParser(specs: [
