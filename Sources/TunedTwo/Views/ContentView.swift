@@ -18,20 +18,37 @@ struct ContentView: View {
             header
             controls
             Divider()
-            metadata
-            Divider()
-            HStack {
+            TabView {
+                metadata
+                    .tabItem {
+                        Image(systemName: "radio")
+                        Text("Radio")
+                    }
+
                 EventLogView(events: state.logEntries)
-                Divider()
+                    .tabItem {
+                        Image(systemName: "list.bullet.rectangle")
+                        Text("Logs")
+                    }
+
                 if let composite = state.traffic.composite {
+                    // TODO: skip nsImage, direct from cgImage?
                     Image(nsImage: NSImage(cgImage: composite,
                                            size: NSSize(width: composite.width, height: composite.height)))
                         .resizable().scaledToFit()
+                        .tabItem {
+                            Image(systemName: "map")
+                            Text("Traffic")
+                        }
                 } else {
                     Image(systemName: "map").resizable().scaledToFit()
+                        .tabItem {
+                            Image(systemName: "map")
+                            Text("Traffic")
+                        }
                 }
             }
-            Spacer()
+            Divider()
             statusBar
         }
         .padding()
@@ -107,17 +124,14 @@ struct ContentView: View {
                 .pickerStyle(.segmented)
             }
 
-            HStack {
-                Spacer()
+            Section {
                 Button(action: togglePlayback) {
                     Label(state.isPlaying ? "Stop" : "Play",
                           systemImage: state.isPlaying ? "stop.fill" : "play.fill")
                 }
                 .controlSize(.large)
                 .keyboardShortcut(.space, modifiers: [])
-                Spacer()
             }
-            .padding(.top, 8)
         }
     }
 
