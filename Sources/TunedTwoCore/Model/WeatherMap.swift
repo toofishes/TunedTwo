@@ -8,6 +8,7 @@
 import Foundation
 import CoreGraphics
 import ImageIO
+import MapKit
 
 /// Parsed parts of a TMT filename: `DWRO_{provider}_{rev}_{date}_{time}_{hex}.png`
 ///
@@ -39,14 +40,46 @@ public enum WeatherMapIngestOutcome: Equatable, Sendable {
     case notWeatherMapFile
     /// The filename parsed, but the bytes are not a decodable image.
     case undecodableImage
+    /// A text config file was parsed and stored.
+    case storedConfig
+    /// A text config file was recognized but could not be parsed.
+    case invalidConfig
 }
 
 /// The current weather map.
 public struct WeatherMap {
+    /// Provider ID of the map currently being assembled (from the most
+    /// recently ingested image or text config file).
+    public private(set) var provider: String?
+
     public private(set) var info: WeatherInfo?
     public private(set) var image: CGImage?
 
+    /// Most recently ingested weather map config file.
+    public private(set) var config: TTNSTMWeatherConfig?
+
     public init() {
+    }
+
+    /// Geographic bounding box derived from the config file coordinates,
+    /// or `nil` if no config has been received.
+    public var radarBoundingBox: MKMapRect? {
+        guard let config else { return nil }
+        let coordinates = config.coordinates
+        guard coordinates.count >= 2 else { return nil }
+
+        let points = coordinates.map { coordinate in
+            MKMapPoint(CLLocationCoordinate2D(latitude: coordinate.latitude,
+                                              longitude: coordinate.longitude))
+        }
+        let minX = points.map { $0.x }.min() ?? 0
+        let maxX = points.map { $0.x }.max() ?? 0
+        let minY = points.map { $0.y }.min() ?? 0
+        let maxY = points.map { $0.y }.max() ?? 0
+        return MKMapRect(x: minX,
+                         y: minY,
+                         width: maxX - minX,
+                         height: maxY - minY)
     }
 
     // MARK: - Filename parsing
@@ -97,14 +130,71 @@ public struct WeatherMap {
         return WeatherInfo(provider: provider, revision: revision, timestamp: timestamp, hex: hex)
     }
 
+    // MARK: - Filename parsing
+
+    /// Parse a DWRI text config filename and return its provider ID.
+    ///
+    /// Accepts both `DWRI_{provider}_rev{N}_{hex}.txt` and the
+    /// sequence-number-prefixed form `1635_DWRI_{provider}_rev{N}_{hex}.txt`.
+    public static func parseConfigName(_ lotName: String) -> String? {
+        guard lotName.hasSuffix(".txt") else { return nil }
+
+        let baseName = String(lotName.dropLast(4))
+        let components = baseName.components(separatedBy: "_")
+        guard components.count >= 4 else { return nil }
+
+        let dwriIndex: Int
+        if components[0] == "DWRI" {
+            dwriIndex = 0
+        } else if components.count >= 5 && components[1] == "DWRI" {
+            dwriIndex = 1
+        } else {
+            return nil
+        }
+
+        let provider = components[dwriIndex + 1]
+        guard !provider.isEmpty else { return nil }
+        return provider
+    }
+
     // MARK: - Ingest
 
     /// Offer one LOT file to the map.
     @discardableResult
     public mutating func processLOTFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
+        if name.hasSuffix(".txt") {
+            return processConfigFile(name: name, data: data)
+        } else {
+            return processImageFile(name: name, data: data)
+        }
+    }
+
+    private mutating func processConfigFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
+        guard let provider = Self.parseConfigName(name) else { return .notWeatherMapFile }
+        guard let text = String(bytes: data, encoding: .utf8),
+              let newConfig = try? TTNSTMWeatherConfigParser.parse(text) else {
+            return .invalidConfig
+        }
+
+        if let currentProvider = self.provider, currentProvider != provider {
+            info = nil
+            image = nil
+        }
+        self.provider = provider
+        self.config = newConfig
+        return .storedConfig
+    }
+
+    private mutating func processImageFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
         guard let newInfo = Self.parseLOTName(name) else { return .notWeatherMapFile }
         guard let source = CGImageSourceCreateWithData(Data(data) as CFData, nil) else { return .undecodableImage }
         guard let newImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
+
+        if let currentProvider = self.provider, currentProvider != newInfo.provider {
+            info = nil
+            image = nil
+        }
+        self.provider = newInfo.provider
 
         if let currentInfo = info {
             if currentInfo.timestamp > newInfo.timestamp {

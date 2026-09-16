@@ -43,6 +43,14 @@ struct TrafficMapCommand: CLICommand {
 
         let directoryURL = URL(fileURLWithPath: parsed.positional[0], isDirectory: true)
         let files = try listFiles(in: directoryURL)
+
+        var map = TrafficMap()
+
+        // Ingest any TMI text config files first so provider and background
+        // color are available before tiles are stitched.
+        var ingester = Ingester(verbose: verbose)
+        try ingestConfigFiles(files, into: &map, ingester: &ingester, verbose: verbose)
+
         let candidates = collectCandidates(files, providerFilter: providerFilter, verbose: verbose)
 
         guard !candidates.isEmpty else {
@@ -58,8 +66,6 @@ struct TrafficMapCommand: CLICommand {
             return lhs.info.hex < rhs.info.hex
         }
 
-        var ingester = Ingester(verbose: verbose)
-        var map = TrafficMap()
         for candidate in ordered {
             try ingester.ingest(&map, candidate: candidate)
         }
@@ -117,6 +123,21 @@ struct TrafficMapCommand: CLICommand {
         }
     }
 
+    /// Ingest any TMI text config files found in the directory.
+    private func ingestConfigFiles(_ files: [URL],
+                                   into map: inout TrafficMap,
+                                   ingester: inout Ingester,
+                                   verbose: Bool) throws {
+        for url in files {
+            let fileName = url.lastPathComponent
+            let lotName = Self.stripNumericPrefix(fileName)
+            guard TrafficMap.parseConfigName(lotName) != nil else { continue }
+            let data = try Data(contentsOf: url)
+            let outcome = map.processLOTFile(name: lotName, data: [UInt8](data))
+            ingester.recordConfig(outcome: outcome, fileName: fileName, verbose: verbose)
+        }
+    }
+
     /// Parse filenames and apply the provider filter. A leading numeric
     /// sequence prefix (as in `304_TMT_...`) is stripped before parsing.
     private func collectCandidates(_ files: [URL],
@@ -129,6 +150,12 @@ struct TrafficMapCommand: CLICommand {
         for url in files {
             let fileName = url.lastPathComponent
             let lotName = Self.stripNumericPrefix(fileName)
+
+            // Config files are handled separately before tile collection.
+            if lotName.hasSuffix(".txt") {
+                continue
+            }
+
             guard let info = TrafficMap.parseLOTName(lotName) else {
                 skipped += 1
                 if verbose {
@@ -211,9 +238,23 @@ struct TrafficMapCommand: CLICommand {
                 stats.outOfGrid += 1
                 reportAlways(candidate, "row/column outside the 3x3 grid "
                            + "(row \(candidate.info.row), column \(candidate.info.column))")
-            case .notTrafficMapFile:
+            case .notTrafficMapFile, .storedConfig, .invalidConfig:
                 // Already filtered during collection; counted as skipped.
                 stats.skipped += 1
+            }
+        }
+
+        mutating func recordConfig(outcome: TrafficMapIngestOutcome, fileName: String, verbose: Bool) {
+            switch outcome {
+            case .storedConfig:
+                if verbose {
+                    fputs("  \(fileName): config stored\n", stderr)
+                }
+            case .invalidConfig:
+                stats.undecodable += 1
+                fputs("traffic-map: warning: \(fileName): config could not be parsed\n", stderr)
+            default:
+                break
             }
         }
 

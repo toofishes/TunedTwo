@@ -52,6 +52,10 @@ public enum TrafficMapIngestOutcome: Equatable, Sendable {
     case undecodableImage
     /// The filename parsed, but row/column lie outside the 3×3 grid.
     case outOfGrid
+    /// A text config file was parsed and stored.
+    case storedConfig
+    /// A text config file was recognized but could not be parsed.
+    case invalidConfig
 }
 
 /// The 3×3 traffic map.
@@ -68,9 +72,15 @@ public struct TrafficMap {
     public static let rowCount = 3
     public static let columnCount = 3
 
+    /// Default background color used when no config file has been received.
+    public static let defaultBackgroundColor = TTNSTMRGB(red: 194, green: 187, blue: 96)
+
     /// Provider ID of the map currently being assembled (from the most
-    /// recently ingested tile).
+    /// recently ingested tile or text config file).
     public private(set) var provider: String?
+
+    /// Most recently ingested traffic map config file.
+    public private(set) var config: TTNSTMTrafficConfig?
 
     /// Flat row-major storage: `tiles[(row - 1) * columnCount + (column - 1)]`.
     public private(set) var tiles: [TrafficMapTile?]
@@ -133,11 +143,61 @@ public struct TrafficMap {
         return TMTInfo(provider: provider, row: row, column: column, timestamp: timestamp, hex: hex)
     }
 
+    // MARK: - Filename parsing
+
+    /// Parse a TMI text config filename and return its provider ID.
+    ///
+    /// Accepts both `TMI_{provider}_rev{N}_{hex}.txt` and the
+    /// sequence-number-prefixed form `304_TMI_{provider}_rev{N}_{hex}.txt`.
+    public static func parseConfigName(_ lotName: String) -> String? {
+        guard lotName.hasSuffix(".txt") else { return nil }
+
+        let baseName = String(lotName.dropLast(4))
+        let components = baseName.components(separatedBy: "_")
+        guard components.count >= 4 else { return nil }
+
+        let tmiIndex: Int
+        if components[0] == "TMI" {
+            tmiIndex = 0
+        } else if components.count >= 5 && components[1] == "TMI" {
+            tmiIndex = 1
+        } else {
+            return nil
+        }
+
+        let provider = components[tmiIndex + 1]
+        guard !provider.isEmpty else { return nil }
+        return provider
+    }
+
     // MARK: - Ingest
 
     /// Offer one LOT file to the map.
     @discardableResult
     public mutating func processLOTFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
+        if name.hasSuffix(".txt") {
+            return processConfigFile(name: name, data: data)
+        } else {
+            return processImageFile(name: name, data: data)
+        }
+    }
+
+    private mutating func processConfigFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
+        guard let provider = Self.parseConfigName(name) else { return .notTrafficMapFile }
+        guard let text = String(bytes: data, encoding: .utf8),
+              let newConfig = try? TTNSTMTrafficConfigParser.parse(text) else {
+            return .invalidConfig
+        }
+
+        if let currentProvider = self.provider, currentProvider != provider {
+            tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
+        }
+        self.provider = provider
+        self.config = newConfig
+        return .storedConfig
+    }
+
+    private mutating func processImageFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
         guard let info = Self.parseLOTName(name) else { return .notTrafficMapFile }
         guard (1...Self.rowCount).contains(info.row),
               (1...Self.columnCount).contains(info.column) else { return .outOfGrid }
@@ -196,8 +256,13 @@ public struct TrafficMap {
             return nil
         }
 
-        // Background fill for missing tiles.
-        context.setFillColor(red: 194.0 / 255.0, green: 187.0 / 255.0, blue: 96.0 / 255.0, alpha: 1.0)
+        // Background fill for missing tiles. Override with the config color
+        // when one is available, otherwise fall back to the default.
+        let background = config?.backgroundRGBColor ?? Self.defaultBackgroundColor
+        context.setFillColor(red: CGFloat(background.red) / 255.0,
+                             green: CGFloat(background.green) / 255.0,
+                             blue: CGFloat(background.blue) / 255.0,
+                             alpha: 1.0)
         context.fill(CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
 
         // CGBitmapContext user space has its origin at the lower-left, so

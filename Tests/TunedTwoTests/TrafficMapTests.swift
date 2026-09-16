@@ -190,6 +190,101 @@ struct TrafficMapTests {
         #expect(Self.pixelColor(in: composite, x: 20, yFromTop: 20) == Self.mapBackground)
     }
 
+    // MARK: - Config files
+
+    @Test("parses a TMI config filename")
+    func parseConfigName() {
+        #expect(TrafficMap.parseConfigName("TMI_035apk_rev5_014a.txt") == "035apk")
+    }
+
+    @Test("parses a sequence-prefixed TMI config filename")
+    func parsePrefixedConfigName() {
+        #expect(TrafficMap.parseConfigName("330_TMI_035apk_rev5_014a.txt") == "035apk")
+    }
+
+    @Test("returns nil for non-config filenames")
+    func rejectsNonConfigNames() {
+        #expect(TrafficMap.parseConfigName("TMT_035apk_1_1_20260914_1514_0001.png") == nil)
+        #expect(TrafficMap.parseConfigName("TMI_035apk_rev5_014a.jpg") == nil)
+        #expect(TrafficMap.parseConfigName("random.txt") == nil)
+    }
+
+    @Test("stores a parsed config file")
+    func storesConfigFile() {
+        var map = TrafficMap()
+        let outcome = map.processLOTFile(name: "TMI_035apk_rev5_014a.txt",
+                                         data: Array(Self.sampleConfig.utf8))
+        #expect(outcome == .storedConfig)
+        #expect(map.provider == "035apk")
+        #expect(map.config?.trafficMapID == "035apk")
+        #expect(map.config?.backgroundRGBColor == TTNSTMRGB(red: 194, green: 187, blue: 96))
+    }
+
+    @Test("reports an invalid config file")
+    func invalidConfigFile() {
+        var map = TrafficMap()
+        let outcome = map.processLOTFile(name: "TMI_035apk_rev5_014a.txt",
+                                         data: Array("not a config".utf8))
+        #expect(outcome == .invalidConfig)
+        #expect(map.config == nil)
+    }
+
+    @Test("a config from a different provider resets the map")
+    func configProviderChangeResets() throws {
+        var map = TrafficMap()
+        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        map.processLOTFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tile))
+        #expect(map.tiles.compactMap { $0 }.count == 1)
+
+        let outcome = map.processLOTFile(name: "TMI_941xyz_rev1_0001.txt",
+                                         data: Array(Self.sampleConfig.utf8))
+        #expect(outcome == .storedConfig)
+        #expect(map.provider == "941xyz")
+        #expect(map.tiles.compactMap { $0 }.count == 0)
+    }
+
+    @Test("uses the config background color in the composite")
+    func configBackgroundColorOverride() throws {
+        var map = TrafficMap()
+        let tile = try #require(Self.pngData(color: Self.red, width: 10, height: 10))
+        map.processLOTFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: Array(tile))
+
+        let config = """
+            TrafficMapProtocolVersionID="1.3"
+            TrafficMapID="035apk"
+            StationList="(pIDH3Q,FM107.5)"
+            NumRows="3"
+            NumColumns="3"
+            NumTransmittedTiles="9"
+            CoordinatesRow1="(0,0)";"(1,1)";"(2,2)";"(3,3)"
+            CoordinatesRow2="(0,0)";"(1,1)";"(2,2)";"(3,3)"
+            CoordinatesRow3="(0,0)";"(1,1)";"(2,2)";"(3,3)"
+            BackgroundRGBColor="(255,0,0)"
+            CopyrightNotice="n/a"
+            """
+        map.processLOTFile(name: "TMI_035apk_rev5_014a.txt", data: Array(config.utf8))
+
+        let composite = try #require(map.composite)
+        // Bottom-right background cell should now be red instead of the default tan.
+        #expect(Self.pixelColor(in: composite, x: 25, yFromTop: 25) == Self.red)
+    }
+
+    // MARK: - Helpers
+
+    private static let sampleConfig = """
+        TrafficMapProtocolVersionID="1.3"
+        TrafficMapID="035apk"
+        StationList="(pIDH3Q,FM107.5)";"(pIERmg,FM93.9)";"(pIEhwg,FM103.5)";"(pIDS0w,FM95.5)";"(pIAZvA,FM102.7)"
+        NumRows="3"
+        NumColumns="3"
+        NumTransmittedTiles="9"
+        CoordinatesRow1="(42.38202,-88.35461)";"(42.02510,-87.99769)";"(42.38202,-87.64077)";"(42.02510,-87.28385)"
+        CoordinatesRow2="(42.02510,-88.35461)";"(41.66818,-87.99769)";"(42.02510,-87.64077)";"(41.66818,-87.28385)"
+        CoordinatesRow3="(41.66818,-88.35461)";"(41.31126,-87.99769)";"(41.66818,-87.64077)";"(41.31126,-87.28385)"
+        BackgroundRGBColor="(194,187,96)"
+        CopyrightNotice="Copyright © 2014 iHeartMedia, Inc. All rights reserved."
+        """
+
     // MARK: - Tile stitching
 
     @Test("leaves composite nil when no tiles are available")

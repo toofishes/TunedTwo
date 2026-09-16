@@ -48,7 +48,7 @@ class ImageOverlayRenderer: MKOverlayRenderer {
 struct WeatherMapView: NSViewRepresentable {
     @Binding var visibleRect: MKMapRect
     let image: CGImage?
-    let boundingBox: MKMapRect
+    let boundingBox: MKMapRect?
 
     func makeNSView(context: Context) -> MKMapView {
         let mapView = MKMapView()
@@ -77,7 +77,7 @@ struct WeatherMapView: NSViewRepresentable {
     private func configure(_ mapView: MKMapView, coordinator: Coordinator) {
         mapView.removeOverlays(mapView.overlays)
 
-        if let image = image {
+        if let image = image, let boundingBox = boundingBox {
             let overlay = ImageOverlay(image: image, rect: boundingBox)
             mapView.addOverlay(overlay)
         }
@@ -117,10 +117,18 @@ struct WeatherMapView: NSViewRepresentable {
 struct WeatherView: View {
     let map: WeatherMap
 
-    private static let locationOne = CLLocationCoordinate2D(latitude: 43.69360, longitude: -90.68990)
-    private static let locationTwo = CLLocationCoordinate2D(latitude: 39.67031, longitude: -85.30001)
+    /// Fallback viewport covering the contiguous United States, used when
+    /// no weather config has been received yet.
+    private static let usBoundingBox: MKMapRect = {
+        let p1 = MKMapPoint(CLLocationCoordinate2D(latitude: 24.396308, longitude: -124.848974))
+        let p2 = MKMapPoint(CLLocationCoordinate2D(latitude: 49.384358, longitude: -66.885444))
+        return MKMapRect(x: min(p1.x, p2.x),
+                         y: min(p1.y, p2.y),
+                         width: abs(p1.x - p2.x),
+                         height: abs(p1.y - p2.y))
+    }()
 
-    @State private var visibleRect: MKMapRect = radarBoundingBox
+    @State private var visibleRect: MKMapRect = usBoundingBox
 
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
@@ -128,16 +136,19 @@ struct WeatherView: View {
             WeatherMapView(
                 visibleRect: $visibleRect,
                 image: map.image,
-                boundingBox: Self.radarBoundingBox
+                boundingBox: map.radarBoundingBox
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             HStack(spacing: 16) {
                 Button("Reset Radar View") {
-                    visibleRect = Self.radarBoundingBox
+                    visibleRect = map.radarBoundingBox ?? Self.usBoundingBox
                 }
                 Text(updated)
             }
+        }
+        .onChange(of: map.config?.areaID) { _, _ in
+            visibleRect = map.radarBoundingBox ?? Self.usBoundingBox
         }
     }
 
@@ -145,16 +156,5 @@ struct WeatherView: View {
         guard let ts = map.info?.timestamp else { return "No Weather Radar Data" }
         let formattedTs = ts.formatted(date: .numeric, time: .shortened)
         return "Weather Last Updated: \(formattedTs)"
-    }
-
-    private static var radarBoundingBox: MKMapRect {
-        let p1 = MKMapPoint(locationOne)
-        let p2 = MKMapPoint(locationTwo)
-        return MKMapRect(
-            x: min(p1.x, p2.x),
-            y: min(p1.y, p2.y),
-            width: abs(p1.x - p2.x),
-            height: abs(p1.y - p2.y)
-        )
     }
 }
