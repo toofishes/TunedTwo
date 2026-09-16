@@ -69,14 +69,51 @@ Or run directly:
 
 The project ships a build phase that extracts `Vendor/nrsc5/support/sample.xz` into the app bundle. Launch the app, enable **Use Sample File**, and press **Play**. You should hear KUT HD Radio audio and see station metadata.
 
+There is also a scripted app smoke test:
+
+```bash
+./scripts/smoke-test.sh
+```
+
+## Tests
+
+Unit tests live in `Tests/TunedTwoTests` and run **headless** — the test bundle links only against the `TunedTwoCore` framework (no `TEST_HOST`), so running tests never launches the app:
+
+```bash
+xcodebuild -project TunedTwo.xcodeproj -scheme TunedTwo -derivedDataPath DerivedData test
+```
+
+## CLI (`tunedtwo-cli`)
+
+The `tunedtwo-cli` command-line tool (built by the `TunedTwo` scheme alongside the app) exercises the same `TunedTwoCore` code paths without any UI. It currently ships one subcommand:
+
+```bash
+# Stitch the sample traffic tiles to stdout (pipe it somewhere):
+DerivedData/Build/Products/Debug/tunedtwo-cli traffic-map Resources/traffic_sample | open -f -a Preview
+
+# Or write a file, with per-tile reporting:
+DerivedData/Build/Products/Debug/tunedtwo-cli traffic-map Resources/traffic_sample -o out.png -v
+```
+
+Behavior notes:
+
+- Tiles are `TMT_{provider}_{row}_{col}_{date}_{time}_{hex}.png` — **row 1 is the top, column 1 is the left** (so `3_1` is the lower-left tile). A leading numeric prefix (as in `304_TMT_...`) is stripped.
+- Tiles are applied oldest-first; a tile only replaces a stored one when its timestamp is greater than or equal. A tile from a new provider resets the map.
+- stdout carries only the PNG (default destination); all reporting goes to stderr. Exit codes: 0 ok, 1 usage error, 2 no tiles or write failure.
+
+Run `tunedtwo-cli --help` or `tunedtwo-cli traffic-map --help` for details.
+
 ## Project layout
 
-- `Sources/TunedTwo/` – Swift source.
+- `Sources/TunedTwoCore/` – UI-independent core: links `libnrsc5` (via `Modules/module.modulemap`) and builds as a framework.
   - `Services/` – `TunerSession`, `AudioPlayer`, etc.
   - `Model/` – data models and observable app state.
-  - `Views/` – SwiftUI views.
   - `Utilities/` – helpers (bundled sample file lookup, etc.)
-- `Resources/` – bundled sample I/Q file.
+- `Sources/TunedTwo/` – the app: SwiftUI views and app entry point.
+- `Sources/TunedTwoCLI/` – `tunedtwo-cli` command-line tool.
+- `Tests/TunedTwoTests/` – headless unit tests (link `TunedTwoCore`, no app host).
+- `Modules/` – the `nrsc5` module map bridging the vendored C API into Swift for the framework target (bridging headers are app-target-only).
+- `Resources/` – bundled sample I/Q file and sample traffic tiles.
 - `scripts/` – helper build/test scripts.
 - `Vendor/nrsc5/` – Git submodule of the decoder.
 - `Docs/` – architecture notes and references.

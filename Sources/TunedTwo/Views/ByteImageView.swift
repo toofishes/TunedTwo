@@ -5,6 +5,7 @@
 
 
 import SwiftUI
+import TunedTwoCore
 
 struct ByteImageView: View {
     // Example: A raw array of [UInt8] bytes representing an image (PNG, JPEG, etc.)

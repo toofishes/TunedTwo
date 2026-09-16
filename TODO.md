@@ -39,6 +39,9 @@
 
 - [ ] Evaluate linking statically vs. dynamically. Currently dynamic per request; the dylib is copied into the app bundle.
 - [ ] Bundle or document runtime dependencies (`libfftw3f`, `librtlsdr`) for distribution.
-- [ ] Add a minimal XCTest smoke test target that verifies `libnrsc5` loads and decodes a sample to PCM.
+- [x] Headless unit tests: test bundle links only `TunedTwoCore` (no `TEST_HOST`), so running tests never launches the app. Core logic lives in the `TunedTwoCore` framework; nrsc5 is exposed to it via `Modules/module.modulemap` instead of a bridging header.
+- [x] `tunedtwo-cli traffic-map` smoke tool: stitches a directory of TMT tiles into a composite PNG (stdout or `--output`), reporting provider/stale/skipped counts. Shares the exact ingest path the app uses.
+- [ ] Add a headless decoder test to the test bundle (libnrsc5 loads and decodes the sample to PCM) — now possible since `TunerSession` lives in `TunedTwoCore`.
+- [ ] Swap the hand-rolled CLI argument parser for swift-argument-parser if the CLI grows more subcommands.
 - [x] Swift 6 strict concurrency: `TunerSession`/`AudioPlayer` are actors, C callback events flow through an `AsyncStream`, UI state is `@MainActor` and only reached via an awaited event sink. No `@unchecked Sendable` anywhere.
 - [ ] Decide on a persistence strategy (`@AppStorage`, `UserDefaults`, or a small JSON file).

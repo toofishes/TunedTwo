@@ -21,6 +21,20 @@
                ReferencedContainer = "container:TunedTwo.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "98205FDF6F06344890335A0E"
+               BuildableName = "tunedtwo-cli"
+               BlueprintName = "tunedtwo-cli"
+               ReferencedContainer = "container:TunedTwo.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import TunedTwoCore
 
 struct LogEventRow: View {
     let event: LogEvent

@@ -18,6 +18,9 @@ settings:
   ENABLE_USER_SCRIPT_SANDBOXING: NO
   DEAD_CODE_STRIPPING: YES
   GENERATE_INFOPLIST_FILE: YES
+  # The nrsc5 module map must be visible to every target that touches
+  # the TunedTwoCore.swiftmodule dependency chain, not just the framework.
+  SWIFT_INCLUDE_PATHS: $(SRCROOT)/Modules
   ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
   STRING_CATALOG_GENERATE_SYMBOLS: YES
   INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
@@ -26,35 +29,24 @@ configs:
   Debug: debug
   Release: release
 targets:
-  TunedTwo:
-    type: application
+  TunedTwoCore:
+    type: framework
     platform: macOS
     deploymentTarget: "15.0"
     sources:
-      - path: Sources/TunedTwo
-      - path: TunedTwo-Bridging-Header.h
-        buildPhase: none
-      - path: Resources
+      - path: Sources/TunedTwoCore
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.TunedTwo
-        SWIFT_OBJC_BRIDGING_HEADER: $(SRCROOT)/TunedTwo-Bridging-Header.h
-        HEADER_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/include
+        PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.TunedTwoCore
+        DEFINES_MODULE: YES
         LIBRARY_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/build/src
         OTHER_LDFLAGS: -lnrsc5
+        # libnrsc5.dylib (install name @rpath/libnrsc5.dylib) is embedded
+        # in the framework's own Frameworks/ directory.
         LD_RUNPATH_SEARCH_PATHS:
           - $(inherited)
-          - "@executable_path/../Frameworks"
+          - "@loader_path/Frameworks"
     prebuildScripts:
-      - name: Prepare sample file
-        script: |
-          set -e
-          "${SRCROOT}/scripts/prepare-sample.sh"
-        inputFiles:
-          - $(SRCROOT)/scripts/prepare-sample.sh
-          - $(SRCROOT)/Vendor/nrsc5/support/sample.xz
-        outputFiles:
-          - $(SRCROOT)/Resources/sample.bin
       - name: Build libnrsc5
         script: |
           set -e
@@ -75,7 +67,51 @@ targets:
           cp -v "${DYLIB_SRC}" "${FRAMEWORKS_DIR}/libnrsc5.dylib"
         inputFiles:
           - $(SRCROOT)/Vendor/nrsc5/build/src/libnrsc5.dylib
+        outputFiles:
+          - $(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/libnrsc5.dylib
         shell: /bin/bash
+  TunedTwo:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Sources/TunedTwo
+      - path: Resources
+    dependencies:
+      - target: TunedTwoCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.TunedTwo
+        LD_RUNPATH_SEARCH_PATHS:
+          - $(inherited)
+          - "@executable_path/../Frameworks"
+    prebuildScripts:
+      - name: Prepare sample file
+        script: |
+          set -e
+          "${SRCROOT}/scripts/prepare-sample.sh"
+        inputFiles:
+          - $(SRCROOT)/scripts/prepare-sample.sh
+          - $(SRCROOT)/Vendor/nrsc5/support/sample.xz
+        outputFiles:
+          - $(SRCROOT)/Resources/sample.bin
+  tunedtwo-cli:
+    type: tool
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Sources/TunedTwoCLI
+    dependencies:
+      - target: TunedTwoCore
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.tunedtwo-cli
+        # TunedTwoCore.framework is linked next to the executable.
+        LD_RUNPATH_SEARCH_PATHS:
+          - $(inherited)
+          - "@executable_path"
+          - "@executable_path/Frameworks"
   TunedTwoTests:
     type: bundle.unit-test
     platform: macOS
@@ -83,13 +119,10 @@ targets:
     sources:
       - path: Tests/TunedTwoTests
     dependencies:
-      - target: TunedTwo
+      - target: TunedTwoCore
     settings:
       base:
         SWIFT_VERSION: "6.0"
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/TunedTwo.app/Contents/MacOS/TunedTwo"
-        BUNDLE_LOADER: "$(TEST_HOST)"
-        HEADER_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/include
     scheme:
       testTargets:
         - TunedTwoTests
@@ -99,6 +132,7 @@ schemes:
     build:
       targets:
         TunedTwo: all
+        tunedtwo-cli: build
     run:
       config: Debug
     test:

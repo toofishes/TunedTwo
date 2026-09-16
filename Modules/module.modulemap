@@ -1,0 +1,5 @@
+// Exposes the vendored libnrsc5 C API to Swift as the `nrsc5` module.
+module nrsc5 {
+    header "../Vendor/nrsc5/include/nrsc5.h"
+    export *
+}

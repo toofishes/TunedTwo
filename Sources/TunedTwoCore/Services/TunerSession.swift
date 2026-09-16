@@ -23,18 +23,25 @@
 import Foundation
 import AVFoundation
 import os
+import nrsc5
 
 /// Configuration snapshot taken on the MainActor when playback starts, so
 /// the session never reads UI-owned state directly.
-struct TunerConfiguration: Sendable {
-    enum Source: Sendable {
+public struct TunerConfiguration: Sendable {
+    public enum Source: Sendable {
         case rtlSDR(deviceIndex: Int)
         case sampleFile
     }
 
-    let source: Source
-    let frequencyHz: Float?
-    let program: Int
+    public let source: Source
+    public let frequencyHz: Float?
+    public let program: Int
+
+    public init(source: Source, frequencyHz: Float?, program: Int) {
+        self.source = source
+        self.frequencyHz = frequencyHz
+        self.program = program
+    }
 }
 
 // MARK: - C bridge
@@ -358,7 +365,7 @@ private func nrsc5EventCallback(event: UnsafePointer<nrsc5_event_t>?, opaque: Un
 
 // MARK: - Session
 
-actor TunerSession {
+public actor TunerSession {
     private static let logger = Logger(subsystem: "io.tunedtwo.TunedTwo", category: "tuner")
 
     private weak var sink: TunerEventSink?
@@ -370,7 +377,7 @@ actor TunerSession {
     private var currentProgram: Int
     private var isRunning = false
 
-    init(sink: TunerEventSink) throws {
+    public init(sink: TunerEventSink) throws {
         self.sink = sink
         self.audioPlayer = try AudioPlayer()
         self.currentProgram = 0
@@ -401,7 +408,7 @@ actor TunerSession {
 
     // MARK: - Public control (called from the UI, asynchronous by design)
 
-    func start(_ configuration: TunerConfiguration) async {
+    public func start(_ configuration: TunerConfiguration) async {
         currentProgram = configuration.program
         context.close() // idempotent; every start gets a fresh C session
 
@@ -419,7 +426,7 @@ actor TunerSession {
         }
     }
 
-    func stop() async {
+    public func stop() async {
         isRunning = false
         context.close()
         await audioPlayer.stop()
@@ -428,13 +435,13 @@ actor TunerSession {
 
     /// Switches the decoded program (HD1–HD8) and flushes queued audio so the
     /// old program does not bleed into the new one.
-    func setProgram(_ program: Int) async {
+    public func setProgram(_ program: Int) async {
         currentProgram = program
         await audioPlayer.flush()
     }
 
     /// Live retune while playing (RTL-SDR only).
-    func retune(frequencyHz: Float) async {
+    public func retune(frequencyHz: Float) async {
         guard context.retune(frequencyHz: frequencyHz) else {
             await sink?.tunerSessionDidEmit(.failed(message: "Could not tune to the requested frequency."))
             return
@@ -505,7 +512,7 @@ actor TunerSession {
         }
     }
 
-    enum TunerError: LocalizedError {
+    public enum TunerError: LocalizedError {
         case cannotOpenSample
         case nrsc5OpenFailed
         case noSDR
@@ -513,7 +520,7 @@ actor TunerSession {
         case invalidFrequency
         case tuneFailed
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .cannotOpenSample: return "Could not open the sample file."
             case .nrsc5OpenFailed:  return "nrsc5 could not initialize the input."

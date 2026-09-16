@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TunedTwoCore
 
 struct ContentView: View {
     @State private var state = TunerState()
@@ -22,8 +23,9 @@ struct ContentView: View {
             HStack {
                 EventLogView(events: state.logEntries)
                 Divider()
-                if state.traffic.composite != nil {
-                    Image(nsImage: state.traffic.composite!)
+                if let composite = state.traffic.composite {
+                    Image(nsImage: NSImage(cgImage: composite,
+                                           size: NSSize(width: composite.width, height: composite.height)))
                         .resizable().scaledToFit()
                 } else {
                     Image(systemName: "map").resizable().scaledToFit()

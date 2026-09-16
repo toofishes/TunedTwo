@@ -11,61 +11,65 @@
 
 import Foundation
 import Combine
+import Observation
+import nrsc5
 
 @MainActor
 @Observable
-final class TunerState {
-    enum Source: String, CaseIterable, Identifiable {
+public final class TunerState {
+    public enum Source: String, CaseIterable, Identifiable {
         case rtlSDR = "RTL-SDR"
         case sampleFile = "Sample File"
 
-        var id: String { rawValue }
+        public var id: String { rawValue }
     }
 
-    var source: Source = .rtlSDR
+    public var source: Source = .rtlSDR
 
     /// Frequency in MHz when using an RTL-SDR.
-    var frequencyMHz: String = "103.5"
+    public var frequencyMHz: String = "103.5"
 
     /// Selected HD Radio program (0 = HD1, 7 = HD8).
-    var program: Int = 0
+    public var program: Int = 0
 
-    var isPlaying: Bool = false
+    public var isPlaying: Bool = false
 
-    var status: String = "Ready"
+    public var status: String = "Ready"
 
-    var stationName: String = ""
-    var stationSlogan: String = ""
-    var stationMessage: String = ""
+    public var stationName: String = ""
+    public var stationSlogan: String = ""
+    public var stationMessage: String = ""
 
-    var title: String = ""
-    var artist: String = ""
-    var album: String = ""
-    var genre: String = ""
+    public var title: String = ""
+    public var artist: String = ""
+    public var album: String = ""
+    public var genre: String = ""
 
-    var bitsPerSecond: Int = 0
-    var merLower: Float = 0
-    var merUpper: Float = 0
-    var ber: Float = 0
+    public var bitsPerSecond: Int = 0
+    public var merLower: Float = 0
+    public var merUpper: Float = 0
+    public var ber: Float = 0
 
-    var frequencyHz: Float? {
+    public var frequencyHz: Float? {
         let trimmed = frequencyMHz.trimmingCharacters(in: .whitespaces)
         guard let mhz = Double(trimmed), mhz > 0 else { return nil }
         return Float(mhz * 1_000_000)
     }
 
-    var latestStationImage: [UInt8] = []
-    var latestCoverArt: [UInt8] = []
-    var latestImageData: [UInt8] = []
-    var traffic = TrafficMap()
+    public var latestStationImage: [UInt8] = []
+    public var latestCoverArt: [UInt8] = []
+    public var latestImageData: [UInt8] = []
+    public var traffic = TrafficMap()
 
-    var logEntries: [LogEvent] = []
+    public var logEntries: [LogEvent] = []
+
+    public init() {}
 }
 
 // MARK: - TunerEventSink
 
 extension TunerState: TunerEventSink {
-    func tunerSessionDidEmit(_ event: TunerEvent) async {
+    public func tunerSessionDidEmit(_ event: TunerEvent) async {
         switch event {
         case .started:
             isPlaying = true
@@ -132,7 +136,7 @@ extension TunerState: TunerEventSink {
                 }
             }
 
-            logEntries.append(LogEvent(timestamp: Date(), title: "LOT File", description: "ID: \(id), File: \(name), Size: \(size), Mime: \(mimeString), Service: \(service), Component: \(component), Component Mime: \(compMime)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
+            logEntries.append(LogEvent(timestamp: Date(), title: "LOT File", description: "ID: \(id), File: \(name), Size: \(size), Mime: \(mimeString), Service: \(String(describing: service)), Component: \(String(describing: component)), Component Mime: \(compMime)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .audio:
             break // Consumed inside TunerSession; never reaches the UI.
         default:

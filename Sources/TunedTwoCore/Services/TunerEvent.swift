@@ -15,7 +15,7 @@ import Foundation
 /// they cross any isolation boundary. `audio` events are consumed inside
 /// `TunerSession` and never reach the UI; everything else is forwarded to
 /// the ``TunerEventSink``.
-enum TunerEvent: Sendable {
+public enum TunerEvent: Sendable {
     // Lifecycle (emitted by the session itself, not by nrsc5)
     case started
     case stopped
@@ -67,47 +67,47 @@ enum TunerEvent: Sendable {
 }
 
 /// A service entry from an NRSC5 SIG (Service Information Guide) table.
-struct TunerSigService: Sendable {
-    let type: Int
-    let number: Int
-    let name: String
-    let components: [TunerSigComponent]
-    let audioComponent: TunerSigComponent?
+public struct TunerSigService: Sendable {
+    public let type: Int
+    public let number: Int
+    public let name: String
+    public let components: [TunerSigComponent]
+    public let audioComponent: TunerSigComponent?
 }
 
 /// A component belonging to a SIG service.
-enum TunerSigComponent: Sendable {
+public enum TunerSigComponent: Sendable {
     case data(id: Int, port: UInt16, serviceDataType: UInt16, aasType: Int, mime: UInt32)
     case audio(id: Int, port: UInt8, programType: Int, mime: UInt32)
     case unknown(id: Int)
 }
 
 /// SIS audio service descriptor (ASD).
-struct TunerAudioServiceDescriptor: Sendable {
-    let program: Int
-    let access: Int
-    let type: Int
-    let soundExp: Int
+public struct TunerAudioServiceDescriptor: Sendable {
+    public let program: Int
+    public let access: Int
+    public let type: Int
+    public let soundExp: Int
 }
 
 /// SIS data service descriptor (DSD).
-struct TunerDataServiceDescriptor: Sendable {
-    let access: Int
-    let type: Int
-    let mimeType: UInt32
+public struct TunerDataServiceDescriptor: Sendable {
+    public let access: Int
+    public let type: Int
+    public let mimeType: UInt32
 }
 
 /// Geographic bounding box for HERE traffic/weather images.
-struct TunerBoundingBox: Sendable {
-    let latitude1: Float
-    let longitude1: Float
-    let latitude2: Float
-    let longitude2: Float
+public struct TunerBoundingBox: Sendable {
+    public let latitude1: Float
+    public let longitude1: Float
+    public let latitude2: Float
+    public let longitude2: Float
 }
 
 /// Receives tuner events. Conformers run on the MainActor (typically
 /// `TunerState`); the session only ever reaches them through `await`, so
 /// the nrsc5 worker thread never touches UI-owned state.
-protocol TunerEventSink: AnyObject, Sendable {
+public protocol TunerEventSink: AnyObject, Sendable {
     func tunerSessionDidEmit(_ event: TunerEvent) async
 }
