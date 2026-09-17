@@ -37,7 +37,7 @@ struct LogEventRow: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                     Spacer()
-                    Text(event.timestamp, style: .relative)
+                    Text(event.timestamp, format: .dateTime.hour().minute().second())
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
