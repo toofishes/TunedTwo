@@ -396,7 +396,7 @@ public actor TunerSession {
         audioPlayer.stop()
     }
 
-    // MARK: - Public control (called from the UI, asynchronous by design)
+    // MARK: - Public control
 
     public func start(_ configuration: TunerConfiguration) async {
         currentProgram = configuration.program
@@ -439,7 +439,7 @@ public actor TunerSession {
         audioPlayer.flush()
     }
 
-    // MARK: - Event handling (actor-isolated, fed by the event stream)
+    // MARK: - Event handling
 
     private func handle(_ event: TunerEvent) async {
         switch event {

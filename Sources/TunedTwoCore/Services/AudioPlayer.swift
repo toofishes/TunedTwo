@@ -4,10 +4,6 @@
 //
 //  macOS-native audio output using AVAudioEngine.
 //
-//  Confined to its own actor so all audio work — PCM conversion and buffer
-//  scheduling — happens off the main thread, fed directly from the tuner
-//  session's background context into the system audio graph.
-//
 
 @preconcurrency import AVFoundation
 import Foundation
