@@ -14,6 +14,10 @@ This file captures non-obvious project conventions and gotchas that came up duri
   ```
   Note: XcodeGen emits **per-target synced folders** (`Sources/TunedTwo`, `Sources/TunedTwoCLI`, `Sources/TunedTwoCore`, etc.) rather than a single `Sources` synced folder with target exception sets. If the checked-in `.xcodeproj` ever differs from this, it was likely hand-edited in Xcode.
 
+## Code linting and formatting
+
+- Run `swift format -r -i Tests Sources` from the root of the repo to ensure code matches expecting formatting standards.
+
 ## CLI (`Sources/TunedTwoCLI`)
 
 - The CLI uses Apple's `swift-argument-parser`. The hand-rolled parser was removed.
