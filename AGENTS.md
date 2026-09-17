@@ -1,5 +1,3 @@
-# Notes for future agents
-
 This file captures non-obvious project conventions and gotchas that came up during development.
 
 ## Project generation
@@ -15,23 +13,6 @@ This file captures non-obvious project conventions and gotchas that came up duri
     defaultSourceDirectoryType: syncedFolder
   ```
   Note: XcodeGen emits **per-target synced folders** (`Sources/TunedTwo`, `Sources/TunedTwoCLI`, `Sources/TunedTwoCore`, etc.) rather than a single `Sources` synced folder with target exception sets. If the checked-in `.xcodeproj` ever differs from this, it was likely hand-edited in Xcode.
-
-## Swift Package dependencies
-
-- `swift-argument-parser` is linked **only** to the `tunedtwo-cli` target. `TunedTwoCore` and `TunedTwo` must not depend on it.
-- The package name is `swift-argument-parser`, but the linked product is `ArgumentParser`. In `project.yml`:
-  ```yaml
-  packages:
-    swift-argument-parser:
-      url: https://github.com/apple/swift-argument-parser
-      from: 1.8.2
-  targets:
-    tunedtwo-cli:
-      dependencies:
-        - package: swift-argument-parser
-          product: ArgumentParser
-  ```
-- `.gitignore` excludes `Package.resolved`, so the resolved version is not committed. Pin the desired minimum version in `project.yml`.
 
 ## CLI (`Sources/TunedTwoCLI`)
 

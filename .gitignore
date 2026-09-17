@@ -16,12 +16,9 @@ Vendor/nrsc5/build/
 # App sandbox / signing artifacts
 *.entitlements
 
-# Swift Package Manager (if used later)
+# Swift Package Manager
 .build/
-Package.resolved
 .swiftpm/
 
 # Temporary sample decompression
-*.tmp
-*.raw
 Resources/sample.bin
