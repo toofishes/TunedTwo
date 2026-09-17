@@ -50,7 +50,7 @@ public enum TunerEvent: Sendable {
     case dataServiceDescriptor([TunerDataServiceDescriptor])
 
     // Data / file delivery
-    case hdc(program: Int, size: Int, flags: Int)
+    case hdc(program: Int, size: Int, flags: UInt)
     case stream(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
     case packet(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
     case lot(
@@ -76,7 +76,7 @@ public enum TunerEvent: Sendable {
     case localTime(utcOffsetMinutes: Int, dstRegional: Bool, dstLocal: Bool, dstSchedule: Int)
 
     // Decoded audio (consumed by the session, forwarded to the audio actor)
-    case audio(program: Int, samples: [Int16])
+    case audio(program: Int, samples: [Int16], flags: UInt)
 }
 
 extension TunerEvent {

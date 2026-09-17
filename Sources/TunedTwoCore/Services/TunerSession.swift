@@ -94,14 +94,15 @@ private final class Nrsc5Context {
         case NRSC5_EVENT_HDC:
             // We have `data` available but don't copy it since we never use it.
             // Instead, just pass along the received byte count so bitrate can be calculated.
-            event = .hdc(program: Int(raw.hdc.program), size: Int(raw.hdc.count), flags: Int(raw.hdc.flags))
+            event = .hdc(program: Int(raw.hdc.program), size: Int(raw.hdc.count), flags: UInt(raw.hdc.flags))
         case NRSC5_EVENT_IQ:
             // Omitting for now; this is a very low level raw data capture.
             event = nil
         case NRSC5_EVENT_AUDIO:
             event = .audio(
                 program: Int(raw.audio.program),
-                samples: copyInt16(raw.audio.data, count: raw.audio.count))
+                samples: copyInt16(raw.audio.data, count: raw.audio.count),
+                flags: UInt(raw.audio.flags))
         case NRSC5_EVENT_ID3:
             event = .id3(
                 program: Int(raw.id3.program),
@@ -473,13 +474,10 @@ public actor TunerSession {
 
     private func handle(_ event: TunerEvent) async {
         switch event {
-        case .audio(let program, let samples):
+        case let .audio(program, samples, _):
             guard isRunning, program == currentProgram else { return }
             audioPlayer.feed(samples)
-        case .hdc(let program, _, _):
-            guard program == currentProgram else { return }
-            await sink?.tunerSessionDidEmit(event)
-        case .id3(let program, _, _, _, _):
+        case let .hdc(program, _, _), let .id3(program, _, _, _, _):
             guard program == currentProgram else { return }
             await sink?.tunerSessionDidEmit(event)
         default:
