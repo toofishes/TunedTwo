@@ -11,7 +11,7 @@ echo "[build-nrsc5] Building libnrsc5 in ${BUILD_DIR}..."
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-cmake -DUSE_SSE=ON -DBUILD_CLI=ON -DCMAKE_BUILD_TYPE=Release "${NRSC5_DIR}"
+cmake -DUSE_SSE=ON -DBUILD_CLI=OFF -DCMAKE_BUILD_TYPE=Release "${NRSC5_DIR}"
 make -j"$(sysctl -n hw.ncpu)"
 
 # Ensure the dynamic library has an @rpath-based install name so it can be

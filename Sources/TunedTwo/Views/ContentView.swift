@@ -174,8 +174,8 @@ struct ContentView: View {
                 .monospacedDigit()
             Text(
                 String(
-                    format: "MER %.1f / %.1f dB · BER %.6f",
-                    state.merLower, state.merUpper, state.ber)
+                    format: "MER %.1f / %.1f dB · BER %.6f · %d CRC Errors",
+                    state.merLower, state.merUpper, state.ber, state.crcErrors)
             )
             .font(.caption)
             .foregroundStyle(.secondary)

@@ -52,6 +52,8 @@ public final class TunerState {
     public var merLower: Float = 0
     public var merUpper: Float = 0
     public var ber: Float = 0
+    public var crcErrors: Int = 0
+    //public var decodeErrors: Int = 0
 
     public var frequencyHz: Float? {
         let trimmed = frequencyMHz.trimmingCharacters(in: .whitespaces)
@@ -120,7 +122,7 @@ extension TunerState: TunerEventSink {
             merUpper = upper
         case .ber(let cber):
             ber = cber
-        case .hdc(_, let size, _):
+        case .hdc(_, let size, let flags):
             byteCount += size
             receiveCount += 1
             if receiveCount >= 32 || bitsPerSecond == 0 {
@@ -128,6 +130,9 @@ extension TunerState: TunerEventSink {
                     byteCount * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES) / receiveCount
                 byteCount = 0
                 receiveCount = 0
+            }
+            if flags & UInt(NRSC5_PKT_FLAGS_CRC_ERROR) != 0 {
+                crcErrors += 1
             }
         case .stationName(let name):
             stationName = name

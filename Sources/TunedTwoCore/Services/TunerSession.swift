@@ -395,8 +395,6 @@ private func nrsc5EventCallback(event: UnsafePointer<nrsc5_event_t>?, opaque: Un
 // MARK: - Session
 
 public actor TunerSession {
-    private static let logger = Logger(subsystem: "io.tunedtwo.TunedTwo", category: "tuner")
-
     private weak var sink: TunerEventSink?
     private let audioPlayer: AudioPlayer
     private let context = Nrsc5Context()
@@ -438,7 +436,6 @@ public actor TunerSession {
             context.activate(st: st)
             try audioPlayer.start()
             isRunning = true
-            Self.logger.debug("Session started")
             await sink?.tunerSessionDidEmit(.started)
         } catch {
             context.close()
@@ -474,10 +471,10 @@ public actor TunerSession {
 
     private func handle(_ event: TunerEvent) async {
         switch event {
-        case let .audio(program, samples, _):
+        case .audio(let program, let samples, _):
             guard isRunning, program == currentProgram else { return }
             audioPlayer.feed(samples)
-        case let .hdc(program, _, _), let .id3(program, _, _, _, _):
+        case .hdc(let program, _, _), .id3(let program, _, _, _, _):
             guard program == currentProgram else { return }
             await sink?.tunerSessionDidEmit(event)
         default:
@@ -497,7 +494,6 @@ public actor TunerSession {
         switch configuration.source {
         case .sampleFile:
             let path = try SampleFileProvider.sampleFilePath()
-            Self.logger.debug("Opening sample file: \(path, privacy: .public)")
             guard let fp = fopen(path, "rb") else {
                 throw TunerError.cannotOpenSample
             }
