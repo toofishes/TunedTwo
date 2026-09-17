@@ -152,7 +152,8 @@ struct EventLogView: View {
                 LogEvent(
                     timestamp: Date().addingTimeInterval(-120),
                     title: "LOT File",
-                    description: "ID: 42, File: traffic.png, Size: 12400, MIME: TTN STM Traffic (0xFF8422D7), Service: type=1 #0 KOSF (2 components), Component: data id=3 port=0 sdt=0 aas=0, Component MIME: TTN STM Traffic (0xFF8422D7)",
+                    description:
+                        "ID: 42, File: traffic.png, Size: 12400, MIME: TTN STM Traffic (0xFF8422D7), Service: type=1 #0 KOSF (2 components), Component: data id=3 port=0 sdt=0 aas=0, Component MIME: TTN STM Traffic (0xFF8422D7)",
                     systemImage: "checkmark.icloud.fill",
                     tintColor: .blue
                 ),
@@ -176,7 +177,7 @@ struct EventLogView: View {
                     description: "Seq 7, Size 1024, Service #0 KOSF, Component TTN STM Traffic (0xFF8422D7)",
                     systemImage: "arrow.left.arrow.right.circle.fill",
                     tintColor: .blue
-                )
+                ),
             ],
             eventCounts: [
                 "syncAchieved": 1,
@@ -185,7 +186,7 @@ struct EventLogView: View {
                 "sig": 4,
                 "agc": 245,
                 "stream": 120,
-                "mer": 245
+                "mer": 245,
             ]
         )
         .navigationTitle("Activity Log")

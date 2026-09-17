@@ -31,14 +31,16 @@ public struct TTNSTMWeatherConfig: Equatable, Sendable {
     public let legendSnow: [TTNSTMLegendEntry]
     public let copyrightNotice: String
 
-    public init(protocolVersionID: String,
-                areaID: String,
-                stationList: [TTNSTMStation],
-                coordinates: [TTNSTMCoordinate],
-                legendRain: [TTNSTMLegendEntry],
-                legendMixIce: [TTNSTMLegendEntry],
-                legendSnow: [TTNSTMLegendEntry],
-                copyrightNotice: String) {
+    public init(
+        protocolVersionID: String,
+        areaID: String,
+        stationList: [TTNSTMStation],
+        coordinates: [TTNSTMCoordinate],
+        legendRain: [TTNSTMLegendEntry],
+        legendMixIce: [TTNSTMLegendEntry],
+        legendSnow: [TTNSTMLegendEntry],
+        copyrightNotice: String
+    ) {
         self.protocolVersionID = protocolVersionID
         self.areaID = areaID
         self.stationList = stationList
@@ -122,8 +124,9 @@ public enum TTNSTMWeatherConfigParser {
         return try values.map { raw in
             let components = try TTNSTMValueParser.parseTuple(raw)
             guard components.count == 2,
-                  let level = Int(components[0]),
-                  let color = TTNSTMValueParser.parseRGB(components[1]) else {
+                let level = Int(components[0]),
+                let color = TTNSTMValueParser.parseRGB(components[1])
+            else {
                 throw TTNSTMWeatherConfigError.invalidValue(key: "Legend", value: raw)
             }
             return TTNSTMLegendEntry(level: level, color: color)

@@ -22,12 +22,16 @@ public final class AudioPlayer: Sendable {
 
     init() throws {
         let sr = Double(NRSC5_SAMPLE_RATE_AUDIO)
-        guard let inFmt = AVAudioFormat(commonFormat: .pcmFormatInt16,
-                                        sampleRate: sr,
-                                        channels: 2,
-                                        interleaved: true),
-              let outFmt = AVAudioFormat(standardFormatWithSampleRate: sr,
-                                         channels: 2) else {
+        guard
+            let inFmt = AVAudioFormat(
+                commonFormat: .pcmFormatInt16,
+                sampleRate: sr,
+                channels: 2,
+                interleaved: true),
+            let outFmt = AVAudioFormat(
+                standardFormatWithSampleRate: sr,
+                channels: 2)
+        else {
             throw AudioError.formatUnsupported
         }
 
@@ -73,7 +77,7 @@ public final class AudioPlayer: Sendable {
         let frames = AVAudioFrameCount(samples.count / 2)
 
         guard let sourceBuffer = AVAudioPCMBuffer(pcmFormat: inputFormatInt16, frameCapacity: frames) else { return }
-                sourceBuffer.frameLength = frames
+        sourceBuffer.frameLength = frames
         sourceBuffer.frameLength = frames
 
         samples.withUnsafeBufferPointer { srcPtr in

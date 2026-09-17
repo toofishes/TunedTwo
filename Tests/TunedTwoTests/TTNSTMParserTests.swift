@@ -8,6 +8,7 @@
 
 import Foundation
 import Testing
+
 @testable import TunedTwoCore
 
 @Suite("TTN/STM generic parser")
@@ -33,7 +34,8 @@ struct TTNSTMConfigParserTests {
 
     @Test("ignores blank lines")
     func ignoresBlankLines() throws {
-        let config = try TTNSTMConfigParser().parse("""
+        let config = try TTNSTMConfigParser().parse(
+            """
             Key1="a"
 
             Key2="b"
@@ -161,7 +163,8 @@ struct TTNSTMWeatherConfigParserTests {
         #expect(config.legendRain[5] == TTNSTMLegendEntry(level: 6, color: TTNSTMRGB(red: 221, green: 0, blue: 0)))
 
         #expect(config.legendMixIce.count == 2)
-        #expect(config.legendMixIce[1] == TTNSTMLegendEntry(level: 2, color: TTNSTMRGB(red: 244, green: 85, blue: 176)))
+        #expect(
+            config.legendMixIce[1] == TTNSTMLegendEntry(level: 2, color: TTNSTMRGB(red: 244, green: 85, blue: 176)))
 
         #expect(config.legendSnow.count == 2)
         #expect(config.legendSnow[1] == TTNSTMLegendEntry(level: 2, color: TTNSTMRGB(red: 0, green: 0, blue: 255)))
@@ -281,7 +284,8 @@ struct TTNSTMSampleFileTests {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-        let url = testsDirectory
+        let url =
+            testsDirectory
             .appendingPathComponent("Resources")
             .appendingPathComponent(directory)
             .appendingPathComponent(name)

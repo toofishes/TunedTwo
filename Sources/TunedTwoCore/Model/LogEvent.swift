@@ -16,11 +16,13 @@ public struct LogEvent: Identifiable {
     public let systemImage: String
     public let tintColor: Color
 
-    public init(timestamp: Date,
-                title: String,
-                description: String,
-                systemImage: String,
-                tintColor: Color) {
+    public init(
+        timestamp: Date,
+        title: String,
+        description: String,
+        systemImage: String,
+        tintColor: Color
+    ) {
         self.timestamp = timestamp
         self.title = title
         self.description = description

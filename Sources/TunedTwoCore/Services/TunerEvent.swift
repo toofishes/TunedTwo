@@ -40,7 +40,9 @@ public enum TunerEvent: Sendable {
 
     // Audio / program metadata
     case id3(program: Int, title: String, artist: String, album: String, genre: String)
-    case audioService(program: Int, access: Int, type: Int, codecMode: Int, blendControl: Int, digitalAudioGain: Int, commonDelay: Int, latency: Int)
+    case audioService(
+        program: Int, access: Int, type: Int, codecMode: Int, blendControl: Int, digitalAudioGain: Int,
+        commonDelay: Int, latency: Int)
 
     // Service Information Guide and descriptors
     case sig(services: [TunerSigService])
@@ -51,14 +53,25 @@ public enum TunerEvent: Sendable {
     case hdc(program: Int, size: Int, flags: Int)
     case stream(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
     case packet(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
-    case lot(lotID: Int, mime: UInt32, name: String, data: [UInt8], expiry: Date?, service: TunerSigService?, component: TunerSigComponent?)
-    case lotHeader(lotID: Int, mime: UInt32, name: String, size: Int, expiry: Date?, service: TunerSigService?, component: TunerSigComponent?)
-    case hereImage(type: Int, seq: Int, n1: Int, n2: Int, timeUTC: Date?, boundingBox: TunerBoundingBox, name: String, data: [UInt8])
+    case lot(
+        lotID: Int, mime: UInt32, name: String, data: [UInt8], expiry: Date?, service: TunerSigService?,
+        component: TunerSigComponent?)
+    case lotHeader(
+        lotID: Int, mime: UInt32, name: String, size: Int, expiry: Date?, service: TunerSigService?,
+        component: TunerSigComponent?)
+    case hereImage(
+        type: Int, seq: Int, n1: Int, n2: Int, timeUTC: Date?, boundingBox: TunerBoundingBox, name: String,
+        data: [UInt8])
 
     // Alerts and infrastructure info
-    case emergencyAlert(message: String, controlData: [UInt8], category1: Int, category2: Int, locationFormat: Int, locations: [Int])
-    case exciterInfo(manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int], manufacturerStatus: Int, importerConnected: Bool)
-    case importerInfo(manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int], manufacturerStatus: Int)
+    case emergencyAlert(
+        message: String, controlData: [UInt8], category1: Int, category2: Int, locationFormat: Int, locations: [Int])
+    case exciterInfo(
+        manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int],
+        manufacturerStatus: Int, importerConnected: Bool)
+    case importerInfo(
+        manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int],
+        manufacturerStatus: Int)
     case leapSecondOffset(pendingOffset: Int, currentOffset: Int, pendingALFN: UInt)
     case localTime(utcOffsetMinutes: Int, dstRegional: Bool, dstLocal: Bool, dstSchedule: Int)
 
@@ -66,9 +79,9 @@ public enum TunerEvent: Sendable {
     case audio(program: Int, samples: [Int16])
 }
 
-public extension TunerEvent {
+extension TunerEvent {
     /// The enum case name without associated values, suitable for counters and logging.
-    var caseName: String {
+    public var caseName: String {
         switch self {
         case .started: return "started"
         case .stopped: return "stopped"

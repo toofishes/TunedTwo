@@ -17,7 +17,7 @@ struct TunedTwoApp: App {
         }
         .windowToolbarStyle(.unified)
         .commands {
-            CommandGroup(replacing: .newItem) { }
+            CommandGroup(replacing: .newItem) {}
         }
     }
 }

@@ -101,9 +101,10 @@ public enum TTNSTMValueParser {
     /// Parse a `(latitude, longitude)` coordinate tuple.
     public static func parseCoordinate(_ raw: String) -> TTNSTMCoordinate? {
         guard let components = try? parseTuple(raw),
-              components.count == 2,
-              let latitude = Double(components[0]),
-              let longitude = Double(components[1]) else {
+            components.count == 2,
+            let latitude = Double(components[0]),
+            let longitude = Double(components[1])
+        else {
             return nil
         }
         return TTNSTMCoordinate(latitude: latitude, longitude: longitude)
@@ -112,10 +113,11 @@ public enum TTNSTMValueParser {
     /// Parse an `(r, g, b)` RGB tuple.
     public static func parseRGB(_ raw: String) -> TTNSTMRGB? {
         guard let components = try? parseTuple(raw),
-              components.count == 3,
-              let red = UInt8(components[0]),
-              let green = UInt8(components[1]),
-              let blue = UInt8(components[2]) else {
+            components.count == 3,
+            let red = UInt8(components[0]),
+            let green = UInt8(components[1]),
+            let blue = UInt8(components[2])
+        else {
             return nil
         }
         return TTNSTMRGB(red: red, green: green, blue: blue)
@@ -124,7 +126,8 @@ public enum TTNSTMValueParser {
     /// Parse a `(stationID, frequency)` station tuple.
     public static func parseStation(_ raw: String) -> TTNSTMStation? {
         guard let components = try? parseTuple(raw),
-              components.count == 2 else {
+            components.count == 2
+        else {
             return nil
         }
         return TTNSTMStation(stationID: components[0], frequency: components[1])

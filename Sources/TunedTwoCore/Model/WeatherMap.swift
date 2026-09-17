@@ -5,8 +5,8 @@
 //  Tracks a DWRO weather radar image, including metadata.
 //
 
-import Foundation
 import CoreGraphics
+import Foundation
 import ImageIO
 import MapKit
 
@@ -70,17 +70,20 @@ public struct WeatherMap {
         guard coordinates.count >= 2 else { return nil }
 
         let points = coordinates.map { coordinate in
-            MKMapPoint(CLLocationCoordinate2D(latitude: coordinate.latitude,
-                                              longitude: coordinate.longitude))
+            MKMapPoint(
+                CLLocationCoordinate2D(
+                    latitude: coordinate.latitude,
+                    longitude: coordinate.longitude))
         }
         let minX = points.map { $0.x }.min() ?? 0
         let maxX = points.map { $0.x }.max() ?? 0
         let minY = points.map { $0.y }.min() ?? 0
         let maxY = points.map { $0.y }.max() ?? 0
-        return MKMapRect(x: minX,
-                         y: minY,
-                         width: maxX - minX,
-                         height: maxY - minY)
+        return MKMapRect(
+            x: minX,
+            y: minY,
+            width: maxX - minX,
+            height: maxY - minY)
     }
 
     // MARK: - Filename parsing
@@ -108,10 +111,11 @@ public struct WeatherMap {
         var dateComponents = DateComponents(calendar: Calendar.utc)
 
         guard let year = Int(dateString.prefix(4)),
-              let month = Int(dateString.dropFirst(4).prefix(2)),
-              let day = Int(dateString.dropFirst(6).prefix(2)),
-              let hour = Int(timeString.prefix(2)),
-              let minute = Int(timeString.dropFirst(2).prefix(2)) else {
+            let month = Int(dateString.dropFirst(4).prefix(2)),
+            let day = Int(dateString.dropFirst(6).prefix(2)),
+            let hour = Int(timeString.prefix(2)),
+            let minute = Int(timeString.dropFirst(2).prefix(2))
+        else {
             return nil
         }
 
@@ -136,7 +140,8 @@ public struct WeatherMap {
     @discardableResult
     public mutating func processConfigFile(data: [UInt8]) -> WeatherMapIngestOutcome {
         guard let text = String(bytes: data, encoding: .utf8),
-              let newConfig = try? TTNSTMWeatherConfigParser.parse(text) else {
+            let newConfig = try? TTNSTMWeatherConfigParser.parse(text)
+        else {
             return .invalidConfig
         }
 
@@ -165,8 +170,9 @@ public struct WeatherMap {
 
         if let currentInfo = info {
             if currentInfo.timestamp > newInfo.timestamp {
-                return .ignoredStale(existingTimestamp: currentInfo.timestamp,
-                                     incomingTimestamp: newInfo.timestamp)
+                return .ignoredStale(
+                    existingTimestamp: currentInfo.timestamp,
+                    incomingTimestamp: newInfo.timestamp)
             }
         }
 

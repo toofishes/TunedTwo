@@ -7,10 +7,11 @@
 //  bundle links only against TunedTwoCore.
 //
 
-import Foundation
 import CoreGraphics
+import Foundation
 import ImageIO
 import Testing
+
 @testable import TunedTwoCore
 
 @Suite("TrafficMap parsing")
@@ -92,9 +93,15 @@ struct TrafficMapTests {
         var map = TrafficMap()
 
         // Row/column of 0 parse fine but are outside the grid.
-        #expect(map.processImageFile(name: "TMT_prov_0_0_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
-        #expect(map.processImageFile(name: "TMT_prov_4_1_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
-        #expect(map.processImageFile(name: "TMT_prov_1_4_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47]) == .outOfGrid)
+        #expect(
+            map.processImageFile(name: "TMT_prov_0_0_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47])
+                == .outOfGrid)
+        #expect(
+            map.processImageFile(name: "TMT_prov_4_1_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47])
+                == .outOfGrid)
+        #expect(
+            map.processImageFile(name: "TMT_prov_1_4_20260914_1514_0001.png", data: [0x89, 0x50, 0x4E, 0x47])
+                == .outOfGrid)
         #expect(map.tiles.allSatisfy { $0 == nil })
     }
 
@@ -123,8 +130,11 @@ struct TrafficMapTests {
         map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: Array(newer))
         let outcome = map.processImageFile(name: "TMT_prov_1_1_20260913_1500_0002.png", data: Array(older))
 
-        #expect(outcome == .ignoredStale(existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 0),
-                                         incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 13, hour: 15, minute: 0)))
+        #expect(
+            outcome
+                == .ignoredStale(
+                    existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 0),
+                    incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 13, hour: 15, minute: 0)))
         #expect(map.tiles[0]?.info.hex == 0x0001)
     }
 
@@ -307,14 +317,15 @@ struct TrafficMapTests {
         let colors: [[(CGFloat, CGFloat, CGFloat)]] = [
             [Self.red, Self.green, Self.blue],
             [Self.yellow, Self.cyan, Self.magenta],
-            [Self.orange, Self.purple, Self.brown]
+            [Self.orange, Self.purple, Self.brown],
         ]
 
         for row in 1...3 {
             for column in 1...3 {
                 let color = colors[row - 1][column - 1]
                 let tileData = try #require(Self.pngData(color: color, width: 8, height: 8))
-                let name = String(format: "TMT_prov_%d_%d_20260914_1514_%04x.png", row, column, (row - 1) * 3 + (column - 1))
+                let name = String(
+                    format: "TMT_prov_%d_%d_20260914_1514_%04x.png", row, column, (row - 1) * 3 + (column - 1))
                 map.processImageFile(name: name, data: Array(tileData))
             }
         }
@@ -327,7 +338,9 @@ struct TrafficMapTests {
         for row in 1...3 {
             for column in 1...3 {
                 let point = (x: (column - 1) * 8 + 4, yFromTop: (row - 1) * 8 + 4)
-                #expect(Self.pixelColor(in: composite, x: point.x, yFromTop: point.yFromTop) == colors[row - 1][column - 1])
+                #expect(
+                    Self.pixelColor(in: composite, x: point.x, yFromTop: point.yFromTop) == colors[row - 1][column - 1]
+                )
             }
         }
     }
@@ -385,13 +398,14 @@ struct TrafficMapTests {
     }
 
     private static func makeRGBContext(width: Int, height: Int) -> CGContext? {
-        CGContext(data: nil,
-                  width: width,
-                  height: height,
-                  bitsPerComponent: 8,
-                  bytesPerRow: 0,
-                  space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
     }
 }
 
@@ -400,7 +414,5 @@ struct TrafficMapTests {
 private func == (lhs: (CGFloat, CGFloat, CGFloat)?, rhs: (CGFloat, CGFloat, CGFloat)) -> Bool {
     guard let lhs else { return false }
     let tolerance: CGFloat = 0.02
-    return abs(lhs.0 - rhs.0) < tolerance &&
-           abs(lhs.1 - rhs.1) < tolerance &&
-           abs(lhs.2 - rhs.2) < tolerance
+    return abs(lhs.0 - rhs.0) < tolerance && abs(lhs.1 - rhs.1) < tolerance && abs(lhs.2 - rhs.2) < tolerance
 }

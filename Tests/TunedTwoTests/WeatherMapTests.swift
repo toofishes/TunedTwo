@@ -6,11 +6,12 @@
 //  config-file integration.
 //
 
-import Foundation
 import CoreGraphics
+import Foundation
 import ImageIO
 import MapKit
 import Testing
+
 @testable import TunedTwoCore
 
 @Suite("WeatherMap parsing")
@@ -56,7 +57,8 @@ struct WeatherMapTests {
     @Test("rejects undecodable image bytes")
     func rejectsUndecodableBytes() {
         var map = WeatherMap()
-        let outcome = map.processImageFile(name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: Array("not a png".utf8))
+        let outcome = map.processImageFile(
+            name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: Array("not a png".utf8))
         #expect(outcome == .undecodableImage)
         #expect(map.image == nil)
     }
@@ -85,8 +87,11 @@ struct WeatherMapTests {
         map.processImageFile(name: "DWRO_prov_rev01_20260916_1500_0001.png", data: Array(newer))
         let outcome = map.processImageFile(name: "DWRO_prov_rev01_20260915_1500_0002.png", data: Array(older))
 
-        #expect(outcome == .ignoredStale(existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 16, hour: 15, minute: 0),
-                                         incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 15, hour: 15, minute: 0)))
+        #expect(
+            outcome
+                == .ignoredStale(
+                    existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 16, hour: 15, minute: 0),
+                    incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 15, hour: 15, minute: 0)))
         #expect(map.info?.hex == 0x0001)
     }
 
@@ -194,12 +199,13 @@ struct WeatherMapTests {
     }
 
     private static func makeRGBContext(width: Int, height: Int) -> CGContext? {
-        CGContext(data: nil,
-                  width: width,
-                  height: height,
-                  bitsPerComponent: 8,
-                  bytesPerRow: 0,
-                  space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
     }
 }

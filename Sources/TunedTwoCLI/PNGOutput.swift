@@ -5,8 +5,8 @@
 //  Composite-image encoding (ImageIO) and output routing (stdout or file).
 //
 
-import Foundation
 import CoreGraphics
+import Foundation
 import ImageIO
 
 /// Where a produced file goes: stdout (the default, for piping) or a path.
@@ -48,8 +48,10 @@ enum PNGEncoder {
     /// Encode a CGImage to PNG data.
     static func encode(_ image: CGImage) throws -> Data {
         let mutableData = NSMutableData()
-        guard let destination = CGImageDestinationCreateWithData(
-            mutableData, "public.png" as CFString, 1, nil) else {
+        guard
+            let destination = CGImageDestinationCreateWithData(
+                mutableData, "public.png" as CFString, 1, nil)
+        else {
             throw EncodeError.destinationCreationFailed
         }
         CGImageDestinationAddImage(destination, image, nil)

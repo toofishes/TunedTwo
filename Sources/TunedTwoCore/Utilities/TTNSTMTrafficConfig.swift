@@ -21,15 +21,17 @@ public struct TTNSTMTrafficConfig: Equatable, Sendable {
     public let backgroundRGBColor: TTNSTMRGB
     public let copyrightNotice: String
 
-    public init(protocolVersionID: String,
-                trafficMapID: String,
-                stationList: [TTNSTMStation],
-                numRows: Int,
-                numColumns: Int,
-                numTransmittedTiles: Int,
-                coordinatesRows: [[TTNSTMCoordinate]],
-                backgroundRGBColor: TTNSTMRGB,
-                copyrightNotice: String) {
+    public init(
+        protocolVersionID: String,
+        trafficMapID: String,
+        stationList: [TTNSTMStation],
+        numRows: Int,
+        numColumns: Int,
+        numTransmittedTiles: Int,
+        coordinatesRows: [[TTNSTMCoordinate]],
+        backgroundRGBColor: TTNSTMRGB,
+        copyrightNotice: String
+    ) {
         self.protocolVersionID = protocolVersionID
         self.trafficMapID = trafficMapID
         self.stationList = stationList

@@ -118,8 +118,9 @@ struct ContentView: View {
 
             Section {
                 Button(action: togglePlayback) {
-                    Label(state.isPlaying ? "Stop" : "Play",
-                          systemImage: state.isPlaying ? "stop.fill" : "play.fill")
+                    Label(
+                        state.isPlaying ? "Stop" : "Play",
+                        systemImage: state.isPlaying ? "stop.fill" : "play.fill")
                 }
                 .controlSize(.large)
                 .keyboardShortcut(.space, modifiers: [])
@@ -171,11 +172,14 @@ struct ContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
-            Text(String(format: "MER %.1f / %.1f dB · BER %.6f",
-                        state.merLower, state.merUpper, state.ber))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+            Text(
+                String(
+                    format: "MER %.1f / %.1f dB · BER %.6f",
+                    state.merLower, state.merUpper, state.ber)
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
         }
     }
 
@@ -225,7 +229,8 @@ struct ContentView: View {
             try? await Task.sleep(for: .milliseconds(600))
             guard !Task.isCancelled else { return }
             guard state.source == .rtlSDR, state.isPlaying,
-                  let session, let frequencyHz = state.frequencyHz else { return }
+                let session, let frequencyHz = state.frequencyHz
+            else { return }
             await session.retune(frequencyHz: frequencyHz)
         }
     }

@@ -3,8 +3,8 @@
 //  TunedTwo
 //
 
-import SwiftUI
 import MapKit
+import SwiftUI
 import TunedTwoCore
 
 class ImageOverlay: NSObject, MKOverlay {
@@ -67,7 +67,8 @@ struct WeatherMapView: NSViewRepresentable {
         // Guard against programmatic updates so we don't fight the user's
         // gestures or recurse through regionDidChangeAnimated.
         if !context.coordinator.isApplyingBinding,
-           !MKMapRectEqualToRect(mapView.visibleMapRect, visibleRect) {
+            !MKMapRectEqualToRect(mapView.visibleMapRect, visibleRect)
+        {
             context.coordinator.isApplyingBinding = true
             mapView.setVisibleMapRect(visibleRect, animated: false)
             context.coordinator.isApplyingBinding = false
@@ -122,10 +123,11 @@ struct WeatherView: View {
     private static let usBoundingBox: MKMapRect = {
         let p1 = MKMapPoint(CLLocationCoordinate2D(latitude: 24.396308, longitude: -124.848974))
         let p2 = MKMapPoint(CLLocationCoordinate2D(latitude: 49.384358, longitude: -66.885444))
-        return MKMapRect(x: min(p1.x, p2.x),
-                         y: min(p1.y, p2.y),
-                         width: abs(p1.x - p2.x),
-                         height: abs(p1.y - p2.y))
+        return MKMapRect(
+            x: min(p1.x, p2.x),
+            y: min(p1.y, p2.y),
+            width: abs(p1.x - p2.x),
+            height: abs(p1.y - p2.y))
     }()
 
     @State private var visibleRect: MKMapRect = usBoundingBox

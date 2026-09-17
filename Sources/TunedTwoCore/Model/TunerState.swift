@@ -9,8 +9,8 @@
 //  methods, so UI-owned state is only ever mutated on the main thread.
 //
 
-import Foundation
 import Combine
+import Foundation
 import Observation
 import nrsc5
 
@@ -100,49 +100,67 @@ extension TunerState: TunerEventSink {
         case .stopped:
             isPlaying = false
             status = "Stopped"
-        case let .failed(message):
+        case .failed(let message):
             isPlaying = false
             status = "Error: \(message)"
         case .lostDevice:
             status = "Device lost"
             isPlaying = false
-        case let .syncAchieved(freqOffset, psmi, pli, hppi, aabi, rdbi):
+        case .syncAchieved(let freqOffset, let psmi, let pli, let hppi, let aabi, let rdbi):
             status = "Synchronized"
-            appendLog(LogEvent(timestamp: Date(), title: "Synchronized", description: "Frequency Offset \(freqOffset.formatted(.number.precision(.fractionLength(0)))) Hz PSMI \(psmi) PLI \(pli) HPI \(hppi) AABI \(aabi) RDBI \(rdbi)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Synchronized",
+                    description:
+                        "Frequency Offset \(freqOffset.formatted(.number.precision(.fractionLength(0)))) Hz PSMI \(psmi) PLI \(pli) HPI \(hppi) AABI \(aabi) RDBI \(rdbi)",
+                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .lostSync:
             status = "Lost sync"
-        case let .mer(lower, upper):
+        case .mer(let lower, let upper):
             merLower = lower
             merUpper = upper
-        case let .ber(cber):
+        case .ber(let cber):
             ber = cber
-        case let .hdc(_, size, _):
+        case .hdc(_, let size, _):
             byteCount += size
             receiveCount += 1
             if receiveCount >= 32 || bitsPerSecond == 0 {
-                bitsPerSecond = byteCount * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES) / receiveCount;
+                bitsPerSecond =
+                    byteCount * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES) / receiveCount
                 byteCount = 0
                 receiveCount = 0
             }
-        case let .stationName(name):
+        case .stationName(let name):
             stationName = name
-            appendLog(LogEvent(timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case let .stationSlogan(slogan):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill",
+                    tintColor: .blue))
+        case .stationSlogan(let slogan):
             stationSlogan = slogan
-            appendLog(LogEvent(timestamp: Date(), title: "Station Slogan", description: slogan, systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case let .stationMessage(message):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Station Slogan", description: slogan,
+                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .stationMessage(let message):
             stationMessage = message
-            appendLog(LogEvent(timestamp: Date(), title: "Station Message", description: message, systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case let .stationID(countryCode, fccFacilityID):
-            appendLog(LogEvent(timestamp: Date(), title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case let .stationLocation(_, _, _):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Station Message", description: message,
+                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .stationID(let countryCode, let fccFacilityID):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)",
+                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .stationLocation(_, _, _):
             break
-        case let .id3(_, newTitle, newArtist, newAlbum, newGenre):
+        case .id3(_, let newTitle, let newArtist, let newAlbum, let newGenre):
             title = newTitle
             artist = newArtist
             album = newAlbum
             genre = newGenre
-        case let .lot(id, mime, name, data, _, service, component):
+        case .lot(let id, let mime, let name, let data, _, let service, let component):
             let isImage = mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG
             if isImage {
                 latestImageData = data
@@ -178,46 +196,101 @@ extension TunerState: TunerEventSink {
                 }
             }
 
-            let serviceDesc = service.map { "type=\($0.type) #\($0.number) \($0.name) (\($0.components.count) components)" } ?? "None"
+            let serviceDesc =
+                service.map { "type=\($0.type) #\($0.number) \($0.name) (\($0.components.count) components)" }
+                ?? "None"
 
             let componentDesc: String
             if let component {
                 switch component {
-                case let .data(cid, port, serviceDataType, aasType, _):
+                case .data(let cid, let port, let serviceDataType, let aasType, _):
                     componentDesc = "data id=\(cid) port=\(port) sdt=\(serviceDataType) aas=\(aasType)"
-                case let .audio(cid, port, programType, _):
+                case .audio(let cid, let port, let programType, _):
                     componentDesc = "audio id=\(cid) port=\(port) programType=\(programType)"
-                case let .unknown(cid):
+                case .unknown(let cid):
                     componentDesc = "unknown id=\(cid)"
                 }
             } else {
                 componentDesc = "None"
             }
 
-            appendLog(LogEvent(timestamp: Date(), title: "LOT File", description: "ID: \(id), File: \(name), Size: \(data.count), MIME: \(mimeName), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case let .agc(gainDB, peakDBFS, isFinal):
-            appendLog(LogEvent(timestamp: Date(), title: "AGC", description: "Gain \(String(format: "%.1f", gainDB)) dB, Peak \(String(format: "%.1f", peakDBFS)) dBFS, Final \(isFinal)", systemImage: "chart.line.uptrend.xyaxis", tintColor: .orange))
-        case let .audioService(program, access, type, codecMode, blendControl, digitalAudioGain, commonDelay, latency):
-            appendLog(LogEvent(timestamp: Date(), title: "Audio Service", description: "Program \(program), Access \(access), Type \(type), Codec \(codecMode), Blend \(blendControl), Gain \(digitalAudioGain), Delay \(commonDelay), Latency \(latency)", systemImage: "speaker.wave.2.fill", tintColor: .blue))
-        case let .audioServiceDescriptor(descriptors):
-            let list = descriptors.map { "Program \($0.program), Access \($0.access), Type \($0.type), SoundExp \($0.soundExp)" }.joined(separator: "; ")
-            appendLog(LogEvent(timestamp: Date(), title: "Audio Service Descriptor", description: list, systemImage: "waveform", tintColor: .blue))
-        case let .dataServiceDescriptor(descriptors):
-            let list = descriptors.map { "Access \($0.access), Type \($0.type), MIME \(nameForNRSC5MIMEType($0.mimeType))" }.joined(separator: "; ")
-            appendLog(LogEvent(timestamp: Date(), title: "Data Service Descriptor", description: list, systemImage: "waveform", tintColor: .purple))
-        case let .exciterInfo(manufacturerID, coreVersion, coreStatus, manufacturerVersion, manufacturerStatus, importerConnected):
-            appendLog(LogEvent(timestamp: Date(), title: "Exciter Info", description: "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus)), Importer \(importerConnected)", systemImage: "antenna.radiowaves.left.and.right", tintColor: .green))
-        case let .importerInfo(manufacturerID, coreVersion, coreStatus, manufacturerVersion, manufacturerStatus):
-            appendLog(LogEvent(timestamp: Date(), title: "Importer Info", description: "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus))", systemImage: "arrow.down.circle.fill", tintColor: .green))
-        case let .leapSecondOffset(pendingOffset, currentOffset, pendingALFN):
-            appendLog(LogEvent(timestamp: Date(), title: "Leap Second Offset", description: "Pending \(pendingOffset)s, Current \(currentOffset)s, ALFN \(pendingALFN)", systemImage: "clock", tintColor: .orange))
-        case let .localTime(utcOffsetMinutes, dstRegional, dstLocal, dstSchedule):
-            appendLog(LogEvent(timestamp: Date(), title: "Local Time", description: "UTC Offset \(utcOffsetMinutes) min, Regional DST \(dstRegional), Local DST \(dstLocal), Schedule \(dstSchedule)", systemImage: "clock.badge.checkmark", tintColor: .orange))
-        case let .sig(services):
-            let list = services.map { "#\($0.number) \($0.name) (\($0.components.count) components)" }.joined(separator: ", ")
-            appendLog(LogEvent(timestamp: Date(), title: "SIG", description: "Services: \(list)", systemImage: "antenna.radiowaves.left.and.right", tintColor: .purple))
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "LOT File",
+                    description:
+                        "ID: \(id), File: \(name), Size: \(data.count), MIME: \(mimeName), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
+                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case .agc(let gainDB, let peakDBFS, let isFinal):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "AGC",
+                    description:
+                        "Gain \(String(format: "%.1f", gainDB)) dB, Peak \(String(format: "%.1f", peakDBFS)) dBFS, Final \(isFinal)",
+                    systemImage: "chart.line.uptrend.xyaxis", tintColor: .orange))
+        case .audioService(
+            let program, let access, let type, let codecMode, let blendControl, let digitalAudioGain, let commonDelay,
+            let latency):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Audio Service",
+                    description:
+                        "Program \(program), Access \(access), Type \(type), Codec \(codecMode), Blend \(blendControl), Gain \(digitalAudioGain), Delay \(commonDelay), Latency \(latency)",
+                    systemImage: "speaker.wave.2.fill", tintColor: .blue))
+        case .audioServiceDescriptor(let descriptors):
+            let list = descriptors.map {
+                "Program \($0.program), Access \($0.access), Type \($0.type), SoundExp \($0.soundExp)"
+            }.joined(separator: "; ")
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Audio Service Descriptor", description: list, systemImage: "waveform",
+                    tintColor: .blue))
+        case .dataServiceDescriptor(let descriptors):
+            let list = descriptors.map {
+                "Access \($0.access), Type \($0.type), MIME \(nameForNRSC5MIMEType($0.mimeType))"
+            }.joined(separator: "; ")
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Data Service Descriptor", description: list, systemImage: "waveform",
+                    tintColor: .purple))
+        case .exciterInfo(
+            let manufacturerID, let coreVersion, let coreStatus, let manufacturerVersion, let manufacturerStatus,
+            let importerConnected):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Exciter Info",
+                    description:
+                        "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus)), Importer \(importerConnected)",
+                    systemImage: "antenna.radiowaves.left.and.right", tintColor: .green))
+        case .importerInfo(
+            let manufacturerID, let coreVersion, let coreStatus, let manufacturerVersion, let manufacturerStatus):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Importer Info",
+                    description:
+                        "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus))",
+                    systemImage: "arrow.down.circle.fill", tintColor: .green))
+        case .leapSecondOffset(let pendingOffset, let currentOffset, let pendingALFN):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Leap Second Offset",
+                    description: "Pending \(pendingOffset)s, Current \(currentOffset)s, ALFN \(pendingALFN)",
+                    systemImage: "clock", tintColor: .orange))
+        case .localTime(let utcOffsetMinutes, let dstRegional, let dstLocal, let dstSchedule):
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "Local Time",
+                    description:
+                        "UTC Offset \(utcOffsetMinutes) min, Regional DST \(dstRegional), Local DST \(dstLocal), Schedule \(dstSchedule)",
+                    systemImage: "clock.badge.checkmark", tintColor: .orange))
+        case .sig(let services):
+            let list = services.map { "#\($0.number) \($0.name) (\($0.components.count) components)" }.joined(
+                separator: ", ")
+            appendLog(
+                LogEvent(
+                    timestamp: Date(), title: "SIG", description: "Services: \(list)",
+                    systemImage: "antenna.radiowaves.left.and.right", tintColor: .purple))
         case .audio:
-            break // Consumed inside TunerSession; never reaches the UI.
+            break  // Consumed inside TunerSession; never reaches the UI.
         default:
             // Newly-added nrsc5 events are forwarded to the sink but not
             // yet displayed in the UI.
@@ -229,23 +302,23 @@ extension TunerState: TunerEventSink {
 // MARK: - Logging helpers
 
 @MainActor
-private extension TunerState {
+extension TunerState {
     /// Accumulates an event count. Counts are batched and only flushed to the
     /// observable `eventCounts` while the log view is visible, to avoid SwiftUI
     /// redraws for every event.
-    func recordEventCount(_ name: String) {
+    fileprivate func recordEventCount(_ name: String) {
         pendingEventCounts[name, default: 0] += 1
         scheduleLogFlushIfVisible()
     }
 
     /// Buffers a log entry. Entries are always captured, but are only flushed to
     /// the observable `logEntries` while the log view is visible.
-    func appendLog(_ event: LogEvent) {
+    fileprivate func appendLog(_ event: LogEvent) {
         pendingLogEntries.append(event)
         scheduleLogFlushIfVisible()
     }
 
-    func scheduleLogFlushIfVisible() {
+    fileprivate func scheduleLogFlushIfVisible() {
         guard isLogsVisible, logFlushTask == nil else { return }
         logFlushTask = Task { @MainActor [self] in
             defer { logFlushTask = nil }
@@ -258,7 +331,7 @@ private extension TunerState {
         }
     }
 
-    func flushPendingLogs() {
+    fileprivate func flushPendingLogs() {
         guard isLogsVisible else { return }
 
         if !pendingEventCounts.isEmpty {

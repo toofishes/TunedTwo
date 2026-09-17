@@ -24,19 +24,25 @@ struct ArgumentParser {
         /// One-line help text.
         let help: String
 
-        static func option(_ longName: String,
-                           _ shortName: Character? = nil,
-                           _ valuePlaceholder: String,
-                           _ help: String) -> OptionSpec {
-            OptionSpec(longName: longName, shortName: shortName,
-                       takesValue: true, valuePlaceholder: valuePlaceholder, help: help)
+        static func option(
+            _ longName: String,
+            _ shortName: Character? = nil,
+            _ valuePlaceholder: String,
+            _ help: String
+        ) -> OptionSpec {
+            OptionSpec(
+                longName: longName, shortName: shortName,
+                takesValue: true, valuePlaceholder: valuePlaceholder, help: help)
         }
 
-        static func flag(_ longName: String,
-                         _ shortName: Character? = nil,
-                         _ help: String) -> OptionSpec {
-            OptionSpec(longName: longName, shortName: shortName,
-                       takesValue: false, valuePlaceholder: nil, help: help)
+        static func flag(
+            _ longName: String,
+            _ shortName: Character? = nil,
+            _ help: String
+        ) -> OptionSpec {
+            OptionSpec(
+                longName: longName, shortName: shortName,
+                takesValue: false, valuePlaceholder: nil, help: help)
         }
     }
 
@@ -69,9 +75,11 @@ struct ArgumentParser {
 
     // MARK: - Parsing
 
-    func parse(_ arguments: [String],
-               positionalCount: ClosedRange<Int>,
-               positionalHint: String) throws -> Result {
+    func parse(
+        _ arguments: [String],
+        positionalCount: ClosedRange<Int>,
+        positionalHint: String
+    ) throws -> Result {
         var values: [String: String] = [:]
         var positional: [String] = []
         var index = 0

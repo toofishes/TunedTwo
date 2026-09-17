@@ -6,8 +6,8 @@
 //  single composite image.
 //
 
-import Foundation
 import CoreGraphics
+import Foundation
 import ImageIO
 
 /// Parsed parts of a TMT filename: `TMT_{provider}_{row}_{col}_{date}_{time}_{hex}.png`
@@ -121,10 +121,11 @@ public struct TrafficMap {
         var dateComponents = DateComponents(calendar: Calendar.utc)
 
         guard let year = Int(dateString.prefix(4)),
-              let month = Int(dateString.dropFirst(4).prefix(2)),
-              let day = Int(dateString.dropFirst(6).prefix(2)),
-              let hour = Int(timeString.prefix(2)),
-              let minute = Int(timeString.dropFirst(2).prefix(2)) else {
+            let month = Int(dateString.dropFirst(4).prefix(2)),
+            let day = Int(dateString.dropFirst(6).prefix(2)),
+            let hour = Int(timeString.prefix(2)),
+            let minute = Int(timeString.dropFirst(2).prefix(2))
+        else {
             return nil
         }
 
@@ -149,7 +150,8 @@ public struct TrafficMap {
     @discardableResult
     public mutating func processConfigFile(data: [UInt8]) -> TrafficMapIngestOutcome {
         guard let text = String(bytes: data, encoding: .utf8),
-              let newConfig = try? TTNSTMTrafficConfigParser.parse(text) else {
+            let newConfig = try? TTNSTMTrafficConfigParser.parse(text)
+        else {
             return .invalidConfig
         }
 
@@ -167,7 +169,8 @@ public struct TrafficMap {
     public mutating func processImageFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
         guard let info = Self.parseLOTName(name) else { return .notTrafficMapFile }
         guard (1...Self.rowCount).contains(info.row),
-              (1...Self.columnCount).contains(info.column) else { return .outOfGrid }
+            (1...Self.columnCount).contains(info.column)
+        else { return .outOfGrid }
         guard let source = CGImageSourceCreateWithData(Data(data) as CFData, nil) else { return .undecodableImage }
         guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
 
@@ -178,8 +181,9 @@ public struct TrafficMap {
 
         let index = (info.row - 1) * Self.columnCount + (info.column - 1)
         if let existing = tiles[index], existing.info.timestamp > info.timestamp {
-            return .ignoredStale(existingTimestamp: existing.info.timestamp,
-                                 incomingTimestamp: info.timestamp)
+            return .ignoredStale(
+                existingTimestamp: existing.info.timestamp,
+                incomingTimestamp: info.timestamp)
         }
 
         tiles[index] = TrafficMapTile(info: info, image: image)
@@ -213,23 +217,27 @@ public struct TrafficMap {
         let width = Int(cellWidth * CGFloat(Self.columnCount))
         let height = Int(cellHeight * CGFloat(Self.rowCount))
 
-        guard let context = CGContext(data: nil,
-                                      width: width,
-                                      height: height,
-                                      bitsPerComponent: 8,
-                                      bytesPerRow: 0,
-                                      space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+        guard
+            let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else {
             return nil
         }
 
         // Background fill for missing tiles. Override with the config color
         // when one is available, otherwise fall back to the default.
         let background = config?.backgroundRGBColor ?? Self.defaultBackgroundColor
-        context.setFillColor(red: CGFloat(background.red) / 255.0,
-                             green: CGFloat(background.green) / 255.0,
-                             blue: CGFloat(background.blue) / 255.0,
-                             alpha: 1.0)
+        context.setFillColor(
+            red: CGFloat(background.red) / 255.0,
+            green: CGFloat(background.green) / 255.0,
+            blue: CGFloat(background.blue) / 255.0,
+            alpha: 1.0)
         context.fill(CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
 
         // CGBitmapContext user space has its origin at the lower-left, so
@@ -238,10 +246,11 @@ public struct TrafficMap {
         for row in 0..<Self.rowCount {
             for column in 0..<Self.columnCount {
                 guard let tile = tiles[row * Self.columnCount + column] else { continue }
-                let rect = CGRect(x: CGFloat(column) * cellWidth,
-                                  y: CGFloat(Self.rowCount - 1 - row) * cellHeight,
-                                  width: cellWidth,
-                                  height: cellHeight)
+                let rect = CGRect(
+                    x: CGFloat(column) * cellWidth,
+                    y: CGFloat(Self.rowCount - 1 - row) * cellHeight,
+                    width: cellWidth,
+                    height: cellHeight)
                 context.draw(tile.image, in: rect)
             }
         }

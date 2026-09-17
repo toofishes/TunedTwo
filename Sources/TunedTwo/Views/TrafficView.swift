@@ -21,7 +21,7 @@ struct TrafficView: View {
             Text(updated)
         }
     }
-    
+
     var updated: String {
         guard let ts = map.maximumTimestamp() else { return "No Traffic Data" }
         let formattedTs = ts.formatted(date: .numeric, time: .shortened)

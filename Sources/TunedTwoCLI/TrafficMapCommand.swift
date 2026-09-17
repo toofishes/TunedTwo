@@ -10,22 +10,26 @@
 //  stdout stays pipeable.
 //
 
-import Foundation
 import CoreGraphics
+import Foundation
 import TunedTwoCore
 
 struct TrafficMapCommand: CLICommand {
     static let name = "traffic-map"
     static let abstract = "Stitch traffic-map tiles (TMT PNGs) into one composite image."
-    static let usageLine = "usage: \(CLI.programName) traffic-map <directory> [--output <file|->] [--provider <id>] [--verbose]"
+    static let usageLine =
+        "usage: \(CLI.programName) traffic-map <directory> [--output <file|->] [--provider <id>] [--verbose]"
 
     private let parser = ArgumentParser(specs: [
-        .option("output", "o", "FILE",
-                "Write the composite PNG to FILE ('-' for stdout, the default)."),
-        .option("provider", nil, "ID",
-                "Only ingest tiles whose provider ID matches (e.g. 035apk)."),
-        .flag("verbose", "v",
-              "Report every file considered: stored, stale, skipped, or rejected.")
+        .option(
+            "output", "o", "FILE",
+            "Write the composite PNG to FILE ('-' for stdout, the default)."),
+        .option(
+            "provider", nil, "ID",
+            "Only ingest tiles whose provider ID matches (e.g. 035apk)."),
+        .flag(
+            "verbose", "v",
+            "Report every file considered: stored, stale, skipped, or rejected."),
     ])
 
     func run(arguments: [String]) async throws -> Int32 {
@@ -34,9 +38,10 @@ struct TrafficMapCommand: CLICommand {
             return 0
         }
 
-        let parsed = try parser.parse(arguments,
-                                       positionalCount: 1...1,
-                                       positionalHint: "<directory>")
+        let parsed = try parser.parse(
+            arguments,
+            positionalCount: 1...1,
+            positionalHint: "<directory>")
         let verbose = parsed.isSet("verbose")
         let providerFilter = parsed.value("provider")
         let output = OutputDestination(path: parsed.value("output") ?? "-")
@@ -72,8 +77,9 @@ struct TrafficMapCommand: CLICommand {
 
         let stats = ingester.stats
         if stats.stored == 0 {
-            throw RuntimeError("no tiles could be stored (stored: 0, stale: \(stats.stale), "
-                               + "undecodable: \(stats.undecodable), out of grid: \(stats.outOfGrid))")
+            throw RuntimeError(
+                "no tiles could be stored (stored: 0, stale: \(stats.stale), "
+                    + "undecodable: \(stats.undecodable), out of grid: \(stats.outOfGrid))")
         }
 
         guard let composite = map.composite else {
@@ -86,10 +92,11 @@ struct TrafficMapCommand: CLICommand {
         // One-line summary on stderr: the smoke-test heartbeat.
         let target = output.description
         let provider = map.provider ?? "?"
-        fputs("traffic-map: \(stats.stored) tiles stored "
-              + "(\(stats.stale) stale, \(stats.undecodable) undecodable, \(stats.outOfGrid) out of grid, "
-              + "\(stats.skipped) skipped), provider=\(provider), "
-              + "composite \(composite.width)x\(composite.height) -> \(target)\n", stderr)
+        fputs(
+            "traffic-map: \(stats.stored) tiles stored "
+                + "(\(stats.stale) stale, \(stats.undecodable) undecodable, \(stats.outOfGrid) out of grid, "
+                + "\(stats.skipped) skipped), provider=\(provider), "
+                + "composite \(composite.width)x\(composite.height) -> \(target)\n", stderr)
 
         return 0
     }
@@ -109,7 +116,8 @@ struct TrafficMapCommand: CLICommand {
     private func listFiles(in directory: URL) throws -> [URL] {
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: directory.path, isDirectory: &isDirectory),
-              isDirectory.boolValue else {
+            isDirectory.boolValue
+        else {
             throw UsageError("'\(directory.path)' is not a directory")
         }
 
@@ -124,10 +132,12 @@ struct TrafficMapCommand: CLICommand {
     }
 
     /// Ingest any TMI text config files found in the directory.
-    private func ingestConfigFiles(_ files: [URL],
-                                   into map: inout TrafficMap,
-                                   ingester: inout Ingester,
-                                   verbose: Bool) throws {
+    private func ingestConfigFiles(
+        _ files: [URL],
+        into map: inout TrafficMap,
+        ingester: inout Ingester,
+        verbose: Bool
+    ) throws {
         for url in files {
             let fileName = url.lastPathComponent
             let lotName = Self.stripNumericPrefix(fileName)
@@ -140,9 +150,11 @@ struct TrafficMapCommand: CLICommand {
 
     /// Parse filenames and apply the provider filter. A leading numeric
     /// sequence prefix (as in `304_TMT_...`) is stripped before parsing.
-    private func collectCandidates(_ files: [URL],
-                                   providerFilter: String?,
-                                   verbose: Bool) -> [Candidate] {
+    private func collectCandidates(
+        _ files: [URL],
+        providerFilter: String?,
+        verbose: Bool
+    ) -> [Candidate] {
         var candidates: [Candidate] = []
         var skipped = 0
         var providers: [String: Int] = [:]
@@ -182,8 +194,9 @@ struct TrafficMapCommand: CLICommand {
             let summary = providers.sorted { $0.value > $1.value }
                 .map { "\($0.key) (\($0.value) files)" }
                 .joined(separator: ", ")
-            fputs("traffic-map: warning: multiple providers found: \(summary). "
-                  + "The last provider processed wins; use --provider <id> to pin one.\n", stderr)
+            fputs(
+                "traffic-map: warning: multiple providers found: \(summary). "
+                    + "The last provider processed wins; use --provider <id> to pin one.\n", stderr)
         }
 
         return candidates
@@ -191,7 +204,8 @@ struct TrafficMapCommand: CLICommand {
 
     private static func stripNumericPrefix(_ fileName: String) -> String {
         guard let underscore = fileName.firstIndex(of: "_"),
-              underscore > fileName.startIndex else { return fileName }
+            underscore > fileName.startIndex
+        else { return fileName }
         let prefix = fileName[fileName.startIndex..<underscore]
         return prefix.allSatisfy(\.isNumber) ? String(fileName[fileName.index(after: underscore)...]) : fileName
     }
@@ -225,19 +239,23 @@ struct TrafficMapCommand: CLICommand {
                 if verbose {
                     report(candidate, "stored at row \(candidate.info.row), column \(candidate.info.column)")
                 }
-            case let .ignoredStale(existing, incoming):
+            case .ignoredStale(let existing, let incoming):
                 stats.stale += 1
                 if verbose {
-                    report(candidate, "ignored stale (existing \(timestampFormatter.string(from: existing)) "
-                           + "> incoming \(timestampFormatter.string(from: incoming)))")
+                    report(
+                        candidate,
+                        "ignored stale (existing \(timestampFormatter.string(from: existing)) "
+                            + "> incoming \(timestampFormatter.string(from: incoming)))")
                 }
             case .undecodableImage:
                 stats.undecodable += 1
                 reportAlways(candidate, "image bytes could not be decoded")
             case .outOfGrid:
                 stats.outOfGrid += 1
-                reportAlways(candidate, "row/column outside the 3x3 grid "
-                           + "(row \(candidate.info.row), column \(candidate.info.column))")
+                reportAlways(
+                    candidate,
+                    "row/column outside the 3x3 grid "
+                        + "(row \(candidate.info.row), column \(candidate.info.column))")
             case .notTrafficMapFile, .storedConfig, .invalidConfig:
                 // Already filtered during collection; counted as skipped.
                 stats.skipped += 1
