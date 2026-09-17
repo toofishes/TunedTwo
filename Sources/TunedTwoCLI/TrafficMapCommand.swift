@@ -10,43 +10,41 @@
 //  stdout stays pipeable.
 //
 
+import ArgumentParser
 import CoreGraphics
 import Foundation
 import TunedTwoCore
 
-struct TrafficMapCommand: CLICommand {
-    static let name = "traffic-map"
-    static let abstract = "Stitch traffic-map tiles (TMT PNGs) into one composite image."
-    static let usageLine =
-        "usage: \(CLI.programName) traffic-map <directory> [--output <file|->] [--provider <id>] [--verbose]"
+struct TrafficMapCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "traffic-map",
+        abstract: "Stitch traffic-map tiles (TMT PNGs) into one composite image."
+    )
 
-    private let parser = ArgumentParser(specs: [
-        .option(
-            "output", "o", "FILE",
-            "Write the composite PNG to FILE ('-' for stdout, the default)."),
-        .option(
-            "provider", nil, "ID",
-            "Only ingest tiles whose provider ID matches (e.g. 035apk)."),
-        .flag(
-            "verbose", "v",
-            "Report every file considered: stored, stale, skipped, or rejected."),
-    ])
+    @Argument(help: "Directory containing TMT_*.png traffic-map tiles.")
+    var directory: String
 
-    func run(arguments: [String]) async throws -> Int32 {
-        if arguments.contains("--help") || arguments.contains("-h") {
-            printHelp()
-            return 0
+    @Option(name: [.short, .long], help: "Write the composite PNG to FILE ('-' for stdout).")
+    var output: String = "-"
+
+    @Option(help: "Only ingest tiles whose provider ID matches (e.g. 035apk).")
+    var provider: String?
+
+    @Flag(name: [.short, .long], help: "Report every file considered: stored, stale, skipped, or rejected.")
+    var verbose = false
+
+    func validate() throws {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: directory, isDirectory: &isDirectory),
+            isDirectory.boolValue
+        else {
+            throw ValidationError("'\(directory)' is not a directory")
         }
+    }
 
-        let parsed = try parser.parse(
-            arguments,
-            positionalCount: 1...1,
-            positionalHint: "<directory>")
-        let verbose = parsed.isSet("verbose")
-        let providerFilter = parsed.value("provider")
-        let output = OutputDestination(path: parsed.value("output") ?? "-")
-
-        let directoryURL = URL(fileURLWithPath: parsed.positional[0], isDirectory: true)
+    mutating func run() throws {
+        let outputDestination = OutputDestination(path: output)
+        let directoryURL = URL(fileURLWithPath: directory, isDirectory: true)
         let files = try listFiles(in: directoryURL)
 
         var map = TrafficMap()
@@ -56,7 +54,7 @@ struct TrafficMapCommand: CLICommand {
         var ingester = Ingester(verbose: verbose)
         try ingestConfigFiles(files, into: &map, ingester: &ingester, verbose: verbose)
 
-        let candidates = collectCandidates(files, providerFilter: providerFilter, verbose: verbose)
+        let candidates = collectCandidates(files, providerFilter: provider, verbose: verbose)
 
         guard !candidates.isEmpty else {
             throw RuntimeError("no TMT traffic-map files found in '\(directoryURL.path)'")
@@ -87,18 +85,16 @@ struct TrafficMapCommand: CLICommand {
         }
 
         let png = try PNGEncoder.encode(composite)
-        try PNGEncoder.write(png, to: output)
+        try PNGEncoder.write(png, to: outputDestination)
 
         // One-line summary on stderr: the smoke-test heartbeat.
-        let target = output.description
+        let target = outputDestination.description
         let provider = map.provider ?? "?"
         fputs(
             "traffic-map: \(stats.stored) tiles stored "
                 + "(\(stats.stale) stale, \(stats.undecodable) undecodable, \(stats.outOfGrid) out of grid, "
                 + "\(stats.skipped) skipped), provider=\(provider), "
                 + "composite \(composite.width)x\(composite.height) -> \(target)\n", stderr)
-
-        return 0
     }
 
     // MARK: - Directory scan
@@ -114,13 +110,6 @@ struct TrafficMapCommand: CLICommand {
 
     /// Enumerate regular files in the directory.
     private func listFiles(in directory: URL) throws -> [URL] {
-        var isDirectory: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: directory.path, isDirectory: &isDirectory),
-            isDirectory.boolValue
-        else {
-            throw UsageError("'\(directory.path)' is not a directory")
-        }
-
         let contents = try FileManager.default.contentsOfDirectory(
             at: directory,
             includingPropertiesForKeys: nil)
@@ -285,26 +274,5 @@ struct TrafficMapCommand: CLICommand {
         private func reportAlways(_ candidate: Candidate, _ detail: String) {
             fputs("traffic-map: warning: \(candidate.fileName): \(detail)\n", stderr)
         }
-    }
-
-    // MARK: - Help
-
-    private func printHelp() {
-        var text = "\(Self.abstract)\n\n\(Self.usageLine)\n\n"
-        text += parser.helpLines.joined(separator: "\n")
-        text += "\n\nTiles are parsed as TMT_{provider}_{row}_{col}_{date}_{time}_{hex}.png "
-        text += "(row 1 = top, column 1 = left). Tiles are applied oldest-first, "
-        text += "and a tile only replaces an existing one when its timestamp is "
-        text += "greater than or equal. Exit codes: 0 ok, 1 usage error, 2 no tiles or write failure.\n"
-        fputs(text, stderr)
-    }
-}
-
-/// A processing failure that is not the user's fault; exits with code 2.
-struct RuntimeError: LocalizedError {
-    let errorDescription: String?
-
-    init(_ description: String) {
-        self.errorDescription = description
     }
 }

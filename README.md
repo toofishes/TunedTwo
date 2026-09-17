@@ -99,7 +99,7 @@ Behavior notes:
 
 - Tiles are `TMT_{provider}_{row}_{col}_{date}_{time}_{hex}.png` — **row 1 is the top, column 1 is the left** (so `3_1` is the lower-left tile). A leading numeric prefix (as in `304_TMT_...`) is stripped.
 - Tiles are applied oldest-first; a tile only replaces a stored one when its timestamp is greater than or equal. A tile from a new provider resets the map.
-- stdout carries only the PNG (default destination); all reporting goes to stderr. Exit codes: 0 ok, 1 usage error, 2 no tiles or write failure.
+- stdout carries only the PNG (default destination); all reporting goes to stderr. Exit codes: 0 ok, 64 usage error (standard `EX_USAGE`), 2 no tiles or write failure.
 
 Run `tunedtwo-cli --help` or `tunedtwo-cli traffic-map --help` for details.
 

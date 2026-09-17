@@ -1,6 +1,10 @@
 name: TunedTwo
 attributes:
   LastUpgradeCheck: "2660"
+packages:
+  swift-argument-parser:
+    url: https://github.com/apple/swift-argument-parser
+    from: 1.5.0
 options:
   bundleIdPrefix: io.tunedtwo
   deploymentTarget:
@@ -9,6 +13,7 @@ options:
   defaultConfig: Debug
   developmentLanguage: en
   groupSortPosition: top
+  defaultSourceDirectoryType: syncedFolder
 settings:
   MARKETING_VERSION: "0.1.0"
   CURRENT_PROJECT_VERSION: "1"
@@ -104,6 +109,8 @@ targets:
     dependencies:
       - target: TunedTwoCore
         embed: true
+      - package: swift-argument-parser
+        product: ArgumentParser
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.tunedtwo-cli

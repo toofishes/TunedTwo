@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1708D7E166216B25FBCF587E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 29F8DA4DDDE7837B438D915E /* ArgumentParser */; };
 		18FF19175FBD475C4871D4BA /* TunedTwoCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; };
 		1C16F982482BC9C3C2719B68 /* TunedTwoCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; };
 		3542081607162BF2629BED51 /* TunedTwoCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -77,70 +78,58 @@
 
 /* Begin PBXFileReference section */
 		095A6FC05DBFD8042A5B9350 /* TunedTwo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TunedTwo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		133752B5A74A306027F74D9A /* tunedtwo-cli */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = "tunedtwo-cli"; sourceTree = BUILT_PRODUCTS_DIR; };
+		133752B5A74A306027F74D9A /* tunedtwo-cli */ = {isa = PBXFileReference; includeInIndex = 0; path = "tunedtwo-cli"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5731CBB48B8C3B63621F311B /* TunedTwoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TunedTwoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B641508074556027BFC0A5C /* TunedTwoCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TunedTwoCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C1A05150305B28A400577FA5 /* Exceptions for "Sources" folder in "TunedTwoCore" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				TunedTwo/TunedTwoApp.swift,
-				TunedTwo/Views/ByteImageView.swift,
-				TunedTwo/Views/ContentView.swift,
-				TunedTwo/Views/EventLogView.swift,
-				TunedTwo/Views/TrafficView.swift,
-				TunedTwo/Views/WeatherView.swift,
-				TunedTwoCLI/ArgumentParser.swift,
-				TunedTwoCLI/CLI.swift,
-				TunedTwoCLI/PNGOutput.swift,
-				TunedTwoCLI/TrafficMapCommand.swift,
-			);
-			target = AFF6F4DC248CEA95FE29B326 /* TunedTwoCore */;
-		};
-		C1A05151305B28A400577FA5 /* Exceptions for "Sources" folder in "TunedTwo" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				TunedTwo/TunedTwoApp.swift,
-				TunedTwo/Views/ByteImageView.swift,
-				TunedTwo/Views/ContentView.swift,
-				TunedTwo/Views/EventLogView.swift,
-				TunedTwo/Views/TrafficView.swift,
-				TunedTwo/Views/WeatherView.swift,
-			);
-			target = C217569EDF9D1B057F5FAC46 /* TunedTwo */;
-		};
-		C1A05152305B28A400577FA5 /* Exceptions for "Sources" folder in "tunedtwo-cli" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				TunedTwoCLI/ArgumentParser.swift,
-				TunedTwoCLI/CLI.swift,
-				TunedTwoCLI/PNGOutput.swift,
-				TunedTwoCLI/TrafficMapCommand.swift,
-			);
-			target = 98205FDF6F06344890335A0E /* tunedtwo-cli */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C1A0507F305B285400577FA5 /* Tests */ = {
+		6BDB84486AE14C5F6C9F6BA7 /* TunedTwoCore */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Tests;
-			sourceTree = "<group>";
-		};
-		C1A0512F305B28A300577FA5 /* Sources */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C1A05150305B28A400577FA5 /* Exceptions for "Sources" folder in "TunedTwoCore" target */,
-				C1A05151305B28A400577FA5 /* Exceptions for "Sources" folder in "TunedTwo" target */,
-				C1A05152305B28A400577FA5 /* Exceptions for "Sources" folder in "tunedtwo-cli" target */,
+			explicitFileTypes = {
+			};
+			explicitFolders = (
 			);
-			path = Sources;
+			name = TunedTwoCore;
+			path = TunedTwoCore;
 			sourceTree = "<group>";
 		};
-		C1DB0263305B22D500C37D92 /* Resources */ = {
+		7C755EF349908B6C6257AFC1 /* TunedTwo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			name = TunedTwo;
+			path = TunedTwo;
+			sourceTree = "<group>";
+		};
+		7C8F2B487C50F4B733946083 /* TunedTwoCLI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			name = TunedTwoCLI;
+			path = TunedTwoCLI;
+			sourceTree = "<group>";
+		};
+		C14AEEACABF2FC4EB39A1F2A /* TunedTwoTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			name = TunedTwoTests;
+			path = TunedTwoTests;
+			sourceTree = "<group>";
+		};
+		C34D3EDA9AECBE617641FD42 /* Resources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
 			path = Resources;
 			sourceTree = "<group>";
 		};
@@ -152,6 +141,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				718408AA5CF43FDF9B0CE44A /* TunedTwoCore.framework in Frameworks */,
+				1708D7E166216B25FBCF587E /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,12 +164,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0C7BE9BAA7D114ADB9DE90EE /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				7C755EF349908B6C6257AFC1 /* TunedTwo */,
+				7C8F2B487C50F4B733946083 /* TunedTwoCLI */,
+				6BDB84486AE14C5F6C9F6BA7 /* TunedTwoCore */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		3928A950F79A892FB9BAAC1F /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				C14AEEACABF2FC4EB39A1F2A /* TunedTwoTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
 		4E1B32937EDFF8D9904015CC = {
 			isa = PBXGroup;
 			children = (
-				C1DB0263305B22D500C37D92 /* Resources */,
-				C1A0512F305B28A300577FA5 /* Sources */,
-				C1A0507F305B285400577FA5 /* Tests */,
+				C34D3EDA9AECBE617641FD42 /* Resources */,
+				0C7BE9BAA7D114ADB9DE90EE /* Sources */,
+				3928A950F79A892FB9BAAC1F /* Tests */,
 				570E5FABF70267A883DE5542 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -203,6 +211,7 @@
 			buildConfigurationList = EF1D844F7D3B0B1215155E6A /* Build configuration list for PBXNativeTarget "tunedtwo-cli" */;
 			buildPhases = (
 				6585063EB52C176305AD4830 /* Sources */,
+				CC31063D5274EF6BEC462DC8 /* Resources */,
 				2520681941675291825C3A05 /* Frameworks */,
 				0769BF75064C48B875624F45 /* Embed Frameworks */,
 			);
@@ -211,8 +220,12 @@
 			dependencies = (
 				7A5E94D6CAC133E4ECE1EAE9 /* PBXTargetDependency */,
 			);
+			fileSystemSynchronizedGroups = (
+				7C8F2B487C50F4B733946083 /* TunedTwoCLI */,
+			);
 			name = "tunedtwo-cli";
 			packageProductDependencies = (
+				29F8DA4DDDE7837B438D915E /* ArgumentParser */,
 			);
 			productName = "tunedtwo-cli";
 			productReference = 133752B5A74A306027F74D9A /* tunedtwo-cli */;
@@ -224,6 +237,7 @@
 			buildPhases = (
 				38EADEAB18D1F19BF60CCB6B /* Build libnrsc5 */,
 				A6E1F42A202224538E31D7B5 /* Sources */,
+				9B8975219DF5428EB51BAF9B /* Resources */,
 				1578B3C409C501A6F13B240C /* Embed libnrsc5 */,
 			);
 			buildRules = (
@@ -231,7 +245,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				C1A0512F305B28A300577FA5 /* Sources */,
+				6BDB84486AE14C5F6C9F6BA7 /* TunedTwoCore */,
 			);
 			name = TunedTwoCore;
 			packageProductDependencies = (
@@ -256,7 +270,8 @@
 				30694E28CF44193B4FECAA2D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				C1DB0263305B22D500C37D92 /* Resources */,
+				C34D3EDA9AECBE617641FD42 /* Resources */,
+				7C755EF349908B6C6257AFC1 /* TunedTwo */,
 			);
 			name = TunedTwo;
 			packageProductDependencies = (
@@ -270,6 +285,7 @@
 			buildConfigurationList = 3BF62C78E43934B35B398CC0 /* Build configuration list for PBXNativeTarget "TunedTwoTests" */;
 			buildPhases = (
 				2460878D9B36F6525A965567 /* Sources */,
+				7F6CF1E5C1197D5928C35F52 /* Resources */,
 				7339F4828D999B48697CFDBB /* Frameworks */,
 				E60961E9CC31968BB1E0FFCB /* Embed Frameworks */,
 			);
@@ -279,7 +295,7 @@
 				DF0A6DF5541834D3D21043DB /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				C1A0507F305B285400577FA5 /* Tests */,
+				C14AEEACABF2FC4EB39A1F2A /* TunedTwoTests */,
 			);
 			name = TunedTwoTests;
 			packageProductDependencies = (
@@ -320,6 +336,9 @@
 			);
 			mainGroup = 4E1B32937EDFF8D9904015CC;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 570E5FABF70267A883DE5542 /* Products */;
 			projectDirPath = "";
@@ -334,6 +353,27 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7F6CF1E5C1197D5928C35F52 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B8975219DF5428EB51BAF9B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CC31063D5274EF6BEC462DC8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D0124B8C3717D38F5C34569B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -794,6 +834,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-argument-parser";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		29F8DA4DDDE7837B438D915E /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CFA5C02AC7F02CFC776B321C /* Project object */;
 }
