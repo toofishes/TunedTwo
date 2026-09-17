@@ -15,46 +15,30 @@ import nrsc5
 /// their hex representation.
 public func nameForNRSC5MIMEType(_ mime: UInt32) -> String {
     let hex = String(format: "0x%08X", mime)
-
-    if mime == NRSC5_MIME_PRIMARY_IMAGE {
-        return "Primary Image (\(hex))"
-    } else if mime == NRSC5_MIME_STATION_LOGO {
-        return "Station Logo (\(hex))"
-    } else if mime == NRSC5_MIME_NAVTEQ {
-        return "NAVTEQ (\(hex))"
-    } else if mime == NRSC5_MIME_HERE_TPEG {
-        return "HERE TPEG (\(hex))"
-    } else if mime == NRSC5_MIME_HERE_IMAGE {
-        return "HERE Image (\(hex))"
-    } else if mime == NRSC5_MIME_HD_TMC {
-        return "HD TMC (\(hex))"
-    } else if mime == NRSC5_MIME_HDC {
-        return "HDC Audio (\(hex))"
-    } else if mime == NRSC5_MIME_TEXT {
-        return "Text (\(hex))"
-    } else if mime == NRSC5_MIME_JPEG {
-        return "JPEG (\(hex))"
-    } else if mime == NRSC5_MIME_PNG {
-        return "PNG (\(hex))"
-    } else if mime == NRSC5_MIME_TTN_TPEG_1 {
-        return "TTN TPEG 1 (\(hex))"
-    } else if mime == NRSC5_MIME_TTN_TPEG_2 {
-        return "TTN TPEG 2 (\(hex))"
-    } else if mime == NRSC5_MIME_TTN_TPEG_3 {
-        return "TTN TPEG 3 (\(hex))"
-    } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
-        return "TTN STM Traffic (\(hex))"
-    } else if mime == NRSC5_MIME_TTN_STM_WEATHER {
-        return "TTN STM Weather (\(hex))"
-    } else if mime == NRSC5_MIME_UNKNOWN_00000000 {
-        return "Unknown (\(hex))"
-    } else if mime == NRSC5_MIME_UNKNOWN_1C7D0E29 {
-        return "Unknown (\(hex))"
-    } else if mime == NRSC5_MIME_UNKNOWN_B81FFAA8 {
-        return "Unknown (\(hex))"
-    } else if mime == NRSC5_MIME_UNKNOWN_FFFFFFFF {
-        return "Unknown (\(hex))"
+    if let name = nrsc5MimeNames[mime] {
+        return "\(name) (\(hex))"
     }
-
     return "Unknown (\(hex))"
 }
+
+private let nrsc5MimeNames: [UInt32: String] = [
+    NRSC5_MIME_PRIMARY_IMAGE: "PrimaryImage",
+    NRSC5_MIME_STATION_LOGO: "Station Logo",
+    UInt32(NRSC5_MIME_NAVTEQ): "NAVTEQ",
+    NRSC5_MIME_HERE_TPEG: "HERE TPEG",
+    NRSC5_MIME_HERE_IMAGE: "HERE Image",
+    NRSC5_MIME_HD_TMC: "HD TMC",
+    UInt32(NRSC5_MIME_HDC): "HDC Audio",
+    NRSC5_MIME_TEXT: "Text",
+    UInt32(NRSC5_MIME_JPEG): "JPEG",
+    UInt32(NRSC5_MIME_PNG): "PNG",
+    NRSC5_MIME_TTN_TPEG_1: "TTN TPEG 1",
+    UInt32(NRSC5_MIME_TTN_TPEG_2): "TTN TPEG 2",
+    UInt32(NRSC5_MIME_TTN_TPEG_3): "TTN TPEG 3",
+    NRSC5_MIME_TTN_STM_TRAFFIC: "TTN STM Traffic",
+    NRSC5_MIME_TTN_STM_WEATHER: "TTN STM Weather",
+    UInt32(NRSC5_MIME_UNKNOWN_00000000): "Unknown",
+    UInt32(NRSC5_MIME_UNKNOWN_1C7D0E29): "Unknown",
+    NRSC5_MIME_UNKNOWN_B81FFAA8: "Unknown",
+    NRSC5_MIME_UNKNOWN_FFFFFFFF: "Unknown",
+]
