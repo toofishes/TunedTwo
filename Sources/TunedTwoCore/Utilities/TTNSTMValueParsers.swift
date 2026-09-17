@@ -9,7 +9,7 @@
 import Foundation
 
 /// A geographic coordinate as latitude and longitude in degrees.
-public struct TTNSTMCoordinate: Equatable, Sendable {
+public struct TTNSTMCoordinate: Equatable, Hashable, Sendable {
     public let latitude: Double
     public let longitude: Double
 
@@ -20,7 +20,7 @@ public struct TTNSTMCoordinate: Equatable, Sendable {
 }
 
 /// An RGB color with 8-bit components.
-public struct TTNSTMRGB: Equatable, Sendable {
+public struct TTNSTMRGB: Equatable, Hashable, Sendable {
     public let red: UInt8
     public let green: UInt8
     public let blue: UInt8
