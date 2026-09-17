@@ -32,7 +32,10 @@ struct ContentView: View {
                 }
 
                 Tab("Logs", systemImage: "list.bullet.rectangle") {
-                    EventLogView(events: state.logEntries)
+                    EventLogView(
+                        events: state.logEntries,
+                        eventCounts: state.eventCounts
+                    )
                 }
             }
             Divider()

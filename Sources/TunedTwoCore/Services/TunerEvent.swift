@@ -66,6 +66,45 @@ public enum TunerEvent: Sendable {
     case audio(program: Int, samples: [Int16])
 }
 
+public extension TunerEvent {
+    /// The enum case name without associated values, suitable for counters and logging.
+    var caseName: String {
+        switch self {
+        case .started: return "started"
+        case .stopped: return "stopped"
+        case .failed: return "failed"
+        case .syncAchieved: return "syncAchieved"
+        case .lostSync: return "lostSync"
+        case .lostDevice: return "lostDevice"
+        case .mer: return "mer"
+        case .ber: return "ber"
+        case .agc: return "agc"
+        case .stationName: return "stationName"
+        case .stationSlogan: return "stationSlogan"
+        case .stationMessage: return "stationMessage"
+        case .stationID: return "stationID"
+        case .stationLocation: return "stationLocation"
+        case .id3: return "id3"
+        case .audioService: return "audioService"
+        case .sig: return "sig"
+        case .audioServiceDescriptor: return "audioServiceDescriptor"
+        case .dataServiceDescriptor: return "dataServiceDescriptor"
+        case .hdc: return "hdc"
+        case .stream: return "stream"
+        case .packet: return "packet"
+        case .lot: return "lot"
+        case .lotHeader: return "lotHeader"
+        case .hereImage: return "hereImage"
+        case .emergencyAlert: return "emergencyAlert"
+        case .exciterInfo: return "exciterInfo"
+        case .importerInfo: return "importerInfo"
+        case .leapSecondOffset: return "leapSecondOffset"
+        case .localTime: return "localTime"
+        case .audio: return "audio"
+        }
+    }
+}
+
 /// A service entry from an NRSC5 SIG (Service Information Guide) table.
 public struct TunerSigService: Sendable {
     public let type: Int
