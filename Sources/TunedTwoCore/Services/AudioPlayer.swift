@@ -78,7 +78,6 @@ public final class AudioPlayer: Sendable {
 
         guard let sourceBuffer = AVAudioPCMBuffer(pcmFormat: inputFormatInt16, frameCapacity: frames) else { return }
         sourceBuffer.frameLength = frames
-        sourceBuffer.frameLength = frames
 
         samples.withUnsafeBufferPointer { srcPtr in
             if let destPtr = sourceBuffer.int16ChannelData?[0] {
