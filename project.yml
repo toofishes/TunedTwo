@@ -4,7 +4,7 @@ attributes:
 packages:
   swift-argument-parser:
     url: https://github.com/apple/swift-argument-parser
-    from: 1.5.0
+    from: 1.8.2
 options:
   bundleIdPrefix: io.tunedtwo
   deploymentTarget:
