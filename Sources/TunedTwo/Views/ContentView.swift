@@ -152,13 +152,13 @@ struct ContentView: View {
     private var nowPlaying: some View {
         HStack {
             VStack(alignment: .leading, spacing: 12) {
-                MetadataRow(label: "Title", value: state.title)
-                MetadataRow(label: "Artist", value: state.artist)
-                MetadataRow(label: "Album", value: state.album)
-                MetadataRow(label: "Genre", value: state.genre)
+                MetadataRow(label: "Title", value: state.programState.title)
+                MetadataRow(label: "Artist", value: state.programState.artist)
+                MetadataRow(label: "Album", value: state.programState.album)
+                MetadataRow(label: "Genre", value: state.programState.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageData: state.latestCoverArt)
+            ByteImageView(imageData: state.programState.latestCoverArt)
         }
     }
 
@@ -168,7 +168,7 @@ struct ContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(String(format: "%.1f kbps", Double(state.bitsPerSecond) / 1000.0))
+            Text(String(format: "%.1f kbps", Double(state.programState.bitsPerSecond) / 1000.0))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -180,7 +180,7 @@ struct ContentView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .monospacedDigit()
-            .help("\(state.crcErrors) CRC Errors")
+            .help("\(state.programState.crcErrors) CRC Errors")
         }
     }
 
@@ -244,8 +244,8 @@ struct ContentView: View {
         state.source = .sampleFile
         await startPlayback()
         try? await Task.sleep(for: .seconds(8))
-        if !state.stationName.isEmpty || !state.title.isEmpty {
-            fputs("SMOKE_OK: station='\(state.stationName)' title='\(state.title)'\n", stderr)
+        if !state.stationName.isEmpty || !state.programState.title.isEmpty {
+            fputs("SMOKE_OK: station='\(state.stationName)' title='\(state.programState.title)'\n", stderr)
         } else {
             fputs("SMOKE_FAIL: no metadata received\n", stderr)
         }

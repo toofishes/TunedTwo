@@ -11,8 +11,36 @@
 
 import Combine
 import Foundation
-import Observation
 import nrsc5
+
+public struct ProgramState {
+    public var title: String = ""
+    public var artist: String = ""
+    public var album: String = ""
+    public var genre: String = ""
+
+    private var byteCount: Int = 0
+    private var receiveCount: Int = 0
+
+    public var bitsPerSecond: Int = 0
+    public var crcErrors: Int = 0
+
+    public var latestCoverArt: Data = Data()
+
+    mutating func processHDC(size: Int, flags: UInt) {
+        byteCount += size
+        receiveCount += 1
+        if receiveCount >= 32 || bitsPerSecond == 0 {
+            bitsPerSecond =
+                byteCount * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES) / receiveCount
+            byteCount = 0
+            receiveCount = 0
+        }
+        if flags & UInt(NRSC5_PKT_FLAGS_CRC_ERROR) != 0 {
+            crcErrors += 1
+        }
+    }
+}
 
 @MainActor
 @Observable
@@ -40,20 +68,11 @@ public final class TunerState {
     public var stationSlogan: String = ""
     public var stationMessage: String = ""
 
-    public var title: String = ""
-    public var artist: String = ""
-    public var album: String = ""
-    public var genre: String = ""
+    public var programState: ProgramState = .init()
 
-    private var byteCount: Int = 0
-    private var receiveCount: Int = 0
-
-    public var bitsPerSecond: Int = 0
     public var merLower: Float = 0
     public var merUpper: Float = 0
     public var ber: Float = 0
-    public var crcErrors: Int = 0
-    //public var decodeErrors: Int = 0
 
     public var frequencyHz: Float? {
         let trimmed = frequencyMHz.trimmingCharacters(in: .whitespaces)
@@ -62,7 +81,6 @@ public final class TunerState {
     }
 
     public var latestStationImage: Data = Data()
-    public var latestCoverArt: Data = Data()
     public var traffic = TrafficMap()
     public var weather = WeatherMap()
 
@@ -123,17 +141,7 @@ extension TunerState: TunerEventSink {
         case .ber(let cber):
             ber = cber
         case .hdc(_, let size, let flags):
-            byteCount += size
-            receiveCount += 1
-            if receiveCount >= 32 || bitsPerSecond == 0 {
-                bitsPerSecond =
-                    byteCount * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES) / receiveCount
-                byteCount = 0
-                receiveCount = 0
-            }
-            if flags & UInt(NRSC5_PKT_FLAGS_CRC_ERROR) != 0 {
-                crcErrors += 1
-            }
+            programState.processHDC(size: size, flags: flags)
         case .stationName(let name):
             stationName = name
             appendLog(
@@ -160,10 +168,10 @@ extension TunerState: TunerEventSink {
         case .stationLocation(_, _, _):
             break
         case .id3(_, let newTitle, let newArtist, let newAlbum, let newGenre):
-            title = newTitle
-            artist = newArtist
-            album = newAlbum
-            genre = newGenre
+            programState.title = newTitle
+            programState.artist = newArtist
+            programState.album = newAlbum
+            programState.genre = newGenre
         case .lot(let id, let mime, let name, let data, _, let service, let component):
             let isImage = mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG
             let mimeName = nameForNRSC5MIMEType(mime)
@@ -174,7 +182,7 @@ extension TunerState: TunerEventSink {
                 case .data(_, _, _, _, let mime):
                     compMimeName = nameForNRSC5MIMEType(mime)
                     if mime == NRSC5_MIME_PRIMARY_IMAGE {
-                        latestCoverArt = data
+                        programState.latestCoverArt = data
                     } else if mime == NRSC5_MIME_STATION_LOGO {
                         latestStationImage = data
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
