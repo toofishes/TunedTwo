@@ -59,9 +59,8 @@ public final class TunerState {
         return Float(mhz * 1_000_000)
     }
 
-    public var latestStationImage: [UInt8] = []
-    public var latestCoverArt: [UInt8] = []
-    public var latestImageData: [UInt8] = []
+    public var latestStationImage: Data = Data()
+    public var latestCoverArt: Data = Data()
     public var traffic = TrafficMap()
     public var weather = WeatherMap()
 
@@ -162,9 +161,6 @@ extension TunerState: TunerEventSink {
             genre = newGenre
         case .lot(let id, let mime, let name, let data, _, let service, let component):
             let isImage = mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG
-            if isImage {
-                latestImageData = data
-            }
             let mimeName = nameForNRSC5MIMEType(mime)
 
             var compMimeName = "None"

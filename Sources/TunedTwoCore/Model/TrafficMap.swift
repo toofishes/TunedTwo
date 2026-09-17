@@ -148,7 +148,7 @@ public struct TrafficMap {
 
     /// Parse and store a text config file.
     @discardableResult
-    public mutating func processConfigFile(data: [UInt8]) -> TrafficMapIngestOutcome {
+    public mutating func processConfigFile(data: Data) -> TrafficMapIngestOutcome {
         guard let text = String(bytes: data, encoding: .utf8),
             let newConfig = try? TTNSTMTrafficConfigParser.parse(text)
         else {
@@ -166,12 +166,12 @@ public struct TrafficMap {
 
     /// Parse and store a single tile image.
     @discardableResult
-    public mutating func processImageFile(name: String, data: [UInt8]) -> TrafficMapIngestOutcome {
+    public mutating func processImageFile(name: String, data: Data) -> TrafficMapIngestOutcome {
         guard let info = Self.parseLOTName(name) else { return .notTrafficMapFile }
         guard (1...Self.rowCount).contains(info.row),
             (1...Self.columnCount).contains(info.column)
         else { return .outOfGrid }
-        guard let source = CGImageSourceCreateWithData(Data(data) as CFData, nil) else { return .undecodableImage }
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return .undecodableImage }
         guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
 
         if let currentProvider = provider, currentProvider != info.provider {

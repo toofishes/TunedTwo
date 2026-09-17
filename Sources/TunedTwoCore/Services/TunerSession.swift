@@ -311,9 +311,9 @@ extension Nrsc5Context {
         return Calendar.utc.date(from: components)
     }
 
-    fileprivate func copyBytes(_ ptr: UnsafePointer<UInt8>?, count: Int) -> [UInt8] {
-        guard let ptr, count > 0 else { return [] }
-        return Array(UnsafeBufferPointer(start: ptr, count: count))
+    fileprivate func copyBytes(_ ptr: UnsafePointer<UInt8>?, count: Int) -> Data {
+        guard let ptr, count > 0 else { return Data() }
+        return Data(buffer: UnsafeBufferPointer(start: ptr, count: count))
     }
 
     fileprivate func copyInt16(_ ptr: UnsafePointer<Int16>?, count: Int) -> [Int16] {

@@ -145,7 +145,7 @@ struct ContentView: View {
                 MetadataRow(label: "Message", value: state.stationMessage)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageBytes: state.latestStationImage)
+            ByteImageView(imageData: state.latestStationImage)
         }
     }
 
@@ -158,7 +158,7 @@ struct ContentView: View {
                 MetadataRow(label: "Genre", value: state.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageBytes: state.latestCoverArt)
+            ByteImageView(imageData: state.latestCoverArt)
         }
     }
 

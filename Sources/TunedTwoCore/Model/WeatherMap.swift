@@ -138,7 +138,7 @@ public struct WeatherMap {
 
     /// Parse and store a text config file.
     @discardableResult
-    public mutating func processConfigFile(data: [UInt8]) -> WeatherMapIngestOutcome {
+    public mutating func processConfigFile(data: Data) -> WeatherMapIngestOutcome {
         guard let text = String(bytes: data, encoding: .utf8),
             let newConfig = try? TTNSTMWeatherConfigParser.parse(text)
         else {
@@ -157,9 +157,9 @@ public struct WeatherMap {
 
     /// Parse and store a radar image.
     @discardableResult
-    public mutating func processImageFile(name: String, data: [UInt8]) -> WeatherMapIngestOutcome {
+    public mutating func processImageFile(name: String, data: Data) -> WeatherMapIngestOutcome {
         guard let newInfo = Self.parseLOTName(name) else { return .notWeatherMapFile }
-        guard let source = CGImageSourceCreateWithData(Data(data) as CFData, nil) else { return .undecodableImage }
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return .undecodableImage }
         guard let newImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
 
         if let currentProvider = self.provider, currentProvider != newInfo.provider {

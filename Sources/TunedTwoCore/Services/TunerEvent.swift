@@ -54,18 +54,18 @@ public enum TunerEvent: Sendable {
     case stream(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
     case packet(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
     case lot(
-        lotID: Int, mime: UInt32, name: String, data: [UInt8], expiry: Date?, service: TunerSigService?,
+        lotID: Int, mime: UInt32, name: String, data: Data, expiry: Date?, service: TunerSigService?,
         component: TunerSigComponent?)
     case lotHeader(
         lotID: Int, mime: UInt32, name: String, size: Int, expiry: Date?, service: TunerSigService?,
         component: TunerSigComponent?)
     case hereImage(
         type: Int, seq: Int, n1: Int, n2: Int, timeUTC: Date?, boundingBox: TunerBoundingBox, name: String,
-        data: [UInt8])
+        data: Data)
 
     // Alerts and infrastructure info
     case emergencyAlert(
-        message: String, controlData: [UInt8], category1: Int, category2: Int, locationFormat: Int, locations: [Int])
+        message: String, controlData: Data, category1: Int, category2: Int, locationFormat: Int, locations: [Int])
     case exciterInfo(
         manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int],
         manufacturerStatus: Int, importerConnected: Bool)

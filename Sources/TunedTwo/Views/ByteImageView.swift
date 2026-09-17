@@ -7,11 +7,10 @@ import SwiftUI
 import TunedTwoCore
 
 struct ByteImageView: View {
-    // Example: A raw array of [UInt8] bytes representing an image (PNG, JPEG, etc.)
-    let imageBytes: [UInt8]
+    let imageData: Data
 
     var body: some View {
-        if let swiftUIImage = createSwiftUIImage(from: imageBytes) {
+        if let swiftUIImage = createSwiftUIImage(imageData) {
             swiftUIImage
                 .resizable()
                 .scaledToFit()
@@ -25,10 +24,8 @@ struct ByteImageView: View {
     }
 
     // Helper function to handle the conversion
-    private func createSwiftUIImage(from bytes: [UInt8]) -> Image? {
-        guard !bytes.isEmpty else { return nil }
-
-        let data = Data(bytes)
+    private func createSwiftUIImage(_ data: Data) -> Image? {
+        guard !data.isEmpty else { return nil }
 
         #if os(macOS)
             // macOS implementation using NSImage
