@@ -1,29 +1,31 @@
 //
-//  ByteImageView.swift
+//  LotImageView.swift
 //  TunedTwo
 //
 
 import SwiftUI
 import TunedTwoCore
 
-struct ByteImageView: View {
-    let imageData: Data
+struct LotImageView: View {
+    let lot: LotFile?
+    let defaultSystemImage: String
 
     var body: some View {
-        if let swiftUIImage = createSwiftUIImage(imageData) {
-            swiftUIImage
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: 100, maxHeight: 100)
-        } else {
-            Image(systemName: "music.note")
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: 100, maxHeight: 100)
-        }
+        imageToDisplay
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: 100, maxHeight: 100)
     }
 
-    // Helper function to handle the conversion
+    /// Resolves the lot data to a SwiftUI `Image`, falling back to the default system image.
+    private var imageToDisplay: Image {
+        if let lot, let image = createSwiftUIImage(lot.data) {
+            return image
+        }
+        return Image(systemName: defaultSystemImage)
+    }
+
+    /// Helper function to handle the conversion.
     private func createSwiftUIImage(_ data: Data) -> Image? {
         guard !data.isEmpty else { return nil }
 

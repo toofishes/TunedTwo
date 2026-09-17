@@ -31,7 +31,7 @@ struct StationInfo: View {
                 MetadataRow(label: "Message", value: state.stationMessage)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageData: state.latestStationImage)
+            LotImageView(lot: state.latestStationImage, defaultSystemImage: "antenna.radiowaves.left.and.right")
         }
     }
 }
@@ -49,7 +49,7 @@ private struct NowPlaying: View {
                 MetadataRow(label: "Genre", value: programState.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageData: lotCache[programState.lotID]?.data ?? Data())
+            LotImageView(lot: lotCache[programState.lotID], defaultSystemImage: "music.note")
         }
     }
 }

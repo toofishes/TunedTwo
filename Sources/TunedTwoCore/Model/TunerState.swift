@@ -83,7 +83,7 @@ public final class TunerState {
         return Float(mhz * 1_000_000)
     }
 
-    public var latestStationImage: Data = Data()
+    public var latestStationImage: LotFile?
     public var traffic = TrafficMap()
     public var weather = WeatherMap()
 
@@ -200,7 +200,7 @@ extension TunerState: TunerEventSink {
                         lotCache[file.lotID] = file
                     } else if mime == NRSC5_MIME_STATION_LOGO && isImage {
                         lotCache[file.lotID] = file
-                        latestStationImage = file.data
+                        latestStationImage = file
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
                         if isImage {
                             traffic.processImageFile(name: file.name, data: file.data)
