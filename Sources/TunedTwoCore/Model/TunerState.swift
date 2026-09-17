@@ -19,26 +19,28 @@ public struct ProgramState {
     public var album: String = ""
     public var genre: String = ""
 
-    private var byteCount: Int = 0
-    private var receiveCount: Int = 0
-
     public var bitsPerSecond: Int = 0
     public var crcErrors: Int = 0
 
     public var latestCoverArt: Data = Data()
+}
 
-    mutating func processHDC(size: Int, flags: UInt) {
+private class BPSTracker {
+    private var byteCount: Int = 0
+    private var receiveCount: Int = 0
+    public private(set) var bitsPerSecond: Int = 0
+
+    func calculateBPS(size: Int) -> Bool {
         byteCount += size
         receiveCount += 1
-        if receiveCount >= 32 || bitsPerSecond == 0 {
+        if receiveCount >= 64 || bitsPerSecond == 0 {
             bitsPerSecond =
                 byteCount * 8 * Int(NRSC5_SAMPLE_RATE_AUDIO) / Int(NRSC5_AUDIO_FRAME_SAMPLES) / receiveCount
             byteCount = 0
             receiveCount = 0
+            return true
         }
-        if flags & UInt(NRSC5_PKT_FLAGS_CRC_ERROR) != 0 {
-            crcErrors += 1
-        }
+        return false
     }
 }
 
@@ -69,6 +71,7 @@ public final class TunerState {
     public var stationMessage: String = ""
 
     public var programStates: [ProgramState] = Array(repeating: .init(), count: 8)
+    private var bpsTrackers: [BPSTracker] = Array(repeating: .init(), count: 8)
 
     public var merLower: Float = 0
     public var merUpper: Float = 0
@@ -141,7 +144,12 @@ extension TunerState: TunerEventSink {
         case .ber(let cber):
             ber = cber
         case .hdc(let program, let size, let flags):
-            programStates[program].processHDC(size: size, flags: flags)
+            if flags & UInt(NRSC5_PKT_FLAGS_CRC_ERROR) != 0 {
+                programStates[program].crcErrors += 1
+            }
+            if bpsTrackers[program].calculateBPS(size: size) {
+                programStates[program].bitsPerSecond = bpsTrackers[program].bitsPerSecond
+            }
         case .stationName(let name):
             stationName = name
             appendLog(

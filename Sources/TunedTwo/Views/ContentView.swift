@@ -20,7 +20,7 @@ struct ContentView: View {
             Divider()
             TabView {
                 Tab("Radio", systemImage: "radio") {
-                    metadata
+                    RadioView(state: state, programState: state.programStates[state.currentProgram])
                 }
 
                 Tab("Traffic", systemImage: "map") {
@@ -41,7 +41,10 @@ struct ContentView: View {
                 }
             }
             Divider()
-            statusBar
+            StatusBar(
+                state: state,
+                bitsPerSecond: state.programStates[state.currentProgram].bitsPerSecond,
+                crcErrors: state.programStates[state.currentProgram].crcErrors)
         }
         .padding()
         .frame(minWidth: 480, minHeight: 440)
@@ -128,64 +131,6 @@ struct ContentView: View {
         }
     }
 
-    private var metadata: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            stationMetadata
-            Divider()
-            nowPlaying
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var stationMetadata: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 12) {
-                MetadataRow(label: "Station", value: state.stationName)
-                MetadataRow(label: "Slogan", value: state.stationSlogan)
-                MetadataRow(label: "Message", value: state.stationMessage)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageData: state.latestStationImage)
-        }
-    }
-
-    private var nowPlaying: some View {
-        HStack {
-            let ps = state.programStates[state.currentProgram]
-            VStack(alignment: .leading, spacing: 12) {
-                MetadataRow(label: "Title", value: ps.title)
-                MetadataRow(label: "Artist", value: ps.artist)
-                MetadataRow(label: "Album", value: ps.album)
-                MetadataRow(label: "Genre", value: ps.genre)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageData: ps.latestCoverArt)
-        }
-    }
-
-    private var statusBar: some View {
-        HStack {
-            let ps = state.programStates[state.currentProgram]
-            Text(state.status)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text(String(format: "%.1f kbps", Double(ps.bitsPerSecond) / 1000.0))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-            Text(
-                String(
-                    format: "MER %.1f / %.1f dB · BER %.6f",
-                    state.merLower, state.merUpper, state.ber)
-            )
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .monospacedDigit()
-            .help("\(ps.crcErrors) CRC Errors")
-        }
-    }
-
     // MARK: - Actions
 
     /// Play/stop is inherently asynchronous: commands flow down into the
@@ -256,18 +201,30 @@ struct ContentView: View {
     }
 }
 
-/// A caption label + value row used by the metadata panel.
-private struct MetadataRow: View {
-    let label: String
-    let value: String
+private struct StatusBar: View {
+    let state: TunerState
+    let bitsPerSecond: Int
+    let crcErrors: Int
 
     var body: some View {
         HStack {
-            Text(label)
+            Text(state.status)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .frame(width: 60, alignment: .leading)
-            Text(value.isEmpty ? "—" : value)
+            Spacer()
+            Text(String(format: "%.1f kbps", Double(bitsPerSecond) / 1000.0))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            Text(
+                String(
+                    format: "MER %.1f / %.1f dB · BER %.6f",
+                    state.merLower, state.merUpper, state.ber)
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
+            .help("\(crcErrors) CRC Errors")
         }
     }
 }
