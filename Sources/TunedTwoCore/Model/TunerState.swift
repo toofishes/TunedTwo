@@ -58,7 +58,7 @@ public final class TunerState {
     public var frequencyMHz: String = "103.5"
 
     /// Selected HD Radio program (0 = HD1, 7 = HD8).
-    public var program: Int = 0
+    public var currentProgram: Int = 0
 
     public var isPlaying: Bool = false
 
@@ -68,7 +68,7 @@ public final class TunerState {
     public var stationSlogan: String = ""
     public var stationMessage: String = ""
 
-    public var programState: ProgramState = .init()
+    public var programStates: [ProgramState] = Array(repeating: .init(), count: 8)
 
     public var merLower: Float = 0
     public var merUpper: Float = 0
@@ -140,8 +140,8 @@ extension TunerState: TunerEventSink {
             merUpper = upper
         case .ber(let cber):
             ber = cber
-        case .hdc(_, let size, let flags):
-            programState.processHDC(size: size, flags: flags)
+        case .hdc(let program, let size, let flags):
+            programStates[program].processHDC(size: size, flags: flags)
         case .stationName(let name):
             stationName = name
             appendLog(
@@ -167,11 +167,11 @@ extension TunerState: TunerEventSink {
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .stationLocation(_, _, _):
             break
-        case .id3(_, let newTitle, let newArtist, let newAlbum, let newGenre):
-            programState.title = newTitle
-            programState.artist = newArtist
-            programState.album = newAlbum
-            programState.genre = newGenre
+        case .id3(let program, let newTitle, let newArtist, let newAlbum, let newGenre):
+            programStates[program].title = newTitle
+            programStates[program].artist = newArtist
+            programStates[program].album = newAlbum
+            programStates[program].genre = newGenre
         case .lot(let id, let mime, let name, let data, _, let service, let component):
             let isImage = mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG
             let mimeName = nameForNRSC5MIMEType(mime)
@@ -182,7 +182,8 @@ extension TunerState: TunerEventSink {
                 case .data(_, _, _, _, let mime):
                     compMimeName = nameForNRSC5MIMEType(mime)
                     if mime == NRSC5_MIME_PRIMARY_IMAGE {
-                        programState.latestCoverArt = data
+                        // TODO: figure out right program to match, hardcoded 0 right now
+                        programStates[0].latestCoverArt = data
                     } else if mime == NRSC5_MIME_STATION_LOGO {
                         latestStationImage = data
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {

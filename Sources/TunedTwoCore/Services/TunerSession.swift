@@ -474,12 +474,7 @@ public actor TunerSession {
         case .audio(let program, let samples, _):
             guard isRunning, program == currentProgram else { return }
             audioPlayer.feed(samples)
-        case .hdc(let program, _, _), .id3(let program, _, _, _, _):
-            guard program == currentProgram else { return }
-            await sink?.tunerSessionDidEmit(event)
         default:
-            // Station-level events (sync, metrics, station name/slogan,
-            // device loss) pass straight through to the UI.
             await sink?.tunerSessionDidEmit(event)
         }
     }

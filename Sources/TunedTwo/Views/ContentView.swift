@@ -45,7 +45,7 @@ struct ContentView: View {
         }
         .padding()
         .frame(minWidth: 480, minHeight: 440)
-        .onChange(of: state.program) { _, newProgram in
+        .onChange(of: state.currentProgram) { _, newProgram in
             guard let session else { return }
             Task { await session.setProgram(newProgram) }
         }
@@ -108,7 +108,7 @@ struct ContentView: View {
                 }
                 //.fixedSize(horizontal: true, vertical: false)
 
-                Picker("Program", selection: $state.program) {
+                Picker("Program", selection: $state.currentProgram) {
                     ForEach(0..<8) { i in
                         Text("HD\(i + 1)").tag(i)
                     }
@@ -151,24 +151,26 @@ struct ContentView: View {
 
     private var nowPlaying: some View {
         HStack {
+            let ps = state.programStates[state.currentProgram]
             VStack(alignment: .leading, spacing: 12) {
-                MetadataRow(label: "Title", value: state.programState.title)
-                MetadataRow(label: "Artist", value: state.programState.artist)
-                MetadataRow(label: "Album", value: state.programState.album)
-                MetadataRow(label: "Genre", value: state.programState.genre)
+                MetadataRow(label: "Title", value: ps.title)
+                MetadataRow(label: "Artist", value: ps.artist)
+                MetadataRow(label: "Album", value: ps.album)
+                MetadataRow(label: "Genre", value: ps.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageData: state.programState.latestCoverArt)
+            ByteImageView(imageData: ps.latestCoverArt)
         }
     }
 
     private var statusBar: some View {
         HStack {
+            let ps = state.programStates[state.currentProgram]
             Text(state.status)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(String(format: "%.1f kbps", Double(state.programState.bitsPerSecond) / 1000.0))
+            Text(String(format: "%.1f kbps", Double(ps.bitsPerSecond) / 1000.0))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -180,7 +182,7 @@ struct ContentView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .monospacedDigit()
-            .help("\(state.programState.crcErrors) CRC Errors")
+            .help("\(ps.crcErrors) CRC Errors")
         }
     }
 
@@ -207,7 +209,7 @@ struct ContentView: View {
         let configuration = TunerConfiguration(
             source: state.source == .rtlSDR ? .rtlSDR(deviceIndex: 0) : .sampleFile,
             frequencyHz: state.frequencyHz,
-            program: state.program)
+            program: state.currentProgram)
 
         do {
             let newSession = try TunerSession(sink: state)
@@ -244,8 +246,9 @@ struct ContentView: View {
         state.source = .sampleFile
         await startPlayback()
         try? await Task.sleep(for: .seconds(8))
-        if !state.stationName.isEmpty || !state.programState.title.isEmpty {
-            fputs("SMOKE_OK: station='\(state.stationName)' title='\(state.programState.title)'\n", stderr)
+        let ps = state.programStates[state.currentProgram]
+        if !state.stationName.isEmpty || !ps.title.isEmpty {
+            fputs("SMOKE_OK: station='\(state.stationName)' title='\(ps.title)'\n", stderr)
         } else {
             fputs("SMOKE_FAIL: no metadata received\n", stderr)
         }
