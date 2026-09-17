@@ -393,15 +393,7 @@ public actor TunerSession {
     }
 
     deinit {
-        // No C access here: releasing `context` performs the teardown
-        // (its deinit unregisters the callback, joins the worker thread,
-        // and closes the session), so even a running session that is
-        // dropped without stop() cannot leak the worker or the device.
-        // The audio player is an actor (Sendable), so its reference can be
-        // captured here; the task keeps it alive long enough to stop the
-        // engine, which must not happen on an arbitrary deinit thread.
-        let player = audioPlayer
-        Task { await player.stop() }
+        audioPlayer.stop()
     }
 
     // MARK: - Public control (called from the UI, asynchronous by design)
@@ -413,13 +405,13 @@ public actor TunerSession {
         do {
             let st = try Self.openRawSession(configuration)
             context.activate(st: st)
-            try await audioPlayer.start()
+            try audioPlayer.start()
             isRunning = true
             Self.logger.debug("Session started")
             await sink?.tunerSessionDidEmit(.started)
         } catch {
             context.close()
-            await audioPlayer.stop()
+            audioPlayer.stop()
             await sink?.tunerSessionDidEmit(.failed(message: error.localizedDescription))
         }
     }
@@ -427,7 +419,7 @@ public actor TunerSession {
     public func stop() async {
         isRunning = false
         context.close()
-        await audioPlayer.stop()
+        audioPlayer.stop()
         await sink?.tunerSessionDidEmit(.stopped)
     }
 
@@ -435,7 +427,7 @@ public actor TunerSession {
     /// old program does not bleed into the new one.
     public func setProgram(_ program: Int) async {
         currentProgram = program
-        await audioPlayer.flush()
+        audioPlayer.flush()
     }
 
     /// Live retune while playing (RTL-SDR only).
@@ -444,7 +436,7 @@ public actor TunerSession {
             await sink?.tunerSessionDidEmit(.failed(message: "Could not tune to the requested frequency."))
             return
         }
-        await audioPlayer.flush()
+        audioPlayer.flush()
     }
 
     // MARK: - Event handling (actor-isolated, fed by the event stream)
@@ -453,7 +445,7 @@ public actor TunerSession {
         switch event {
         case .audio(let program, let samples):
             guard isRunning, program == currentProgram else { return }
-            await audioPlayer.feed(samples)
+            audioPlayer.feed(samples)
         case .hdc(let program, _, _):
             guard program == currentProgram else { return }
             await sink?.tunerSessionDidEmit(event)

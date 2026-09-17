@@ -9,42 +9,65 @@
 //  session's background context into the system audio graph.
 //
 
-import AVFoundation
+@preconcurrency import AVFoundation
 import Foundation
 import nrsc5
+import os
 
-actor AudioPlayer {
+public final class AudioPlayer: Sendable {
     private let engine = AVAudioEngine()
     private let player = AVAudioPlayerNode()
-    private let format: AVAudioFormat
+
+    private let inputFormatInt16: AVAudioFormat
+    private let outputFormatFloat: AVAudioFormat
+    private let converter: AVAudioConverter
+
+    private let lock = OSAllocatedUnfairLock()
 
     init() throws {
-        guard let fmt = AVAudioFormat(standardFormatWithSampleRate: Double(NRSC5_SAMPLE_RATE_AUDIO),
-                                      channels: 2) else {
+        let sr = Double(NRSC5_SAMPLE_RATE_AUDIO)
+        guard let inFmt = AVAudioFormat(commonFormat: .pcmFormatInt16,
+                                        sampleRate: sr,
+                                        channels: 2,
+                                        interleaved: true),
+              let outFmt = AVAudioFormat(standardFormatWithSampleRate: sr,
+                                         channels: 2) else {
             throw AudioError.formatUnsupported
         }
-        self.format = fmt
+
+        self.inputFormatInt16 = inFmt
+        self.outputFormatFloat = outFmt
+
+        guard let conv = AVAudioConverter(from: inFmt, to: outFmt) else {
+            throw AudioError.formatUnsupported
+        }
+        self.converter = conv
 
         engine.attach(player)
-        engine.connect(player, to: engine.mainMixerNode, format: fmt)
-        engine.mainMixerNode.outputVolume = 1.0
+        engine.connect(player, to: engine.mainMixerNode, format: outFmt)
     }
 
     func start() throws {
-        try engine.start()
-        player.play()
+        try lock.withLock {
+            try engine.start()
+            player.play()
+        }
     }
 
     func stop() {
-        player.stop()
-        engine.stop()
+        lock.withLock {
+            player.stop()
+            engine.stop()
+        }
     }
 
     /// Drops any queued audio (e.g. after a program switch or retune) and
     /// resumes accepting buffers, keeping the engine running.
     func flush() {
-        player.stop()
-        player.play()
+        lock.withLock {
+            player.stop()
+            player.play()
+        }
     }
 
     /// Accepts interleaved 16-bit signed PCM from nrsc5, converts it to
@@ -52,23 +75,27 @@ actor AudioPlayer {
     func feed(_ samples: [Int16]) {
         guard samples.count >= 2 else { return }
         let frames = AVAudioFrameCount(samples.count / 2)
-        guard frames > 0,
-              let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames) else {
+
+        guard let sourceBuffer = AVAudioPCMBuffer(pcmFormat: inputFormatInt16, frameCapacity: frames) else { return }
+                sourceBuffer.frameLength = frames
+        sourceBuffer.frameLength = frames
+
+        samples.withUnsafeBufferPointer { srcPtr in
+            if let destPtr = sourceBuffer.int16ChannelData?[0] {
+                destPtr.initialize(from: srcPtr.baseAddress!, count: samples.count)
+            }
+        }
+
+        guard let destBuffer = AVAudioPCMBuffer(pcmFormat: outputFormatFloat, frameCapacity: frames) else { return }
+        destBuffer.frameLength = frames
+
+        do {
+            try converter.convert(to: destBuffer, from: sourceBuffer)
+        } catch {
             return
         }
-        buffer.frameLength = frames
 
-        guard let channelData = buffer.floatChannelData else { return }
-        let left = channelData[0]
-        let right = channelData[1]
-
-        let scale: Float = 1.0 / 32768.0
-        for i in 0..<Int(frames) {
-            left[i] = Float(samples[i * 2]) * scale
-            right[i] = Float(samples[i * 2 + 1]) * scale
-        }
-
-        player.scheduleBuffer(buffer)
+        player.scheduleBuffer(destBuffer)
     }
 
     enum AudioError: Error {
