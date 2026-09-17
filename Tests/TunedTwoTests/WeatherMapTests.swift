@@ -48,7 +48,7 @@ struct WeatherMapTests {
         var map = WeatherMap()
         let png = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
 
-        let outcome = map.processImageFile(name: "STN_035apk_rev02_20260916_1358_040f.png", data: Array(png))
+        let outcome = map.processImageFile(name: "STN_035apk_rev02_20260916_1358_040f.png", data: png)
         #expect(outcome == .notWeatherMapFile)
         #expect(map.image == nil)
         #expect(map.provider == nil)
@@ -58,7 +58,7 @@ struct WeatherMapTests {
     func rejectsUndecodableBytes() {
         var map = WeatherMap()
         let outcome = map.processImageFile(
-            name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: Array("not a png".utf8))
+            name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: Data("not a png".utf8))
         #expect(outcome == .undecodableImage)
         #expect(map.image == nil)
     }
@@ -67,7 +67,7 @@ struct WeatherMapTests {
     func retainsImageInfo() throws {
         var map = WeatherMap()
         let png = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        map.processImageFile(name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: Array(png))
+        map.processImageFile(name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: png)
 
         #expect(map.provider == "035apk")
         #expect(map.info?.provider == "035apk")
@@ -84,8 +84,8 @@ struct WeatherMapTests {
         let newer = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
         let older = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
 
-        map.processImageFile(name: "DWRO_prov_rev01_20260916_1500_0001.png", data: Array(newer))
-        let outcome = map.processImageFile(name: "DWRO_prov_rev01_20260915_1500_0002.png", data: Array(older))
+        map.processImageFile(name: "DWRO_prov_rev01_20260916_1500_0001.png", data: newer)
+        let outcome = map.processImageFile(name: "DWRO_prov_rev01_20260915_1500_0002.png", data: older)
 
         #expect(
             outcome
@@ -100,7 +100,7 @@ struct WeatherMapTests {
     @Test("stores a parsed config file")
     func storesConfigFile() {
         var map = WeatherMap()
-        let outcome = map.processConfigFile(data: Array(Self.sampleConfig.utf8))
+        let outcome = map.processConfigFile(data: Data(Self.sampleConfig.utf8))
         #expect(outcome == .storedConfig)
         #expect(map.provider == "035apk")
         #expect(map.config?.areaID == "035apk")
@@ -110,7 +110,7 @@ struct WeatherMapTests {
     @Test("reports an invalid config file")
     func invalidConfigFile() {
         var map = WeatherMap()
-        let outcome = map.processConfigFile(data: Array("not a config".utf8))
+        let outcome = map.processConfigFile(data: Data("not a config".utf8))
         #expect(outcome == .invalidConfig)
         #expect(map.config == nil)
     }
@@ -119,7 +119,7 @@ struct WeatherMapTests {
     func configProviderChangeClearsImage() throws {
         var map = WeatherMap()
         let png = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        map.processImageFile(name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: Array(png))
+        map.processImageFile(name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: png)
         #expect(map.image != nil)
 
         let config = """
@@ -132,7 +132,7 @@ struct WeatherMapTests {
             Legend_Snow="(1,(0,255,255))"
             CopyrightNotice="n/a"
             """
-        let outcome = map.processConfigFile(data: Array(config.utf8))
+        let outcome = map.processConfigFile(data: Data(config.utf8))
         #expect(outcome == .storedConfig)
         #expect(map.provider == "941xyz")
         #expect(map.image == nil)
@@ -142,7 +142,7 @@ struct WeatherMapTests {
     @Test("computes radar bounding box from config coordinates")
     func radarBoundingBoxFromConfig() throws {
         var map = WeatherMap()
-        map.processConfigFile(data: Array(Self.sampleConfig.utf8))
+        map.processConfigFile(data: Data(Self.sampleConfig.utf8))
 
         let box = try #require(map.radarBoundingBox)
         let coordinateOne = CLLocationCoordinate2D(latitude: 43.69360, longitude: -90.68990)
