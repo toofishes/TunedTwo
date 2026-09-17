@@ -111,7 +111,7 @@ extension TunerState: TunerEventSink {
             status = "Synchronized"
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Synchronized",
+                    title: "Synchronized",
                     description:
                         "Frequency Offset \(freqOffset.formatted(.number.precision(.fractionLength(0)))) Hz PSMI \(psmi) PLI \(pli) HPI \(hppi) AABI \(aabi) RDBI \(rdbi)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
@@ -138,24 +138,24 @@ extension TunerState: TunerEventSink {
             stationName = name
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill",
+                    title: "Station Name", description: name, systemImage: "checkmark.icloud.fill",
                     tintColor: .blue))
         case .stationSlogan(let slogan):
             stationSlogan = slogan
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Station Slogan", description: slogan,
+                    title: "Station Slogan", description: slogan,
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .stationMessage(let message):
             stationMessage = message
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Station Message", description: message,
+                    title: "Station Message", description: message,
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .stationID(let countryCode, let fccFacilityID):
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)",
+                    title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .stationLocation(_, _, _):
             break
@@ -217,23 +217,25 @@ extension TunerState: TunerEventSink {
 
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "LOT File",
+                    title: "LOT File",
                     description:
                         "ID: \(id), File: \(name), Size: \(data.count), MIME: \(mimeName), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .agc(let gainDB, let peakDBFS, let isFinal):
-            appendLog(
-                LogEvent(
-                    timestamp: Date(), title: "AGC",
-                    description:
-                        "Gain \(String(format: "%.1f", gainDB)) dB, Peak \(String(format: "%.1f", peakDBFS)) dBFS, Final \(isFinal)",
-                    systemImage: "chart.line.uptrend.xyaxis", tintColor: .orange))
+            if isFinal {
+                appendLog(
+                    LogEvent(
+                        title: "AGC",
+                        description:
+                            "Gain \(String(format: "%.1f", gainDB)) dB, Peak \(String(format: "%.1f", peakDBFS)) dBFS",
+                        systemImage: "chart.line.uptrend.xyaxis", tintColor: .orange))
+            }
         case .audioService(
             let program, let access, let type, let codecMode, let blendControl, let digitalAudioGain, let commonDelay,
             let latency):
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Audio Service",
+                    title: "Audio Service",
                     description:
                         "Program \(program), Access \(access), Type \(type), Codec \(codecMode), Blend \(blendControl), Gain \(digitalAudioGain), Delay \(commonDelay), Latency \(latency)",
                     systemImage: "speaker.wave.2.fill", tintColor: .blue))
@@ -243,7 +245,7 @@ extension TunerState: TunerEventSink {
             }.joined(separator: "; ")
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Audio Service Descriptor", description: list, systemImage: "waveform",
+                    title: "Audio Service Descriptor", description: list, systemImage: "waveform",
                     tintColor: .blue))
         case .dataServiceDescriptor(let descriptors):
             let list = descriptors.map {
@@ -251,14 +253,14 @@ extension TunerState: TunerEventSink {
             }.joined(separator: "; ")
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Data Service Descriptor", description: list, systemImage: "waveform",
+                    title: "Data Service Descriptor", description: list, systemImage: "waveform",
                     tintColor: .purple))
         case .exciterInfo(
             let manufacturerID, let coreVersion, let coreStatus, let manufacturerVersion, let manufacturerStatus,
             let importerConnected):
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Exciter Info",
+                    title: "Exciter Info",
                     description:
                         "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus)), Importer \(importerConnected)",
                     systemImage: "antenna.radiowaves.left.and.right", tintColor: .green))
@@ -266,20 +268,20 @@ extension TunerState: TunerEventSink {
             let manufacturerID, let coreVersion, let coreStatus, let manufacturerVersion, let manufacturerStatus):
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Importer Info",
+                    title: "Importer Info",
                     description:
                         "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus))",
                     systemImage: "arrow.down.circle.fill", tintColor: .green))
         case .leapSecondOffset(let pendingOffset, let currentOffset, let pendingALFN):
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Leap Second Offset",
+                    title: "Leap Second Offset",
                     description: "Pending \(pendingOffset)s, Current \(currentOffset)s, ALFN \(pendingALFN)",
                     systemImage: "clock", tintColor: .orange))
         case .localTime(let utcOffsetMinutes, let dstRegional, let dstLocal, let dstSchedule):
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "Local Time",
+                    title: "Local Time",
                     description:
                         "UTC Offset \(utcOffsetMinutes) min, Regional DST \(dstRegional), Local DST \(dstLocal), Schedule \(dstSchedule)",
                     systemImage: "clock.badge.checkmark", tintColor: .orange))
@@ -288,7 +290,7 @@ extension TunerState: TunerEventSink {
                 separator: ", ")
             appendLog(
                 LogEvent(
-                    timestamp: Date(), title: "SIG", description: "Services: \(list)",
+                    title: "SIG", description: "Services: \(list)",
                     systemImage: "antenna.radiowaves.left.and.right", tintColor: .purple))
         case .audio:
             break  // Consumed inside TunerSession; never reaches the UI.

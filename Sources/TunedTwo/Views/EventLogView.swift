@@ -46,7 +46,7 @@ struct LogEventRow: View {
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.bottom, isLast ? 0 : 24)
+            .padding(.bottom, isLast ? 0 : 16)
         }
     }
 }

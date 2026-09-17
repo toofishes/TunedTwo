@@ -174,12 +174,13 @@ struct ContentView: View {
                 .monospacedDigit()
             Text(
                 String(
-                    format: "MER %.1f / %.1f dB · BER %.6f · %d CRC Errors",
-                    state.merLower, state.merUpper, state.ber, state.crcErrors)
+                    format: "MER %.1f / %.1f dB · BER %.6f",
+                    state.merLower, state.merUpper, state.ber)
             )
             .font(.caption)
             .foregroundStyle(.secondary)
             .monospacedDigit()
+            .help("\(state.crcErrors) CRC Errors")
         }
     }
 

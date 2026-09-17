@@ -29,4 +29,17 @@ public struct LogEvent: Identifiable {
         self.systemImage = systemImage
         self.tintColor = tintColor
     }
+
+    public init(
+        title: String,
+        description: String,
+        systemImage: String,
+        tintColor: Color
+    ) {
+        self.timestamp = Date()
+        self.title = title
+        self.description = description
+        self.systemImage = systemImage
+        self.tintColor = tintColor
+    }
 }
