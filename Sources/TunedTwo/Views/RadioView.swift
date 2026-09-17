@@ -14,7 +14,7 @@ struct RadioView: View {
         VStack(alignment: .leading, spacing: 12) {
             StationInfo(state: state)
             Divider()
-            NowPlaying(programState: programState)
+            NowPlaying(programState: programState, lotCache: state.lotCache)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -38,6 +38,7 @@ struct StationInfo: View {
 
 private struct NowPlaying: View {
     let programState: ProgramState
+    var lotCache: [Int: LotFile]
 
     var body: some View {
         HStack {
@@ -48,7 +49,7 @@ private struct NowPlaying: View {
                 MetadataRow(label: "Genre", value: programState.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            ByteImageView(imageData: programState.latestCoverArt)
+            ByteImageView(imageData: lotCache[programState.lotID]?.data ?? Data())
         }
     }
 }

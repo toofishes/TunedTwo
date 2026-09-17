@@ -39,7 +39,7 @@ public enum TunerEvent: Sendable {
     case stationLocation(latitude: Float, longitude: Float, altitude: Int)
 
     // Audio / program metadata
-    case id3(program: Int, title: String, artist: String, album: String, genre: String)
+    case id3(program: Int, title: String, artist: String, album: String, genre: String, showCover: Bool, lotID: Int)
     case audioService(
         program: Int, access: Int, type: Int, codecMode: Int, blendControl: Int, digitalAudioGain: Int,
         commonDelay: Int, latency: Int)
@@ -53,9 +53,7 @@ public enum TunerEvent: Sendable {
     case hdc(program: Int, size: Int, flags: UInt)
     case stream(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
     case packet(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
-    case lot(
-        lotID: Int, mime: UInt32, name: String, data: Data, expiry: Date?, service: TunerSigService?,
-        component: TunerSigComponent?)
+    case lot(file: LotFile, service: TunerSigService?, component: TunerSigComponent?)
     case lotHeader(
         lotID: Int, mime: UInt32, name: String, size: Int, expiry: Date?, service: TunerSigService?,
         component: TunerSigComponent?)
@@ -116,6 +114,14 @@ extension TunerEvent {
         case .audio: return "audio"
         }
     }
+}
+
+public struct LotFile: Sendable {
+    public let lotID: Int
+    public let mime: UInt32
+    public let name: String
+    public let data: Data
+    public let expiry: Date?
 }
 
 /// A service entry from an NRSC5 SIG (Service Information Guide) table.

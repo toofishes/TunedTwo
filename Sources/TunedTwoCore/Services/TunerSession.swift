@@ -109,16 +109,19 @@ private final class Nrsc5Context {
                 title: makeString(raw.id3.title),
                 artist: makeString(raw.id3.artist),
                 album: makeString(raw.id3.album),
-                genre: makeString(raw.id3.genre))
+                genre: makeString(raw.id3.genre),
+                showCover: raw.id3.xhdr.param == 0,
+                lotID: Int(raw.id3.xhdr.lot))
         case NRSC5_EVENT_SIG:
             event = .sig(services: copySigServices(raw.sig.services))
         case NRSC5_EVENT_LOT:
             event = .lot(
-                lotID: Int(raw.lot.lot),
-                mime: raw.lot.mime,
-                name: makeString(raw.lot.name),
-                data: copyBytes(raw.lot.data, count: Int(raw.lot.size)),
-                expiry: makeDate(raw.lot.expiry_utc),
+                file: LotFile(
+                    lotID: Int(raw.lot.lot),
+                    mime: raw.lot.mime,
+                    name: makeString(raw.lot.name),
+                    data: copyBytes(raw.lot.data, count: Int(raw.lot.size)),
+                    expiry: makeDate(raw.lot.expiry_utc)),
                 service: raw.lot.service.map { copySigService($0.pointee) },
                 component: raw.lot.component.map { copySigComponent($0.pointee) })
         case NRSC5_EVENT_LOT_HEADER:

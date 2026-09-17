@@ -18,11 +18,11 @@ public struct ProgramState {
     public var artist: String = ""
     public var album: String = ""
     public var genre: String = ""
+    public var showCover: Bool = false
+    public var lotID: Int = -1
 
     public var bitsPerSecond: Int = 0
     public var crcErrors: Int = 0
-
-    public var latestCoverArt: Data = Data()
 }
 
 private class BPSTracker {
@@ -86,6 +86,8 @@ public final class TunerState {
     public var latestStationImage: Data = Data()
     public var traffic = TrafficMap()
     public var weather = WeatherMap()
+
+    public var lotCache: [Int: LotFile] = [:]
 
     public var logEntries: [LogEvent] = []
     public var eventCounts: [String: Int] = .init()
@@ -175,36 +177,41 @@ extension TunerState: TunerEventSink {
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .stationLocation(_, _, _):
             break
-        case .id3(let program, let newTitle, let newArtist, let newAlbum, let newGenre):
-            programStates[program].title = newTitle
-            programStates[program].artist = newArtist
-            programStates[program].album = newAlbum
-            programStates[program].genre = newGenre
-        case .lot(let id, let mime, let name, let data, _, let service, let component):
-            let isImage = mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG
-            let mimeName = nameForNRSC5MIMEType(mime)
+        case .id3(let program, let title, let artist, let album, let genre, let showCover, let lotID):
+            programStates[program].title = title
+            programStates[program].artist = artist
+            programStates[program].album = album
+            programStates[program].genre = genre
+            programStates[program].showCover = showCover
+            programStates[program].lotID = lotID
+        case .lot(let file, let service, let component):
+            let isImage = file.mime == NRSC5_MIME_JPEG || file.mime == NRSC5_MIME_PNG
+            if isImage {
+                lotCache[file.lotID] = file
+            }
+            let mimeName = nameForNRSC5MIMEType(file.mime)
 
             var compMimeName = "None"
             if let component {
                 switch component {
                 case .data(_, _, _, _, let mime):
                     compMimeName = nameForNRSC5MIMEType(mime)
-                    if mime == NRSC5_MIME_PRIMARY_IMAGE {
-                        // TODO: figure out right program to match, hardcoded 0 right now
-                        programStates[0].latestCoverArt = data
-                    } else if mime == NRSC5_MIME_STATION_LOGO {
-                        latestStationImage = data
+                    if mime == NRSC5_MIME_PRIMARY_IMAGE && isImage {
+                        lotCache[file.lotID] = file
+                    } else if mime == NRSC5_MIME_STATION_LOGO && isImage {
+                        lotCache[file.lotID] = file
+                        latestStationImage = file.data
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
                         if isImage {
-                            traffic.processImageFile(name: name, data: data)
+                            traffic.processImageFile(name: file.name, data: file.data)
                         } else {
-                            traffic.processConfigFile(data: data)
+                            traffic.processConfigFile(data: file.data)
                         }
                     } else if mime == NRSC5_MIME_TTN_STM_WEATHER {
                         if isImage {
-                            weather.processImageFile(name: name, data: data)
+                            weather.processImageFile(name: file.name, data: file.data)
                         } else {
-                            weather.processConfigFile(data: data)
+                            weather.processConfigFile(data: file.data)
                         }
                     }
                 case .audio(_, _, _, let mime):
@@ -236,7 +243,7 @@ extension TunerState: TunerEventSink {
                 LogEvent(
                     title: "LOT File",
                     description:
-                        "ID: \(id), File: \(name), Size: \(data.count), MIME: \(mimeName), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
+                        "ID: \(file.lotID), File: \(file.name), Size: \(file.data.count), MIME: \(mimeName), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .agc(let gainDB, let peakDBFS, let isFinal):
             if isFinal {
