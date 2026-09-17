@@ -225,7 +225,7 @@ struct TrafficMapCommand: CLICommand {
                 if verbose {
                     report(candidate, "stored at row \(candidate.info.row), column \(candidate.info.column)")
                 }
-            case .ignoredStale(let existing, let incoming):
+            case let .ignoredStale(existing, incoming):
                 stats.stale += 1
                 if verbose {
                     report(candidate, "ignored stale (existing \(timestampFormatter.string(from: existing)) "

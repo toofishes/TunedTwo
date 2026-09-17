@@ -81,7 +81,7 @@ extension TunerState: TunerEventSink {
         case .stopped:
             isPlaying = false
             status = "Stopped"
-        case .failed(let message):
+        case let .failed(message):
             isPlaying = false
             status = "Error: \(message)"
         case .lostDevice:
@@ -92,12 +92,12 @@ extension TunerState: TunerEventSink {
             logEntries.append(LogEvent(timestamp: Date(), title: "Synchronized", description: "Synchronized", systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .lostSync:
             status = "Lost sync"
-        case .mer(let lower, let upper):
+        case let .mer(lower, upper):
             merLower = lower
             merUpper = upper
-        case .ber(let cber):
+        case let .ber(cber):
             ber = cber
-        case .hdc(_, let size, _):
+        case let .hdc(_, size, _):
             byteCount += size
             receiveCount += 1
             if receiveCount >= 32 || bitsPerSecond == 0 {
@@ -105,25 +105,25 @@ extension TunerState: TunerEventSink {
                 byteCount = 0
                 receiveCount = 0
             }
-        case .stationName(let name):
+        case let .stationName(name):
             stationName = name
             logEntries.append(LogEvent(timestamp: Date(), title: "Station Name", description: name, systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .stationSlogan(let slogan):
+        case let .stationSlogan(slogan):
             stationSlogan = slogan
             logEntries.append(LogEvent(timestamp: Date(), title: "Station Slogan", description: slogan, systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .stationMessage(let message):
+        case let .stationMessage(message):
             stationMessage = message
             logEntries.append(LogEvent(timestamp: Date(), title: "Station Message", description: message, systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .stationID(let countryCode, let fccFacilityID):
+        case let .stationID(countryCode, fccFacilityID):
             logEntries.append(LogEvent(timestamp: Date(), title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .stationLocation(let latitude, let longitude, let altitude):
+        case let .stationLocation(latitude, longitude, altitude):
             logEntries.append(LogEvent(timestamp: Date(), title: "Station Location", description: "Lat \(latitude) Lon \(longitude) Alt \(altitude)", systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .id3(_, let newTitle, let newArtist, let newAlbum, let newGenre):
+        case let .id3(_, newTitle, newArtist, newAlbum, newGenre):
             title = newTitle
             artist = newArtist
             album = newAlbum
             genre = newGenre
-        case .lot(let id, let mime, let name, let data, _, let service, let component):
+        case let .lot(id, mime, name, data, _, service, component):
             let isImage = mime == NRSC5_MIME_JPEG || mime == NRSC5_MIME_PNG
             if isImage {
                 latestImageData = data

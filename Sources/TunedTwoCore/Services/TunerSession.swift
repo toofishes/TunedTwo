@@ -443,13 +443,13 @@ public actor TunerSession {
 
     private func handle(_ event: TunerEvent) async {
         switch event {
-        case .audio(let program, let samples):
+        case let .audio(program, samples):
             guard isRunning, program == currentProgram else { return }
             audioPlayer.feed(samples)
-        case .hdc(let program, _, _):
+        case let .hdc(program, _, _):
             guard program == currentProgram else { return }
             await sink?.tunerSessionDidEmit(event)
-        case .id3(let program, _, _, _, _):
+        case let .id3(program, _, _, _, _):
             guard program == currentProgram else { return }
             await sink?.tunerSessionDidEmit(event)
         default:
