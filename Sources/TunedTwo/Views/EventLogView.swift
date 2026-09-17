@@ -137,31 +137,54 @@ struct EventLogView: View {
             events: [
                 LogEvent(
                     timestamp: Date(),
-                    title: "Backup Completed",
-                    description: "System database successfully backed up to AWS S3 storage cloud.",
+                    title: "Synchronized",
+                    description: "Synchronized",
                     systemImage: "checkmark.icloud.fill",
-                    tintColor: .green
+                    tintColor: .blue
                 ),
                 LogEvent(
-                    timestamp: Date().addingTimeInterval(-3600),
-                    title: "Security Alert",
-                    description: "Failed login attempt detected from an unrecognized IP address in Germany.",
-                    systemImage: "exclamationmark.triangle.fill",
-                    tintColor: .red
+                    timestamp: Date().addingTimeInterval(-60),
+                    title: "Station Name",
+                    description: "KOSF",
+                    systemImage: "checkmark.icloud.fill",
+                    tintColor: .blue
                 ),
                 LogEvent(
-                    timestamp: Date().addingTimeInterval(-7200),
-                    title: "Update Installed",
-                    description: "App version 2.4.1 patch was downloaded and installed automatically.",
-                    systemImage: "arrow.down.circle.fill",
+                    timestamp: Date().addingTimeInterval(-120),
+                    title: "LOT File",
+                    description: "ID: 42, File: traffic.png, Size: 12400, MIME: TTN STM Traffic (0xFF8422D7), Service: type=1 #0 KOSF (2 components), Component: data id=3 port=0 sdt=0 aas=0, Component MIME: TTN STM Traffic (0xFF8422D7)",
+                    systemImage: "checkmark.icloud.fill",
+                    tintColor: .blue
+                ),
+                LogEvent(
+                    timestamp: Date().addingTimeInterval(-180),
+                    title: "SIG",
+                    description: "Services: #0 KOSF (2 components), #1 KOSF-HD2 (1 component)",
+                    systemImage: "antenna.radiowaves.left.and.right",
+                    tintColor: .purple
+                ),
+                LogEvent(
+                    timestamp: Date().addingTimeInterval(-240),
+                    title: "AGC",
+                    description: "Gain 42.0 dB, Peak -12.5 dBFS, Final true",
+                    systemImage: "chart.line.uptrend.xyaxis",
+                    tintColor: .orange
+                ),
+                LogEvent(
+                    timestamp: Date().addingTimeInterval(-300),
+                    title: "Stream",
+                    description: "Seq 7, Size 1024, Service #0 KOSF, Component TTN STM Traffic (0xFF8422D7)",
+                    systemImage: "arrow.left.arrow.right.circle.fill",
                     tintColor: .blue
                 )
             ],
             eventCounts: [
-                "syncAchieved": 12,
+                "syncAchieved": 1,
+                "stationName": 1,
                 "lot": 86,
-                "stationName": 3,
-                "ber": 245,
+                "sig": 4,
+                "agc": 245,
+                "stream": 120,
                 "mer": 245
             ]
         )

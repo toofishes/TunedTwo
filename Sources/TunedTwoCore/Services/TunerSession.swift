@@ -131,15 +131,15 @@ private final class Nrsc5Context {
             // so we intentionally do not emit a Swift event for this case.
             event = nil
         case NRSC5_EVENT_STREAM:
+            // Omit `data` since we don't read it and can avoid unneeded allocations.
             event = .stream(seq: Int(raw.stream.seq),
                             size: Int(raw.stream.size),
-                            data: copyBytes(raw.stream.data, count: Int(raw.stream.size)),
                             service: raw.stream.service.map { copySigService($0.pointee) },
                             component: raw.stream.component.map { copySigComponent($0.pointee) })
         case NRSC5_EVENT_PACKET:
+            // Omit `data` since we don't read it and can avoid unneeded allocations.
             event = .packet(seq: Int(raw.packet.seq),
                             size: Int(raw.packet.size),
-                            data: copyBytes(raw.packet.data, count: Int(raw.packet.size)),
                             service: raw.packet.service.map { copySigService($0.pointee) },
                             component: raw.packet.component.map { copySigComponent($0.pointee) })
         case NRSC5_EVENT_AUDIO_SERVICE:

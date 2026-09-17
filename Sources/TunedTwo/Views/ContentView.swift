@@ -36,6 +36,8 @@ struct ContentView: View {
                         events: state.logEntries,
                         eventCounts: state.eventCounts
                     )
+                    .onAppear { state.isLogsVisible = true }
+                    .onDisappear { state.isLogsVisible = false }
                 }
             }
             Divider()
