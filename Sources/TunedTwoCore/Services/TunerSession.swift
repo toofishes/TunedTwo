@@ -91,9 +91,7 @@ private final class Nrsc5Context {
         case NRSC5_EVENT_HDC:
             // We have `data` available but don't copy it since we never use it.
             // Instead, just pass along the received byte count so bitrate can be calculated.
-            event = .hdc(program: Int(raw.hdc.program),
-                         size: Int(raw.hdc.count),
-                         flags: Int(raw.hdc.flags))
+            event = .hdc(program: Int(raw.hdc.program), size: Int(raw.hdc.count), flags: Int(raw.hdc.flags))
         case NRSC5_EVENT_IQ:
             // Omitting for now; this is a very low level raw data capture.
             event = nil
@@ -278,14 +276,13 @@ private extension Nrsc5Context {
         guard let ptr else { return nil }
         let t = ptr.pointee
         var components = DateComponents()
-        components.timeZone = TimeZone(identifier: "UTC")
         components.year = Int(t.tm_year) + 1900
         components.month = Int(t.tm_mon) + 1
         components.day = Int(t.tm_mday)
         components.hour = Int(t.tm_hour)
         components.minute = Int(t.tm_min)
         components.second = Int(t.tm_sec)
-        return Calendar(identifier: .gregorian).date(from: components)
+        return Calendar.utc.date(from: components)
     }
 
     func copyBytes(_ ptr: UnsafePointer<UInt8>?, count: Int) -> [UInt8] {

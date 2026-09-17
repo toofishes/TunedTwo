@@ -170,14 +170,12 @@ struct WeatherMapTests {
 
     private static func utcDate(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Date {
         var components = DateComponents()
-        components.calendar = Calendar(identifier: .gregorian)
-        components.timeZone = TimeZone(secondsFromGMT: 0)
         components.year = year
         components.month = month
         components.day = day
         components.hour = hour
         components.minute = minute
-        return components.date!
+        return Calendar.utc.date(from: components)!
     }
 
     private static func pngData(color: (CGFloat, CGFloat, CGFloat), width: Int, height: Int) -> Data? {

@@ -118,10 +118,7 @@ public struct TrafficMap {
         let timeString = components[5]
         guard dateString.count == 8, timeString.count == 4 else { return nil }
 
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
-        var dateComponents = DateComponents()
-        dateComponents.calendar = calendar
+        var dateComponents = DateComponents(calendar: Calendar.utc)
 
         guard let year = Int(dateString.prefix(4)),
               let month = Int(dateString.dropFirst(4).prefix(2)),
