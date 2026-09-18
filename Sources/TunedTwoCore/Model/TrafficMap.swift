@@ -88,7 +88,7 @@ public struct TrafficMap {
     public private(set) var config: TTNSTMTrafficConfig?
 
     /// Flat row-major storage: `tiles[(row - 1) * columnCount + (column - 1)]`.
-    public private(set) var tiles: [TrafficMapTile?]
+    private var tiles: [TrafficMapTile?]
 
     public init() {
         tiles = Array(repeating: nil, count: rowCount * columnCount)
@@ -225,18 +225,26 @@ public struct TrafficMap {
         return .stored
     }
 
-    // MARK: - Timestamps
+    // MARK: - Tile Timestamps and Counts
 
-    /// The earliest timestamp among the collected tiles, or nil if no
-    /// tiles have been ingested.
+    /// The earliest timestamp among the collected tiles, or nil if no tiles have been ingested.
     public func minimumTimestamp() -> Date? {
         tiles.compactMap { $0?.info.timestamp }.min()
     }
 
-    /// The latest timestamp among the collected tiles, or nil if no
-    /// tiles have been ingested.
+    /// The latest timestamp among the collected tiles, or nil if no tiles have been ingested.
     public func maximumTimestamp() -> Date? {
         tiles.compactMap { $0?.info.timestamp }.max()
+    }
+
+    /// The number of total tiles making up the current map. Includes unpopulated.
+    public func tileCount() -> Int {
+        tiles.count
+    }
+
+    /// The number of populated tiles in the current map.
+    public func populatedTileCount() -> Int {
+        tiles.compactMap { $0 }.count
     }
 
     // MARK: - Composite

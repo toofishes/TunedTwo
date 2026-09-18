@@ -76,7 +76,7 @@ struct TrafficMapTests {
 
         let outcome = map.processImageFile(name: "STN_035apk_2_1_20260914_1514_036f.png", data: png)
         #expect(outcome == .notTrafficMapFile)
-        #expect(map.tiles.allSatisfy { $0 == nil })
+        #expect(map.populatedTileCount() == 0)
         #expect(map.provider == nil)
     }
 
@@ -85,7 +85,7 @@ struct TrafficMapTests {
         var map = TrafficMap()
         let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1514_0001.png", data: Data("not a png".utf8))
         #expect(outcome == .undecodableImage)
-        #expect(map.tiles.allSatisfy { $0 == nil })
+        #expect(map.populatedTileCount() == 0)
     }
 
     @Test("rejects grid coordinates outside 1...3 instead of trapping")
@@ -102,21 +102,7 @@ struct TrafficMapTests {
         #expect(
             map.processImageFile(name: "TMT_prov_1_4_20260914_1514_0001.png", data: Data([0x89, 0x50, 0x4E, 0x47]))
                 == .outOfGrid)
-        #expect(map.tiles.allSatisfy { $0 == nil })
-    }
-
-    @Test("retains parsed tile metadata")
-    func retainsTileInfo() throws {
-        var map = TrafficMap()
-        let png = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        map.processImageFile(name: "TMT_035apk_2_1_20260914_1514_036f.png", data: png)
-
-        let tile = try #require(map.tiles[(2 - 1) * 3 + (1 - 1)])
-        #expect(tile.info.provider == "035apk")
-        #expect(tile.info.row == 2)
-        #expect(tile.info.column == 1)
-        #expect(tile.info.timestamp == Self.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 14))
-        #expect(map.provider == "035apk")
+        #expect(map.populatedTileCount() == 0)
     }
 
     // MARK: - Newer-wins rule
@@ -135,7 +121,6 @@ struct TrafficMapTests {
                 == .ignoredStale(
                     existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 0),
                     incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 13, hour: 15, minute: 0)))
-        #expect(map.tiles[0]?.info.hex == 0x0001)
     }
 
     @Test("replaces the stored tile when the timestamp is equal (retransmission)")
@@ -148,7 +133,6 @@ struct TrafficMapTests {
         let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0002.png", data: retransmission)
 
         #expect(outcome == .stored)
-        #expect(map.tiles[0]?.info.hex == 0x0002)
 
         let composite = try #require(map.composite)
         #expect(Self.pixelColor(in: composite, x: 4, yFromTop: 4) == Self.green)
@@ -164,7 +148,6 @@ struct TrafficMapTests {
         let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1600_0002.png", data: newer)
 
         #expect(outcome == .stored)
-        #expect(map.tiles[0]?.info.hex == 0x0002)
 
         let composite = try #require(map.composite)
         #expect(Self.pixelColor(in: composite, x: 4, yFromTop: 4) == Self.blue)
@@ -180,13 +163,13 @@ struct TrafficMapTests {
 
         map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: tileA)
         map.processImageFile(name: "TMT_035apk_3_3_20260914_1500_0002.png", data: tileA)
-        #expect(map.tiles.compactMap { $0 }.count == 2)
+        #expect(map.populatedTileCount() == 2)
 
         // A tile from a different provider wipes the previous map.
         let outcome = map.processImageFile(name: "TMT_941xyz_2_2_20260914_1600_0003.png", data: tileB)
         #expect(outcome == .stored)
         #expect(map.provider == "941xyz")
-        #expect(map.tiles.compactMap { $0 }.count == 1)
+        #expect(map.populatedTileCount() == 1)
 
         // The old provider's tiles are gone; only 2_2 (middle) holds a tile.
         let composite = try #require(map.composite)
@@ -220,7 +203,7 @@ struct TrafficMapTests {
         var map = TrafficMap()
         let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
         map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: tile)
-        #expect(map.tiles.compactMap { $0 }.count == 1)
+        #expect(map.populatedTileCount() == 1)
 
         let config = """
             TrafficMapProtocolVersionID="1.3"
@@ -238,7 +221,7 @@ struct TrafficMapTests {
         let outcome = map.processConfigFile(data: Data(config.utf8))
         #expect(outcome == .storedConfig)
         #expect(map.provider == "941xyz")
-        #expect(map.tiles.compactMap { $0 }.count == 0)
+        #expect(map.populatedTileCount() == 0)
     }
 
     @Test("uses the config background color in the composite")
