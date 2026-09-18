@@ -181,22 +181,22 @@ private final class Nrsc5Context {
                 longitude: raw.station_location.longitude,
                 altitude: Int(raw.station_location.altitude))
         case NRSC5_EVENT_AUDIO_SERVICE_DESCRIPTOR:
-            event = .audioServiceDescriptor([
+            event = .audioServiceDescriptor(
                 TunerAudioServiceDescriptor(
                     program: Int(raw.asd.program),
                     access: Int(raw.asd.access),
                     type: Int(raw.asd.type),
                     soundExp: Int(raw.asd.sound_exp)
                 )
-            ])
+            )
         case NRSC5_EVENT_DATA_SERVICE_DESCRIPTOR:
-            event = .dataServiceDescriptor([
+            event = .dataServiceDescriptor(
                 TunerDataServiceDescriptor(
                     access: Int(raw.dsd.access),
                     type: Int(raw.dsd.type),
                     mimeType: raw.dsd.mime_type
                 )
-            ])
+            )
         case NRSC5_EVENT_EMERGENCY_ALERT:
             event = .emergencyAlert(
                 message: makeString(raw.emergency_alert.message),

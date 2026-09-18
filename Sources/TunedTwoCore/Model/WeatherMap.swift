@@ -8,7 +8,6 @@
 import CoreGraphics
 import Foundation
 import ImageIO
-import MapKit
 
 /// Parsed parts of a TMT filename: `DWRO_{provider}_{rev}_{date}_{time}_{hex}.png`
 ///
@@ -60,30 +59,6 @@ public struct WeatherMap {
     public private(set) var config: TTNSTMWeatherConfig?
 
     public init() {
-    }
-
-    /// Geographic bounding box derived from the config file coordinates,
-    /// or `nil` if no config has been received.
-    public var radarBoundingBox: MKMapRect? {
-        guard let config else { return nil }
-        let coordinates = config.coordinates
-        guard coordinates.count >= 2 else { return nil }
-
-        let points = coordinates.map { coordinate in
-            MKMapPoint(
-                CLLocationCoordinate2D(
-                    latitude: coordinate.latitude,
-                    longitude: coordinate.longitude))
-        }
-        let minX = points.map { $0.x }.min() ?? 0
-        let maxX = points.map { $0.x }.max() ?? 0
-        let minY = points.map { $0.y }.min() ?? 0
-        let maxY = points.map { $0.y }.max() ?? 0
-        return MKMapRect(
-            x: minX,
-            y: minY,
-            width: maxX - minX,
-            height: maxY - minY)
     }
 
     // MARK: - Filename parsing

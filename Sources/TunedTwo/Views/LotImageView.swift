@@ -11,10 +11,14 @@ struct LotImageView: View {
     let defaultSystemImage: String
 
     var body: some View {
-        imageToDisplay
-            .resizable()
-            .scaledToFit()
-            .frame(maxWidth: 100, maxHeight: 100)
+        VStack(alignment: .center) {
+            Text(lot?.name ?? "No Image")
+            imageToDisplay
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 100, maxHeight: 100)
+            Text(lot?.lotID.formatted() ?? "No File ID")
+        }
     }
 
     /// Resolves the lot data to a SwiftUI `Image`, falling back to the default system image.

@@ -130,6 +130,30 @@ struct WeatherView: View {
             height: abs(p1.y - p2.y))
     }()
 
+    /// Geographic bounding box derived from the config file coordinates,
+    /// or `nil` if no config has been received.
+    private var radarBoundingBox: MKMapRect? {
+        guard let config = map.config else { return nil }
+        let coordinates = config.coordinates
+        guard coordinates.count >= 2 else { return nil }
+
+        let points = coordinates.map { coordinate in
+            MKMapPoint(
+                CLLocationCoordinate2D(
+                    latitude: coordinate.latitude,
+                    longitude: coordinate.longitude))
+        }
+        let minX = points.map { $0.x }.min() ?? 0
+        let maxX = points.map { $0.x }.max() ?? 0
+        let minY = points.map { $0.y }.min() ?? 0
+        let maxY = points.map { $0.y }.max() ?? 0
+        return MKMapRect(
+            x: minX,
+            y: minY,
+            width: maxX - minX,
+            height: maxY - minY)
+    }
+
     @State private var visibleRect: MKMapRect = usBoundingBox
 
     var body: some View {
@@ -138,19 +162,19 @@ struct WeatherView: View {
             WeatherMapView(
                 visibleRect: $visibleRect,
                 image: map.image,
-                boundingBox: map.radarBoundingBox
+                boundingBox: radarBoundingBox ?? Self.usBoundingBox,
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             HStack(spacing: 16) {
                 Button("Reset Radar View") {
-                    visibleRect = map.radarBoundingBox ?? Self.usBoundingBox
+                    visibleRect = radarBoundingBox ?? Self.usBoundingBox
                 }
                 Text(updated)
             }
         }
-        .onChange(of: map.config?.areaID) { _, _ in
-            visibleRect = map.radarBoundingBox ?? Self.usBoundingBox
+        .onChange(of: map.config?.coordinates) { _, _ in
+            visibleRect = radarBoundingBox ?? Self.usBoundingBox
         }
     }
 

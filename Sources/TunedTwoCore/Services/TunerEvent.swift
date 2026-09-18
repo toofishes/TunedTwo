@@ -46,8 +46,8 @@ public enum TunerEvent: Sendable {
 
     // Service Information Guide and descriptors
     case sig(services: [TunerSigService])
-    case audioServiceDescriptor([TunerAudioServiceDescriptor])
-    case dataServiceDescriptor([TunerDataServiceDescriptor])
+    case audioServiceDescriptor(TunerAudioServiceDescriptor)
+    case dataServiceDescriptor(TunerDataServiceDescriptor)
 
     // Data / file delivery
     case hdc(program: Int, size: Int, flags: UInt)

@@ -263,21 +263,21 @@ extension TunerState: TunerEventSink {
                     description:
                         "Program \(program), Access \(access), Type \(type), Codec \(codecMode), Blend \(blendControl), Gain \(digitalAudioGain), Delay \(commonDelay), Latency \(latency)",
                     systemImage: "speaker.wave.2.fill", tintColor: .blue))
-        case .audioServiceDescriptor(let descriptors):
-            let list = descriptors.map {
-                "Program \($0.program), Access \($0.access), Type \($0.type), SoundExp \($0.soundExp)"
-            }.joined(separator: "; ")
+        case .audioServiceDescriptor(let desc):
             appendLog(
                 LogEvent(
-                    title: "Audio Service Descriptor", description: list, systemImage: "waveform",
+                    title: "Audio Service Descriptor",
+                    description:
+                        "Program \(desc.program), Access \(desc.access), Type \(desc.type), SoundExp \(desc.soundExp)",
+                    systemImage: "waveform",
                     tintColor: .blue))
-        case .dataServiceDescriptor(let descriptors):
-            let list = descriptors.map {
-                "Access \($0.access), Type \($0.type), MIME \(nameForNRSC5MIMEType($0.mimeType))"
-            }.joined(separator: "; ")
+        case .dataServiceDescriptor(let desc):
             appendLog(
                 LogEvent(
-                    title: "Data Service Descriptor", description: list, systemImage: "waveform",
+                    title: "Data Service Descriptor",
+                    description:
+                        "Access \(desc.access), Type \(desc.type), MIME \(nameForNRSC5MIMEType(desc.mimeType))",
+                    systemImage: "waveform",
                     tintColor: .purple))
         case .exciterInfo(
             let manufacturerID, let coreVersion, let coreStatus, let manufacturerVersion, let manufacturerStatus,
