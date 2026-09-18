@@ -178,7 +178,7 @@ extension TunerState: TunerEventSink {
                 LogEvent(
                     title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .stationLocation(_, _, _):
+        case .stationLocation(_):
             break
         case .id3(let program, let title, let artist, let album, let genre, let showCover, let lotID):
             programStates[program].title = title
@@ -251,6 +251,14 @@ extension TunerState: TunerEventSink {
                         "ID: \(file.lotID), File: \(file.name), Size: \(file.data.count), MIME: \(mimeName), Expires: \(file.expiry?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .hereImage(let image):
+            switch image.type {
+            case .traffic:
+                traffic.processHereImageFile(hereImage: image)
+            case .weather:
+                weather.processHereImageFile(hereImage: image)
+            case .unknown:
+                break
+            }
             let typeStr =
                 switch image.type {
                 case .traffic:

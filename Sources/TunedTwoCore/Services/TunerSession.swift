@@ -177,9 +177,10 @@ private final class Nrsc5Context {
             event = .stationMessage(makeString(raw.station_message.message))
         case NRSC5_EVENT_STATION_LOCATION:
             event = .stationLocation(
-                latitude: raw.station_location.latitude,
-                longitude: raw.station_location.longitude,
-                altitude: Int(raw.station_location.altitude))
+                location: Location(
+                    latitude: Double(raw.station_location.latitude),
+                    longitude: Double(raw.station_location.longitude),
+                    altitude: Double(raw.station_location.altitude)))
         case NRSC5_EVENT_AUDIO_SERVICE_DESCRIPTOR:
             event = .audioServiceDescriptor(
                 TunerAudioServiceDescriptor(
@@ -224,11 +225,10 @@ private final class Nrsc5Context {
                     n1: Int(img.n1),
                     n2: Int(img.n2),
                     time: makeDate(img.time_utc),
-                    boundingBox: TunerBoundingBox(
-                        latitude1: img.latitude1,
-                        longitude1: img.longitude1,
-                        latitude2: img.latitude2,
-                        longitude2: img.longitude2),
+                    boundingBox: [
+                        Location(latitude: img.latitude1, longitude: img.longitude1),
+                        Location(latitude: img.latitude2, longitude: img.longitude2),
+                    ],
                     data: copyBytes(img.data, count: Int(img.size)))
             )
         case NRSC5_EVENT_AGC:

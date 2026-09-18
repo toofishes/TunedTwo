@@ -8,19 +8,8 @@
 
 import Foundation
 
-/// A geographic coordinate as latitude and longitude in degrees.
-public struct TTNSTMCoordinate: Equatable, Hashable, Sendable {
-    public let latitude: Double
-    public let longitude: Double
-
-    public init(latitude: Double, longitude: Double) {
-        self.latitude = latitude
-        self.longitude = longitude
-    }
-}
-
 /// An RGB color with 8-bit components.
-public struct TTNSTMRGB: Equatable, Hashable, Sendable {
+public struct RGB: Equatable, Hashable, Sendable {
     public let red: UInt8
     public let green: UInt8
     public let blue: UInt8
@@ -99,7 +88,7 @@ public enum TTNSTMValueParser {
     }
 
     /// Parse a `(latitude, longitude)` coordinate tuple.
-    public static func parseCoordinate(_ raw: String) -> TTNSTMCoordinate? {
+    public static func parseCoordinate(_ raw: String) -> Location? {
         guard let components = try? parseTuple(raw),
             components.count == 2,
             let latitude = Double(components[0]),
@@ -107,11 +96,11 @@ public enum TTNSTMValueParser {
         else {
             return nil
         }
-        return TTNSTMCoordinate(latitude: latitude, longitude: longitude)
+        return Location(latitude: latitude, longitude: longitude)
     }
 
     /// Parse an `(r, g, b)` RGB tuple.
-    public static func parseRGB(_ raw: String) -> TTNSTMRGB? {
+    public static func parseRGB(_ raw: String) -> RGB? {
         guard let components = try? parseTuple(raw),
             components.count == 3,
             let red = UInt8(components[0]),
@@ -120,7 +109,7 @@ public enum TTNSTMValueParser {
         else {
             return nil
         }
-        return TTNSTMRGB(red: red, green: green, blue: blue)
+        return RGB(red: red, green: green, blue: blue)
     }
 
     /// Parse a `(stationID, frequency)` station tuple.

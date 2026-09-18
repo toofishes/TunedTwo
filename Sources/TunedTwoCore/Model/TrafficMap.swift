@@ -74,7 +74,7 @@ public struct TrafficMap {
     public static let columnCount = 3
 
     /// Default background color used when no config file has been received.
-    public static let defaultBackgroundColor = TTNSTMRGB(red: 194, green: 187, blue: 96)
+    public static let defaultBackgroundColor = RGB(red: 194, green: 187, blue: 96)
 
     /// Provider ID of the map currently being assembled (from the most
     /// recently ingested tile or text config file).
@@ -187,6 +187,42 @@ public struct TrafficMap {
         }
 
         tiles[index] = TrafficMapTile(info: info, image: image)
+        return .stored
+    }
+
+    /// Parse and store a HERE traffic map image.
+    @discardableResult
+    public mutating func processHereImageFile(hereImage: HereImage) -> TrafficMapIngestOutcome {
+        guard case .traffic = hereImage.type else { return .notTrafficMapFile }
+        guard let source = CGImageSourceCreateWithData(hereImage.data as CFData, nil) else { return .undecodableImage }
+        guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
+
+        let size = Int(Double(hereImage.n2).squareRoot())
+
+        // TODO: right now, we're synthesizing some of this to match LOT format.
+        // TODO: use sqrt(n2) to determine rows/columns max
+        let row = (hereImage.n1 - 1) / size
+        let column = (hereImage.n1 - 1) % size
+        let info = TMTInfo(
+            provider: "HERE", row: row, column: column, timestamp: hereImage.time ?? Date(),
+            hex: UInt16(hereImage.sequence))
+
+        if let currentProvider = provider, currentProvider != info.provider {
+            tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
+        }
+        provider = info.provider
+
+        // TODO: this is also synthesized; we don't use much out of it
+        let newConfig = TTNSTMTrafficConfig(
+            protocolVersionID: "0.0", trafficMapID: "HERE", stationList: [],
+            numRows: size, numColumns: size, numTransmittedTiles: hereImage.n2,
+            // TODO: this isn't quite right; each tile should set it's own location or something?
+            coordinatesRows: Array([hereImage.boundingBox]),
+            backgroundRGBColor: RGB(red: 0xE0, green: 0xE0, blue: 0xE8),
+            copyrightNotice: "")
+
+        tiles[hereImage.n1 - 1] = TrafficMapTile(info: info, image: image)
+        config = newConfig
         return .stored
     }
 

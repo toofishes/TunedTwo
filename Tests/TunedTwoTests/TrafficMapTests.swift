@@ -204,7 +204,7 @@ struct TrafficMapTests {
         #expect(outcome == .storedConfig)
         #expect(map.provider == "035apk")
         #expect(map.config?.trafficMapID == "035apk")
-        #expect(map.config?.backgroundRGBColor == TTNSTMRGB(red: 194, green: 187, blue: 96))
+        #expect(map.config?.backgroundRGBColor == RGB(red: 194, green: 187, blue: 96))
     }
 
     @Test("reports an invalid config file")

@@ -36,7 +36,7 @@ public enum TunerEvent: Sendable {
     case stationSlogan(String)
     case stationMessage(String)
     case stationID(countryCode: String, fccFacilityID: Int)
-    case stationLocation(latitude: Float, longitude: Float, altitude: Int)
+    case stationLocation(location: Location)
 
     // Audio / program metadata
     case id3(program: Int, title: String, artist: String, album: String, genre: String, showCover: Bool, lotID: Int)
@@ -135,7 +135,7 @@ public struct HereImage: Sendable {
     var n1: Int
     var n2: Int
     var time: Date?
-    var boundingBox: TunerBoundingBox
+    var boundingBox: [Location]
     var data: Data
 }
 

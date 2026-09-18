@@ -139,24 +139,6 @@ struct WeatherMapTests {
         #expect(map.info == nil)
     }
 
-    @Test("computes radar bounding box from config coordinates")
-    func radarBoundingBoxFromConfig() throws {
-        var map = WeatherMap()
-        map.processConfigFile(data: Data(Self.sampleConfig.utf8))
-
-        let box = try #require(map.radarBoundingBox)
-        let coordinateOne = CLLocationCoordinate2D(latitude: 43.69360, longitude: -90.68990)
-        let coordinateTwo = CLLocationCoordinate2D(latitude: 39.67031, longitude: -85.30001)
-        #expect(box.contains(MKMapPoint(coordinateOne)))
-        #expect(box.contains(MKMapPoint(coordinateTwo)))
-    }
-
-    @Test("returns nil bounding box when no config is present")
-    func noConfigNoBoundingBox() {
-        let map = WeatherMap()
-        #expect(map.radarBoundingBox == nil)
-    }
-
     // MARK: - Helpers
 
     private static let sampleConfig = """

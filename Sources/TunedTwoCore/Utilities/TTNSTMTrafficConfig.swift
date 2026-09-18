@@ -17,8 +17,8 @@ public struct TTNSTMTrafficConfig: Equatable, Sendable {
     public let numTransmittedTiles: Int
     /// Coordinate entries for each row, keyed by `CoordinatesRow1`,
     /// `CoordinatesRow2`, and so on.
-    public let coordinatesRows: [[TTNSTMCoordinate]]
-    public let backgroundRGBColor: TTNSTMRGB
+    public let coordinatesRows: [[Location]]
+    public let backgroundRGBColor: RGB
     public let copyrightNotice: String
 
     public init(
@@ -28,8 +28,8 @@ public struct TTNSTMTrafficConfig: Equatable, Sendable {
         numRows: Int,
         numColumns: Int,
         numTransmittedTiles: Int,
-        coordinatesRows: [[TTNSTMCoordinate]],
-        backgroundRGBColor: TTNSTMRGB,
+        coordinatesRows: [[Location]],
+        backgroundRGBColor: RGB,
         copyrightNotice: String
     ) {
         self.protocolVersionID = protocolVersionID
@@ -118,14 +118,14 @@ public enum TTNSTMTrafficConfigParser {
         }
     }
 
-    private static func parseCoordinatesRows(_ config: TTNSTMConfig, numRows: Int) throws -> [[TTNSTMCoordinate]] {
-        var rows: [[TTNSTMCoordinate]] = []
+    private static func parseCoordinatesRows(_ config: TTNSTMConfig, numRows: Int) throws -> [[Location]] {
+        var rows: [[Location]] = []
         for row in 1...numRows {
             let key = "CoordinatesRow\(row)"
             guard let values = config.values(for: key) else {
                 throw TTNSTMTrafficConfigError.missingKey(key)
             }
-            let coordinates = try values.map { raw -> TTNSTMCoordinate in
+            let coordinates = try values.map { raw -> Location in
                 guard let coordinate = TTNSTMValueParser.parseCoordinate(raw) else {
                     throw TTNSTMTrafficConfigError.invalidValue(key: key, value: raw)
                 }

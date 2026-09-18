@@ -12,9 +12,9 @@ public struct TTNSTMLegendEntry: Equatable, Sendable {
     /// Intensity or category level for this legend entry.
     public let level: Int
     /// Color assigned to this level.
-    public let color: TTNSTMRGB
+    public let color: RGB
 
-    public init(level: Int, color: TTNSTMRGB) {
+    public init(level: Int, color: RGB) {
         self.level = level
         self.color = color
     }
@@ -25,7 +25,7 @@ public struct TTNSTMWeatherConfig: Equatable, Sendable {
     public let protocolVersionID: String
     public let areaID: String
     public let stationList: [TTNSTMStation]
-    public let coordinates: [TTNSTMCoordinate]
+    public let coordinates: [Location]
     public let legendRain: [TTNSTMLegendEntry]
     public let legendMixIce: [TTNSTMLegendEntry]
     public let legendSnow: [TTNSTMLegendEntry]
@@ -35,7 +35,7 @@ public struct TTNSTMWeatherConfig: Equatable, Sendable {
         protocolVersionID: String,
         areaID: String,
         stationList: [TTNSTMStation],
-        coordinates: [TTNSTMCoordinate],
+        coordinates: [Location],
         legendRain: [TTNSTMLegendEntry],
         legendMixIce: [TTNSTMLegendEntry],
         legendSnow: [TTNSTMLegendEntry],
@@ -109,7 +109,7 @@ public enum TTNSTMWeatherConfigParser {
         }
     }
 
-    private static func parseCoordinates(_ values: [String]?) throws -> [TTNSTMCoordinate] {
+    private static func parseCoordinates(_ values: [String]?) throws -> [Location] {
         guard let values else { return [] }
         return try values.map { raw in
             guard let coordinate = TTNSTMValueParser.parseCoordinate(raw) else {

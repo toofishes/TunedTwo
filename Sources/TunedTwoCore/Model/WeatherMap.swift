@@ -158,7 +158,38 @@ public struct WeatherMap {
 
     /// Parse and store a HERE weather radar image.
     @discardableResult
-    public mutating func processHEREImageFile() -> WeatherMapIngestOutcome {
-        return .notWeatherMapFile
+    public mutating func processHereImageFile(hereImage: HereImage) -> WeatherMapIngestOutcome {
+        guard case .weather = hereImage.type else { return .notWeatherMapFile }
+        // TODO: right now, we're synthesizing some of this to match LOT format.
+        let newInfo = WeatherInfo(
+            provider: "HERE", revision: "HERE", timestamp: hereImage.time ?? Date(), hex: UInt16(hereImage.sequence))
+        guard let source = CGImageSourceCreateWithData(hereImage.data as CFData, nil) else { return .undecodableImage }
+        guard let newImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
+
+        if let currentProvider = self.provider, currentProvider != newInfo.provider {
+            info = nil
+            image = nil
+        }
+        self.provider = newInfo.provider
+
+        if let currentInfo = info {
+            if currentInfo.timestamp > newInfo.timestamp {
+                return .ignoredStale(
+                    existingTimestamp: currentInfo.timestamp,
+                    incomingTimestamp: newInfo.timestamp)
+            }
+        }
+
+        // TODO: this is also synthesized. we really just need the coordinates, not much else
+        let newConfig = TTNSTMWeatherConfig(
+            protocolVersionID: "0.0", areaID: "HERE", stationList: [],
+            coordinates: hereImage.boundingBox,
+            legendRain: [], legendMixIce: [], legendSnow: [],
+            copyrightNotice: "")
+
+        info = newInfo
+        image = newImage
+        config = newConfig
+        return .stored
     }
 }
