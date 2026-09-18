@@ -29,6 +29,8 @@ struct StationInfo: View {
                 MetadataRow(label: "Station", value: state.stationName)
                 MetadataRow(label: "Slogan", value: state.stationSlogan)
                 MetadataRow(label: "Message", value: state.stationMessage)
+                MetadataRow(label: "Station ID", value: state.stationID.formatted(.number.grouping(.never)))
+                MetadataRow(label: "Country Code", value: state.stationCountry)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -40,7 +42,7 @@ private struct NowPlaying: View {
     var lotCache: [Int: LotFile]
 
     var body: some View {
-        HStack {
+        HStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 12) {
                 MetadataRow(label: "Service", value: programState.serviceName)
                 MetadataRow(label: "Title", value: programState.title)
@@ -66,7 +68,7 @@ private struct MetadataRow: View {
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .frame(width: 60, alignment: .leading)
+                .frame(width: 80, alignment: .leading)
             Text(value.isEmpty ? "—" : value)
         }
     }

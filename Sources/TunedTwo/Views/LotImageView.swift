@@ -12,12 +12,14 @@ struct LotImageView: View {
 
     var body: some View {
         VStack(alignment: .center) {
-            Text(lot?.name ?? "No Image")
             imageToDisplay
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: 100, maxHeight: 100)
-            Text(lot?.lotID.formatted() ?? "No File ID")
+                .aspectRatio(1.0, contentMode: .fit)
+                .frame(idealWidth: 100, maxWidth: 100, idealHeight: 100, maxHeight: 100)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Text(lot?.lotID.formatted(.number.grouping(.never)) ?? "")
+            Text(lot?.expiry?.formatted(date: .numeric, time: .shortened) ?? "")
         }
     }
 
@@ -43,4 +45,12 @@ struct LotImageView: View {
             return Image(uiImage: uiImage)
         #endif
     }
+}
+
+#Preview("Non-Square default") {
+    HStack {
+        LotImageView(lot: nil, defaultSystemImage: "antenna.radiowaves.left.and.right")
+        LotImageView(lot: nil, defaultSystemImage: "music.note")
+    }
+    .padding(50)
 }

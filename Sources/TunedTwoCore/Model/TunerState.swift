@@ -70,6 +70,9 @@ public final class TunerState {
 
     public var status: String = "Ready"
 
+    public var stationCountry: String = ""
+    public var stationID: Int = -1
+    public var stationLocation: Location?
     public var stationName: String = ""
     public var stationSlogan: String = ""
     public var stationMessage: String = ""
@@ -174,11 +177,14 @@ extension TunerState: TunerEventSink {
                     title: "Station Message", description: message,
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
         case .stationID(let countryCode, let fccFacilityID):
+            stationCountry = countryCode
+            stationID = fccFacilityID
             appendLog(
                 LogEvent(
                     title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
-        case .stationLocation(_):
+        case .stationLocation(let location):
+            stationLocation = location
             break
         case .id3(let program, let title, let artist, let album, let genre, let showCover, let lotID):
             programStates[program].title = title
