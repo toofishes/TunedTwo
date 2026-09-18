@@ -8,9 +8,8 @@
 import SwiftUI
 import TunedTwoCore
 
-struct LogEventRow: View {
+struct LogEventRow: View, @MainActor Equatable {
     let event: LogEvent
-    let isLast: Bool
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -21,13 +20,6 @@ struct LogEventRow: View {
                     .frame(width: 32, height: 32)
                     .background(event.tintColor)
                     .clipShape(Circle())
-
-                if !isLast {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.4))
-                        .frame(width: 2)
-                        .frame(maxHeight: .infinity)
-                }
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -46,8 +38,39 @@ struct LogEventRow: View {
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.bottom, isLast ? 0 : 16)
         }
+    }
+
+    static func == (lhs: LogEventRow, rhs: LogEventRow) -> Bool {
+        lhs.event.id == rhs.event.id
+    }
+}
+
+struct EventCountRow: View, @MainActor Equatable {
+    let entry: (key: String, value: Int)
+    let highlight: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(entry.key)
+                .font(.caption)
+                .lineLimit(1)
+            Spacer()
+            Text("\(entry.value)")
+                .font(.caption.bold())
+                .monospacedDigit()
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.accentColor.opacity(0.15))
+                .clipShape(Capsule())
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(!highlight ? Color.clear : Color.gray.opacity(0.08))
+    }
+
+    static func == (lhs: EventCountRow, rhs: EventCountRow) -> Bool {
+        lhs.entry == rhs.entry && lhs.highlight == rhs.highlight
     }
 }
 
@@ -70,17 +93,14 @@ struct EventLogView: View {
     }
 
     private var eventList: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
-                    LogEventRow(
-                        event: event,
-                        isLast: index == events.count - 1
-                    )
+        List(events) { event in
+            LogEventRow(event: event)
+                .equatable()
+                .alignmentGuide(.listRowSeparatorLeading) { dimensions in
+                    dimensions[.leading]
                 }
-            }
-            .padding()
         }
+        .padding()
     }
 
     private var eventCountsTable: some View {
@@ -101,22 +121,8 @@ struct EventLogView: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(sortedCounts.enumerated()), id: \.element.key) { index, entry in
-                        HStack(spacing: 8) {
-                            Text(entry.key)
-                                .font(.caption)
-                                .lineLimit(1)
-                            Spacer()
-                            Text("\(entry.value)")
-                                .font(.caption.bold())
-                                .monospacedDigit()
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.accentColor.opacity(0.15))
-                                .clipShape(Capsule())
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(index % 2 == 0 ? Color.clear : Color.gray.opacity(0.08))
+                        EventCountRow(entry: entry, highlight: index % 2 == 0)
+                            .equatable()
                     }
                 }
             }

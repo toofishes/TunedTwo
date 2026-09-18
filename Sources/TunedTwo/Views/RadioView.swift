@@ -49,7 +49,8 @@ private struct NowPlaying: View {
                 MetadataRow(label: "Genre", value: programState.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            LotImageView(lot: lotCache[programState.programLotID], defaultSystemImage: "antenna.radiowaves.left.and.right")
+            LotImageView(
+                lot: lotCache[programState.programLotID], defaultSystemImage: "antenna.radiowaves.left.and.right")
             LotImageView(lot: lotCache[programState.coverLotID], defaultSystemImage: "music.note")
         }
     }
