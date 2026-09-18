@@ -133,8 +133,7 @@ struct WeatherView: View {
     /// Geographic bounding box derived from the config file coordinates,
     /// or `nil` if no config has been received.
     private var radarBoundingBox: MKMapRect? {
-        guard let config = map.config else { return nil }
-        let coordinates = config.coordinates
+        guard let coordinates = map.coordinates else { return nil }
         guard coordinates.count >= 2 else { return nil }
 
         let points = coordinates.map { coordinate in
@@ -173,13 +172,13 @@ struct WeatherView: View {
                 Text(updated)
             }
         }
-        .onChange(of: map.config?.coordinates) { _, _ in
+        .onChange(of: map.coordinates) { _, _ in
             visibleRect = radarBoundingBox ?? Self.usBoundingBox
         }
     }
 
     var updated: String {
-        guard let ts = map.info?.timestamp else { return "No Weather Radar Data" }
+        guard let ts = map.timestamp else { return "No Weather Radar Data" }
         let formattedTs = ts.formatted(date: .numeric, time: .shortened)
         return "Weather Last Updated: \(formattedTs)"
     }

@@ -70,9 +70,7 @@ struct WeatherMapTests {
         map.processImageFile(name: "DWRO_035apk_rev02_20260916_1358_040f.png", data: png)
 
         #expect(map.provider == "035apk")
-        #expect(map.info?.provider == "035apk")
-        #expect(map.info?.revision == "rev02")
-        #expect(map.info?.timestamp == Self.utcDate(year: 2026, month: 9, day: 16, hour: 13, minute: 58))
+        #expect(map.timestamp == Self.utcDate(year: 2026, month: 9, day: 16, hour: 13, minute: 58))
         #expect(map.image != nil)
     }
 
@@ -92,7 +90,7 @@ struct WeatherMapTests {
                 == .ignoredStale(
                     existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 16, hour: 15, minute: 0),
                     incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 15, hour: 15, minute: 0)))
-        #expect(map.info?.hex == 0x0001)
+        #expect(map.timestamp == Self.utcDate(year: 2026, month: 9, day: 16, hour: 15, minute: 0))
     }
 
     // MARK: - Config files
@@ -103,8 +101,7 @@ struct WeatherMapTests {
         let outcome = map.processConfigFile(data: Data(Self.sampleConfig.utf8))
         #expect(outcome == .storedConfig)
         #expect(map.provider == "035apk")
-        #expect(map.config?.areaID == "035apk")
-        #expect(map.config?.coordinates.count == 2)
+        #expect(map.coordinates?.count == 2)
     }
 
     @Test("reports an invalid config file")
@@ -112,7 +109,6 @@ struct WeatherMapTests {
         var map = WeatherMap()
         let outcome = map.processConfigFile(data: Data("not a config".utf8))
         #expect(outcome == .invalidConfig)
-        #expect(map.config == nil)
     }
 
     @Test("a config from a different provider clears the stored image")
@@ -136,7 +132,6 @@ struct WeatherMapTests {
         #expect(outcome == .storedConfig)
         #expect(map.provider == "941xyz")
         #expect(map.image == nil)
-        #expect(map.info == nil)
     }
 
     // MARK: - Helpers
