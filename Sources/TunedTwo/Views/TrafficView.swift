@@ -11,7 +11,6 @@ struct TrafficView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
-            Text("Traffic")
             if let composite = map.composite {
                 Image(composite, scale: 1.0, orientation: .up, label: Text("Traffic"))
                     .resizable().scaledToFit()

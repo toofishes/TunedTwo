@@ -157,7 +157,6 @@ struct WeatherView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 10) {
-            Text("Weather")
             WeatherMapView(
                 visibleRect: $visibleRect,
                 image: map.image,
