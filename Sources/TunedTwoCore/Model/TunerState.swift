@@ -248,8 +248,11 @@ extension TunerState: TunerEventSink {
                 LogEvent(
                     title: "LOT File",
                     description:
-                        "ID: \(file.lotID), File: \(file.name), Size: \(file.data.count), MIME: \(mimeName), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
+                        "ID: \(file.lotID), File: \(file.name), Size: \(file.data.count), MIME: \(mimeName), Expires: \(file.expiry?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
+        case let .hereImage(type, seq, n1, n2, timeUTC, boundingBox, name, data):
+            let typeStr = type == NRSC5_HERE_IMAGE_TRAFFIC ? "Traffic" : type == NRSC5_HERE_IMAGE_WEATHER ? "Weather" : "Unknown"
+            appendLog(LogEvent(title: "HERE Image", description: "File: \(name), Size: \(data.count), Type: \(typeStr), Sequence: \(seq), N1: \(n1), N2: \(n2) Time: \(timeUTC?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Bounds: \(boundingBox)", systemImage: "photo", tintColor: .blue))
         case .agc(let gainDB, let peakDBFS, let isFinal):
             if isFinal {
                 appendLog(
