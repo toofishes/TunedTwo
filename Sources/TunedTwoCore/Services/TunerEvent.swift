@@ -57,9 +57,7 @@ public enum TunerEvent: Sendable {
     case lotHeader(
         lotID: Int, mime: UInt32, name: String, size: Int, expiry: Date?, service: TunerSigService?,
         component: TunerSigComponent?)
-    case hereImage(
-        type: Int, seq: Int, n1: Int, n2: Int, timeUTC: Date?, boundingBox: TunerBoundingBox, name: String,
-        data: Data)
+    case hereImage(image: HereImage)
 
     // Alerts and infrastructure info
     case emergencyAlert(
@@ -122,6 +120,23 @@ public struct LotFile: Sendable {
     public let name: String
     public let data: Data
     public let expiry: Date?
+}
+
+public struct HereImage: Sendable {
+    enum ImageType {
+        case traffic
+        case weather
+        case unknown
+    }
+
+    var type: ImageType
+    var name: String
+    var sequence: Int
+    var n1: Int
+    var n2: Int
+    var time: Date?
+    var boundingBox: TunerBoundingBox
+    var data: Data
 }
 
 /// A service entry from an NRSC5 SIG (Service Information Guide) table.

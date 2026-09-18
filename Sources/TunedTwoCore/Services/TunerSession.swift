@@ -211,19 +211,26 @@ private final class Nrsc5Context {
                     count: Int(raw.emergency_alert.num_locations)))
         case NRSC5_EVENT_HERE_IMAGE:
             let img = raw.here_image
+            let imgType =
+                img.image_type == NRSC5_HERE_IMAGE_TRAFFIC
+                ? HereImage.ImageType.traffic
+                : img.image_type == NRSC5_HERE_IMAGE_WEATHER
+                    ? HereImage.ImageType.weather : HereImage.ImageType.unknown
             event = .hereImage(
-                type: Int(img.image_type),
-                seq: Int(img.seq),
-                n1: Int(img.n1),
-                n2: Int(img.n2),
-                timeUTC: makeDate(img.time_utc),
-                boundingBox: TunerBoundingBox(
-                    latitude1: img.latitude1,
-                    longitude1: img.longitude1,
-                    latitude2: img.latitude2,
-                    longitude2: img.longitude2),
-                name: makeString(img.name),
-                data: copyBytes(img.data, count: Int(img.size)))
+                image: HereImage(
+                    type: imgType,
+                    name: makeString(img.name),
+                    sequence: Int(img.seq),
+                    n1: Int(img.n1),
+                    n2: Int(img.n2),
+                    time: makeDate(img.time_utc),
+                    boundingBox: TunerBoundingBox(
+                        latitude1: img.latitude1,
+                        longitude1: img.longitude1,
+                        latitude2: img.latitude2,
+                        longitude2: img.longitude2),
+                    data: copyBytes(img.data, count: Int(img.size)))
+            )
         case NRSC5_EVENT_AGC:
             event = .agc(
                 gainDB: raw.agc.gain_db,

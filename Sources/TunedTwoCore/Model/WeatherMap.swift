@@ -155,4 +155,10 @@ public struct WeatherMap {
         image = newImage
         return .stored
     }
+
+    /// Parse and store a HERE weather radar image.
+    @discardableResult
+    public mutating func processHEREImageFile() -> WeatherMapIngestOutcome {
+        return .notWeatherMapFile
+    }
 }
