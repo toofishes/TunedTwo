@@ -194,7 +194,7 @@ extension TunerState: TunerEventSink {
             }
             let mimeName = nameForNRSC5MIMEType(file.mime)
 
-            var compMimeName = "None"
+            var compMimeName = "Unknown"
             if let component {
                 switch component {
                 case .data(_, _, _, _, let mime):
@@ -246,7 +246,7 @@ extension TunerState: TunerEventSink {
 
             appendLog(
                 LogEvent(
-                    title: "LOT File",
+                    title: "LOT File - \(mimeName), \(compMimeName)",
                     description:
                         "ID: \(file.lotID), File: \(file.name), Size: \(file.data.count), MIME: \(mimeName), Expires: \(file.expiry?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Service: \(serviceDesc), Component: \(componentDesc), Component MIME: \(compMimeName)",
                     systemImage: "checkmark.icloud.fill", tintColor: .blue))
@@ -270,9 +270,9 @@ extension TunerState: TunerEventSink {
                 }
             appendLog(
                 LogEvent(
-                    title: "HERE Image",
+                    title: "HERE Image - \(typeStr)",
                     description:
-                        "File: \(image.name), Size: \(image.data.count), Type: \(typeStr), Sequence: \(image.sequence), N1: \(image.n1), N2: \(image.n2) Time: \(image.time?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Bounds: \(image.boundingBox)",
+                        "File: \(image.name), Size: \(image.data.count), Sequence: \(image.sequence), N1: \(image.n1), N2: \(image.n2) Time: \(image.time?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Bounds: \(image.boundingBox)",
                     systemImage: "photo", tintColor: .blue))
         case .agc(let gainDB, let peakDBFS, let isFinal):
             if isFinal {

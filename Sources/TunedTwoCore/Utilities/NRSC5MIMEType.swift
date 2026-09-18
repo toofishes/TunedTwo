@@ -11,18 +11,18 @@ import nrsc5
 /// Returns a display name for an NRSC5 MIME type value.
 ///
 /// Known values are translated to readable names plus their hex value
-/// (e.g. `"TTN STM Traffic (0xFF8422D7)"`). Unknown values fall back to
+/// (e.g. `"TTN STM Traffic"`). Unknown values fall back to
 /// their hex representation.
 public func nameForNRSC5MIMEType(_ mime: UInt32) -> String {
-    let hex = String(format: "0x%08X", mime)
     if let name = nrsc5MimeNames[mime] {
-        return "\(name) (\(hex))"
+        return name
     }
+    let hex = String(format: "0x%08X", mime)
     return "Unknown (\(hex))"
 }
 
 private let nrsc5MimeNames: [UInt32: String] = [
-    NRSC5_MIME_PRIMARY_IMAGE: "PrimaryImage",
+    NRSC5_MIME_PRIMARY_IMAGE: "Primary Image",
     NRSC5_MIME_STATION_LOGO: "Station Logo",
     UInt32(NRSC5_MIME_NAVTEQ): "NAVTEQ",
     NRSC5_MIME_HERE_TPEG: "HERE TPEG",
