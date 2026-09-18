@@ -14,12 +14,16 @@ import Foundation
 import nrsc5
 
 public struct ProgramState {
+    public var serviceName: String = ""
+
     public var title: String = ""
     public var artist: String = ""
     public var album: String = ""
     public var genre: String = ""
+
     public var showCover: Bool = false
-    public var lotID: Int = -1
+    public var coverLotID: Int = -1
+    public var programLotID: Int = -1
 
     public var bitsPerSecond: Int = 0
     public var crcErrors: Int = 0
@@ -83,7 +87,6 @@ public final class TunerState {
         return Float(mhz * 1_000_000)
     }
 
-    public var latestStationImage: LotFile?
     public var traffic = TrafficMap()
     public var weather = WeatherMap()
 
@@ -183,7 +186,7 @@ extension TunerState: TunerEventSink {
             programStates[program].album = album
             programStates[program].genre = genre
             programStates[program].showCover = showCover
-            programStates[program].lotID = lotID
+            programStates[program].coverLotID = lotID
         case .lot(let file, let service, let component):
             let isImage = file.mime == NRSC5_MIME_JPEG || file.mime == NRSC5_MIME_PNG
             if isImage {
@@ -200,7 +203,9 @@ extension TunerState: TunerEventSink {
                         lotCache[file.lotID] = file
                     } else if mime == NRSC5_MIME_STATION_LOGO && isImage {
                         lotCache[file.lotID] = file
-                        latestStationImage = file
+                        if let ac = service?.audioComponent, case .audio(_, let port, _, _) = ac {
+                            programStates[Int(port)].programLotID = file.lotID
+                        }
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
                         if isImage {
                             traffic.processImageFile(name: file.name, data: file.data)
@@ -310,6 +315,11 @@ extension TunerState: TunerEventSink {
                         "UTC Offset \(utcOffsetMinutes) min, Regional DST \(dstRegional), Local DST \(dstLocal), Schedule \(dstSchedule)",
                     systemImage: "clock.badge.checkmark", tintColor: .orange))
         case .sig(let services):
+            for service in services {
+                if case .audio(_, let port, _, _) = service.audioComponent {
+                    programStates[Int(port)].serviceName = service.name
+                }
+            }
             let list = services.map { "#\($0.number) \($0.name) (\($0.components.count) components)" }.joined(
                 separator: ", ")
             appendLog(

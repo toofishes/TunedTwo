@@ -31,7 +31,6 @@ struct StationInfo: View {
                 MetadataRow(label: "Message", value: state.stationMessage)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            LotImageView(lot: state.latestStationImage, defaultSystemImage: "antenna.radiowaves.left.and.right")
         }
     }
 }
@@ -43,13 +42,15 @@ private struct NowPlaying: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 12) {
+                MetadataRow(label: "Service", value: programState.serviceName)
                 MetadataRow(label: "Title", value: programState.title)
                 MetadataRow(label: "Artist", value: programState.artist)
                 MetadataRow(label: "Album", value: programState.album)
                 MetadataRow(label: "Genre", value: programState.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            LotImageView(lot: lotCache[programState.lotID], defaultSystemImage: "music.note")
+            LotImageView(lot: lotCache[programState.programLotID], defaultSystemImage: "antenna.radiowaves.left.and.right")
+            LotImageView(lot: lotCache[programState.coverLotID], defaultSystemImage: "music.note")
         }
     }
 }
