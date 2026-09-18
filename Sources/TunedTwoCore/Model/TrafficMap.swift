@@ -70,25 +70,28 @@ public enum TrafficMapIngestOutcome: Equatable, Sendable {
 ///   or equal to the stored tile's — equal timestamps are retransmissions
 ///   with new content and still win.
 public struct TrafficMap {
-    public static let rowCount = 3
-    public static let columnCount = 3
+    /// Default background color used when no TTN config file has been received.
+    private static let defaultTTNBackgroundColor = RGB(red: 194, green: 187, blue: 96)
+    /// Default background color used when the map source is HERE.
+    private static let defaultHereBackgroundColor = RGB(red: 0xE0, green: 0xE0, blue: 0xE8)
 
-    /// Default background color used when no config file has been received.
-    public static let defaultBackgroundColor = RGB(red: 194, green: 187, blue: 96)
+    private var backgroundColor: RGB = defaultTTNBackgroundColor
+
+    private var rowCount = 3
+    private var columnCount = 3
 
     /// Provider ID of the map currently being assembled (from the most
     /// recently ingested tile or text config file).
     public private(set) var provider: String?
 
-    /// Most recently ingested traffic map config file.
+    /// Most recently ingested TTN traffic map config file, if TTN is the source.
     public private(set) var config: TTNSTMTrafficConfig?
 
     /// Flat row-major storage: `tiles[(row - 1) * columnCount + (column - 1)]`.
     public private(set) var tiles: [TrafficMapTile?]
 
     public init() {
-        tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
-        provider = nil
+        tiles = Array(repeating: nil, count: rowCount * columnCount)
     }
 
     // MARK: - Filename parsing
@@ -155,12 +158,14 @@ public struct TrafficMap {
             return .invalidConfig
         }
 
-        let provider = newConfig.trafficMapID
-        if let currentProvider = self.provider, currentProvider != provider {
-            tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
+        let newProvider = newConfig.trafficMapID
+        if let currentProvider = self.provider, currentProvider != newProvider {
+            tiles = Array(repeating: nil, count: rowCount * columnCount)
         }
-        self.provider = provider
+        self.provider = newProvider
         self.config = newConfig
+        self.backgroundColor = newConfig.backgroundRGBColor
+        // TODO: update rowCount/columnCount if changed, and recreate tiles array if needed
         return .storedConfig
     }
 
@@ -168,18 +173,18 @@ public struct TrafficMap {
     @discardableResult
     public mutating func processImageFile(name: String, data: Data) -> TrafficMapIngestOutcome {
         guard let info = Self.parseLOTName(name) else { return .notTrafficMapFile }
-        guard (1...Self.rowCount).contains(info.row),
-            (1...Self.columnCount).contains(info.column)
+        guard (1...rowCount).contains(info.row),
+            (1...columnCount).contains(info.column)
         else { return .outOfGrid }
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return .undecodableImage }
         guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
 
         if let currentProvider = provider, currentProvider != info.provider {
-            tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
+            tiles = Array(repeating: nil, count: rowCount * columnCount)
         }
         provider = info.provider
 
-        let index = (info.row - 1) * Self.columnCount + (info.column - 1)
+        let index = (info.row - 1) * columnCount + (info.column - 1)
         if let existing = tiles[index], existing.info.timestamp > info.timestamp {
             return .ignoredStale(
                 existingTimestamp: existing.info.timestamp,
@@ -208,21 +213,15 @@ public struct TrafficMap {
             hex: UInt16(hereImage.sequence))
 
         if let currentProvider = provider, currentProvider != info.provider {
-            tiles = Array(repeating: nil, count: Self.rowCount * Self.columnCount)
+            config = nil
+            rowCount = size
+            columnCount = size
+            tiles = Array(repeating: nil, count: rowCount * columnCount)
         }
         provider = info.provider
 
-        // TODO: this is also synthesized; we don't use much out of it
-        let newConfig = TTNSTMTrafficConfig(
-            protocolVersionID: "0.0", trafficMapID: "HERE", stationList: [],
-            numRows: size, numColumns: size, numTransmittedTiles: hereImage.n2,
-            // TODO: this isn't quite right; each tile should set it's own location or something?
-            coordinatesRows: Array([hereImage.boundingBox]),
-            backgroundRGBColor: RGB(red: 0xE0, green: 0xE0, blue: 0xE8),
-            copyrightNotice: "")
-
         tiles[hereImage.n1 - 1] = TrafficMapTile(info: info, image: image)
-        config = newConfig
+        backgroundColor = Self.defaultHereBackgroundColor
         return .stored
     }
 
@@ -250,8 +249,8 @@ public struct TrafficMap {
 
         let cellWidth = CGFloat(sample.image.width)
         let cellHeight = CGFloat(sample.image.height)
-        let width = Int(cellWidth * CGFloat(Self.columnCount))
-        let height = Int(cellHeight * CGFloat(Self.rowCount))
+        let width = Int(cellWidth * CGFloat(columnCount))
+        let height = Int(cellHeight * CGFloat(rowCount))
 
         guard
             let context = CGContext(
@@ -266,25 +265,23 @@ public struct TrafficMap {
             return nil
         }
 
-        // Background fill for missing tiles. Override with the config color
-        // when one is available, otherwise fall back to the default.
-        let background = config?.backgroundRGBColor ?? Self.defaultBackgroundColor
+        // Background fill for missing tiles.
         context.setFillColor(
-            red: CGFloat(background.red) / 255.0,
-            green: CGFloat(background.green) / 255.0,
-            blue: CGFloat(background.blue) / 255.0,
+            red: CGFloat(backgroundColor.red) / 255.0,
+            green: CGFloat(backgroundColor.green) / 255.0,
+            blue: CGFloat(backgroundColor.blue) / 255.0,
             alpha: 1.0)
         context.fill(CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
 
         // CGBitmapContext user space has its origin at the lower-left, so
         // map row 1 (the top row) to the highest y band. Tiles are scaled to
         // the cell size, so mismatched tile dimensions still tile cleanly.
-        for row in 0..<Self.rowCount {
-            for column in 0..<Self.columnCount {
-                guard let tile = tiles[row * Self.columnCount + column] else { continue }
+        for row in 0..<rowCount {
+            for column in 0..<columnCount {
+                guard let tile = tiles[row * columnCount + column] else { continue }
                 let rect = CGRect(
                     x: CGFloat(column) * cellWidth,
-                    y: CGFloat(Self.rowCount - 1 - row) * cellHeight,
+                    y: CGFloat(rowCount - 1 - row) * cellHeight,
                     width: cellWidth,
                     height: cellHeight)
                 context.draw(tile.image, in: rect)
