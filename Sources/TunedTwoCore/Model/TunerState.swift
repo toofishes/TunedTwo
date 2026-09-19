@@ -93,7 +93,7 @@ public final class TunerState {
     public var traffic = TrafficMap()
     public var weather = WeatherMap()
 
-    public var lotCache: [Int: LotFile] = [:]
+    public var lotCache: [Int: TunerLotFile] = [:]
 
     public var logEntries: [LogEvent] = []
     public var eventCounts: [String: Int] = .init()
@@ -116,6 +116,22 @@ public final class TunerState {
     private var logFlushTask: Task<Void, Never>?
 
     public init() {}
+
+    public func clearForFrequencyChange() {
+        stationCountry = ""
+        stationID = -1
+        stationLocation = nil
+        stationName = ""
+        stationSlogan = ""
+        stationMessage = ""
+
+        programStates = Array(repeating: .init(), count: 8)
+        bpsTrackers = Array(repeating: .init(), count: 8)
+
+        merLower = 0
+        merUpper = 0
+        ber = 0
+    }
 }
 
 // MARK: - TunerEventSink
@@ -186,13 +202,13 @@ extension TunerState: TunerEventSink {
         case .stationLocation(let location):
             stationLocation = location
             break
-        case .id3(let program, let title, let artist, let album, let genre, let showCover, let lotID):
-            programStates[program].title = title
-            programStates[program].artist = artist
-            programStates[program].album = album
-            programStates[program].genre = genre
-            programStates[program].showCover = showCover
-            programStates[program].coverLotID = lotID
+        case .id3(let program, let id3):
+            programStates[program].title = id3.title
+            programStates[program].artist = id3.artist
+            programStates[program].album = id3.album
+            programStates[program].genre = id3.genre
+            programStates[program].showCover = id3.showCover
+            programStates[program].coverLotID = id3.lotID
         case .lot(let file, let service, let component):
             let isImage = file.mime == NRSC5_MIME_JPEG || file.mime == NRSC5_MIME_PNG
             if isImage {

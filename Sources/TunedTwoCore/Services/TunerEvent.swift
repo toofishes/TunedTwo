@@ -39,7 +39,7 @@ public enum TunerEvent: Sendable {
     case stationLocation(location: Location)
 
     // Audio / program metadata
-    case id3(program: Int, title: String, artist: String, album: String, genre: String, showCover: Bool, lotID: Int)
+    case id3(program: Int, id3: TunerID3)
     case audioService(
         program: Int, access: Int, type: Int, codecMode: Int, blendControl: Int, digitalAudioGain: Int,
         commonDelay: Int, latency: Int)
@@ -53,11 +53,11 @@ public enum TunerEvent: Sendable {
     case hdc(program: Int, size: Int, flags: UInt)
     case stream(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
     case packet(seq: Int, size: Int, service: TunerSigService?, component: TunerSigComponent?)
-    case lot(file: LotFile, service: TunerSigService?, component: TunerSigComponent?)
+    case lot(file: TunerLotFile, service: TunerSigService?, component: TunerSigComponent?)
     case lotHeader(
         lotID: Int, mime: UInt32, name: String, size: Int, expiry: Date?, service: TunerSigService?,
         component: TunerSigComponent?)
-    case hereImage(image: HereImage)
+    case hereImage(image: TunerHereImage)
 
     // Alerts and infrastructure info
     case emergencyAlert(
@@ -114,7 +114,17 @@ extension TunerEvent {
     }
 }
 
-public struct LotFile: Sendable {
+public struct TunerID3: Sendable {
+    public let program: Int
+    public let title: String
+    public let artist: String
+    public let album: String
+    public let genre: String
+    public let showCover: Bool
+    public let lotID: Int
+}
+
+public struct TunerLotFile: Sendable {
     public let lotID: Int
     public let mime: UInt32
     public let name: String
@@ -122,7 +132,7 @@ public struct LotFile: Sendable {
     public let expiry: Date?
 }
 
-public struct HereImage: Sendable {
+public struct TunerHereImage: Sendable {
     enum ImageType {
         case traffic
         case weather
@@ -135,7 +145,7 @@ public struct HereImage: Sendable {
     var n1: Int
     var n2: Int
     var time: Date?
-    var boundingBox: [Location]
+    var boundingBox: (Location, Location)
     var data: Data
 }
 
@@ -168,14 +178,6 @@ public struct TunerDataServiceDescriptor: Sendable {
     public let access: Int
     public let type: Int
     public let mimeType: UInt32
-}
-
-/// Geographic bounding box for HERE traffic/weather images.
-public struct TunerBoundingBox: Sendable {
-    public let latitude1: Float
-    public let longitude1: Float
-    public let latitude2: Float
-    public let longitude2: Float
 }
 
 /// Receives tuner events. Conformers run on the MainActor (typically

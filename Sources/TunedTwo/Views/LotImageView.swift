@@ -7,7 +7,7 @@ import SwiftUI
 import TunedTwoCore
 
 struct LotImageView: View {
-    let lot: LotFile?
+    let lot: TunerLotFile?
     let defaultSystemImage: String
 
     var body: some View {

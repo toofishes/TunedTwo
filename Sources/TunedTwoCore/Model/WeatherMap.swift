@@ -162,7 +162,7 @@ public struct WeatherMap {
 
     /// Parse and store a HERE weather radar image.
     @discardableResult
-    public mutating func processHereImageFile(hereImage: HereImage) -> WeatherMapIngestOutcome {
+    public mutating func processHereImageFile(hereImage: TunerHereImage) -> WeatherMapIngestOutcome {
         guard case .weather = hereImage.type else { return .notWeatherMapFile }
         guard let source = CGImageSourceCreateWithData(hereImage.data as CFData, nil) else { return .undecodableImage }
         guard let newImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
@@ -187,7 +187,7 @@ public struct WeatherMap {
         timestamp = newTimestamp
         image = newImage
         config = nil
-        coordinates = hereImage.boundingBox
+        coordinates = [hereImage.boundingBox.0, hereImage.boundingBox.1]
         return .stored
     }
 }

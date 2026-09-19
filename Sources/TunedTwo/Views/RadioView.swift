@@ -29,7 +29,9 @@ struct StationInfo: View {
                 MetadataRow(label: "Station", value: state.stationName)
                 MetadataRow(label: "Slogan", value: state.stationSlogan)
                 MetadataRow(label: "Message", value: state.stationMessage)
-                MetadataRow(label: "Station ID", value: state.stationID.formatted(.number.grouping(.never)))
+                MetadataRow(
+                    label: "Station ID",
+                    value: state.stationID == -1 ? "" : state.stationID.formatted(.number.grouping(.never)))
                 MetadataRow(label: "Country Code", value: state.stationCountry)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -39,7 +41,7 @@ struct StationInfo: View {
 
 private struct NowPlaying: View {
     let programState: ProgramState
-    var lotCache: [Int: LotFile]
+    var lotCache: [Int: TunerLotFile]
 
     var body: some View {
         HStack(spacing: 20) {

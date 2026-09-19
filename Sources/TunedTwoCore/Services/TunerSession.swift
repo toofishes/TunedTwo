@@ -106,17 +106,19 @@ private final class Nrsc5Context {
         case NRSC5_EVENT_ID3:
             event = .id3(
                 program: Int(raw.id3.program),
-                title: makeString(raw.id3.title),
-                artist: makeString(raw.id3.artist),
-                album: makeString(raw.id3.album),
-                genre: makeString(raw.id3.genre),
-                showCover: raw.id3.xhdr.param == 0,
-                lotID: Int(raw.id3.xhdr.lot))
+                id3: TunerID3(
+                    program: Int(raw.id3.program),
+                    title: makeString(raw.id3.title),
+                    artist: makeString(raw.id3.artist),
+                    album: makeString(raw.id3.album),
+                    genre: makeString(raw.id3.genre),
+                    showCover: raw.id3.xhdr.param == 0,
+                    lotID: Int(raw.id3.xhdr.lot)))
         case NRSC5_EVENT_SIG:
             event = .sig(services: copySigServices(raw.sig.services))
         case NRSC5_EVENT_LOT:
             event = .lot(
-                file: LotFile(
+                file: TunerLotFile(
                     lotID: Int(raw.lot.lot),
                     mime: raw.lot.mime,
                     name: makeString(raw.lot.name),
@@ -214,21 +216,21 @@ private final class Nrsc5Context {
             let img = raw.here_image
             let imgType =
                 img.image_type == NRSC5_HERE_IMAGE_TRAFFIC
-                ? HereImage.ImageType.traffic
+                ? TunerHereImage.ImageType.traffic
                 : img.image_type == NRSC5_HERE_IMAGE_WEATHER
-                    ? HereImage.ImageType.weather : HereImage.ImageType.unknown
+                    ? TunerHereImage.ImageType.weather : TunerHereImage.ImageType.unknown
             event = .hereImage(
-                image: HereImage(
+                image: TunerHereImage(
                     type: imgType,
                     name: makeString(img.name),
                     sequence: Int(img.seq),
                     n1: Int(img.n1),
                     n2: Int(img.n2),
                     time: makeDate(img.time_utc),
-                    boundingBox: [
+                    boundingBox: (
                         Location(latitude: img.latitude1, longitude: img.longitude1),
                         Location(latitude: img.latitude2, longitude: img.longitude2),
-                    ],
+                    ),
                     data: copyBytes(img.data, count: Int(img.size)))
             )
         case NRSC5_EVENT_AGC:

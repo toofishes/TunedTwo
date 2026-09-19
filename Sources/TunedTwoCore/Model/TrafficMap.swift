@@ -197,7 +197,7 @@ public struct TrafficMap {
 
     /// Parse and store a HERE traffic map image.
     @discardableResult
-    public mutating func processHereImageFile(hereImage: HereImage) -> TrafficMapIngestOutcome {
+    public mutating func processHereImageFile(hereImage: TunerHereImage) -> TrafficMapIngestOutcome {
         guard case .traffic = hereImage.type else { return .notTrafficMapFile }
         guard let source = CGImageSourceCreateWithData(hereImage.data as CFData, nil) else { return .undecodableImage }
         guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }

@@ -180,6 +180,7 @@ struct ContentView: View {
                 let session, let frequencyHz = state.frequencyHz
             else { return }
             await session.retune(frequencyHz: frequencyHz)
+            state.clearForFrequencyChange()
         }
     }
 
