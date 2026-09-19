@@ -30,17 +30,14 @@ public final class AudioPlayer: Sendable {
                 interleaved: true),
             let outFmt = AVAudioFormat(
                 standardFormatWithSampleRate: sr,
-                channels: 2)
+                channels: 2),
+            let conv = AVAudioConverter(from: inFmt, to: outFmt)
         else {
             throw AudioError.formatUnsupported
         }
 
         self.inputFormatInt16 = inFmt
         self.outputFormatFloat = outFmt
-
-        guard let conv = AVAudioConverter(from: inFmt, to: outFmt) else {
-            throw AudioError.formatUnsupported
-        }
         self.converter = conv
 
         engine.attach(player)
