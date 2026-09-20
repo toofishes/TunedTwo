@@ -137,9 +137,10 @@ struct EventLogView: View {
         HSplitView {
             EventListView(events: state.logEntries)
                 .frame(minWidth: 240)
+                .layoutPriority(1)
 
             EventCountsTable(eventCounts: state.eventCounts)
-                .frame(minWidth: 180)
+                .frame(minWidth: 240)
         }
     }
 }
