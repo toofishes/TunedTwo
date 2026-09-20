@@ -112,7 +112,7 @@ public final class TunerState {
     /// Counts accumulated since the last public `eventCounts` update.
     private var pendingEventCounts: [String: Int] = [:]
     /// Log entries accumulated since the last public `logEntries` update.
-    private var pendingLogEntries: [LogEvent] = []
+    private var pendingLogEntries: Deque<LogEvent> = Deque()
     /// Outstanding timer that will flush pending counts/logs to the observable properties.
     private var logFlushTask: Task<Void, Never>?
 
@@ -439,7 +439,7 @@ extension TunerState {
         logFlushTask = Task { @MainActor [self] in
             defer { logFlushTask = nil }
             do {
-                try await Task.sleep(for: .milliseconds(250))
+                try await Task.sleep(for: .milliseconds(395))
             } catch {
                 return
             }

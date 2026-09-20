@@ -32,12 +32,9 @@ struct ContentView: View {
                 }
 
                 Tab("Logs", systemImage: "list.bullet.rectangle") {
-                    EventLogView(
-                        events: state.logEntries,
-                        eventCounts: state.eventCounts
-                    )
-                    .onAppear { state.isLogsVisible = true }
-                    .onDisappear { state.isLogsVisible = false }
+                    EventLogView(state: state)
+                        .onAppear { state.isLogsVisible = true }
+                        .onDisappear { state.isLogsVisible = false }
                 }
             }
             Divider()

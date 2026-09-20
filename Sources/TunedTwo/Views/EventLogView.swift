@@ -8,11 +8,10 @@
 import SwiftUI
 import TunedTwoCore
 
-struct LogEventRow: View, @MainActor Equatable {
+private struct LogEventRow: View, @MainActor Equatable {
     let event: LogEvent
 
     var body: some View {
-        let _ = Self._printChanges()
         HStack(alignment: .top, spacing: 16) {
             VStack(spacing: 0) {
                 Image(systemName: event.systemImage)
@@ -47,7 +46,7 @@ struct LogEventRow: View, @MainActor Equatable {
     }
 }
 
-struct EventCountRow: View, @MainActor Equatable {
+private struct EventCountRow: View, @MainActor Equatable {
     let entry: (key: String, value: Int)
     let highlight: Bool
 
@@ -75,26 +74,10 @@ struct EventCountRow: View, @MainActor Equatable {
     }
 }
 
-struct EventLogView<Events>: View where Events: RandomAccessCollection, Events.Element == LogEvent {
+private struct EventListView<Events>: View where Events: RandomAccessCollection, Events.Element == LogEvent {
     let events: Events
-    let eventCounts: [String: Int]
-
-    private var sortedCounts: [(key: String, value: Int)] {
-        eventCounts.sorted { $0.key < $1.key }
-    }
 
     var body: some View {
-        let _ = Self._printChanges()
-        HSplitView {
-            eventList
-                .frame(minWidth: 240)
-
-            eventCountsTable
-                .frame(minWidth: 180)
-        }
-    }
-
-    private var eventList: some View {
         List(events) { event in
             LogEventRow(event: event)
                 .equatable()
@@ -104,8 +87,16 @@ struct EventLogView<Events>: View where Events: RandomAccessCollection, Events.E
         }
         .padding()
     }
+}
 
-    private var eventCountsTable: some View {
+private struct EventCountsTable: View {
+    let eventCounts: [String: Int]
+
+    private var sortedCounts: [(key: String, value: Int)] {
+        eventCounts.sorted { $0.key < $1.key }
+    }
+
+    var body: some View {
         VStack(spacing: 0) {
             HStack {
                 Text("Event")
@@ -139,8 +130,23 @@ struct EventLogView<Events>: View where Events: RandomAccessCollection, Events.E
     }
 }
 
+struct EventLogView: View {
+    let state: TunerState
+
+    var body: some View {
+        HSplitView {
+            EventListView(events: state.logEntries)
+                .frame(minWidth: 240)
+
+            EventCountsTable(eventCounts: state.eventCounts)
+                .frame(minWidth: 180)
+        }
+    }
+}
+
+/*
 #Preview("Activity Log") {
-    NavigationStack {
+    return NavigationStack {
         EventLogView(
             events: [
                 LogEvent(
@@ -200,3 +206,4 @@ struct EventLogView<Events>: View where Events: RandomAccessCollection, Events.E
         .navigationTitle("Activity Log")
     }
 }
+*/
