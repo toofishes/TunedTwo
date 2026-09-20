@@ -50,6 +50,7 @@ class ImageOverlayRenderer: MKOverlayRenderer {
 struct WeatherMapView: NSViewRepresentable {
     @Binding var visibleRect: MKMapRect
     let image: CGImage?
+    let opacity: CGFloat
     let boundingBox: MKMapRect?
 
     func makeNSView(context: Context) -> MKMapView {
@@ -81,7 +82,7 @@ struct WeatherMapView: NSViewRepresentable {
         mapView.removeOverlays(mapView.overlays)
 
         if let image = image, let boundingBox = boundingBox {
-            let overlay = ImageOverlay(image: image, opacity: 0.5, rect: boundingBox)
+            let overlay = ImageOverlay(image: image, opacity: opacity, rect: boundingBox)
             mapView.addOverlay(overlay)
         }
     }
@@ -162,6 +163,8 @@ struct WeatherView: View {
             WeatherMapView(
                 visibleRect: $visibleRect,
                 image: map.image,
+                // TODO: a bit hacky, but helps with the two types of radar maps we've seen
+                opacity: map.provider == "HERE" ? 0.7 : 1.0,
                 boundingBox: radarBoundingBox ?? Self.usBoundingBox,
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
