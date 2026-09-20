@@ -167,7 +167,7 @@ public struct WeatherMap {
         guard let source = CGImageSourceCreateWithData(hereImage.data as CFData, nil) else { return .undecodableImage }
         guard let newImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
 
-        let newProvider = "here"
+        let newProvider = "HERE"
         let newTimestamp = hereImage.time ?? Date()
 
         if let currentProvider = self.provider, currentProvider != newProvider {
