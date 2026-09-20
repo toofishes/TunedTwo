@@ -5,6 +5,9 @@ packages:
   swift-argument-parser:
     url: https://github.com/apple/swift-argument-parser
     from: 1.8.2
+  swift-collections:
+    url: https://github.com/apple/swift-collections
+    from: 1.6.0
 options:
   bundleIdPrefix: io.tunedtwo
   deploymentTarget:
@@ -40,6 +43,9 @@ targets:
     deploymentTarget: "15.0"
     sources:
       - path: Sources/TunedTwoCore
+    dependencies:
+      - package: swift-collections
+        product: Collections
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.TunedTwoCore

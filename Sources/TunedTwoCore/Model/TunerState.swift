@@ -9,6 +9,7 @@
 //  methods, so UI-owned state is only ever mutated on the main thread.
 //
 
+import Collections
 import Combine
 import Foundation
 import nrsc5
@@ -95,7 +96,7 @@ public final class TunerState {
 
     public var lotCache: [Int: TunerLotFile] = [:]
 
-    public var logEntries: [LogEvent] = []
+    public var logEntries: Deque<LogEvent> = Deque()
     public var eventCounts: [String: Int] = .init()
 
     /// Whether the Logs tab is currently on screen.

@@ -12,6 +12,7 @@
 		1C16F982482BC9C3C2719B68 /* TunedTwoCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; };
 		3542081607162BF2629BED51 /* TunedTwoCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		718408AA5CF43FDF9B0CE44A /* TunedTwoCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; };
+		87D0CE46C55F7A74E8ACFEA1 /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = F3C0A8A1611F84BA2352EE2D /* Collections */; };
 		9078F4CD5F8B9A468EC1C5D8 /* TunedTwoCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F23FA2F88B972261503F4DEA /* TunedTwoCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -161,6 +162,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C8241E9D1ABCF2F9B27FE0A6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				87D0CE46C55F7A74E8ACFEA1 /* Collections in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -238,6 +247,7 @@
 				38EADEAB18D1F19BF60CCB6B /* Build libnrsc5 */,
 				A6E1F42A202224538E31D7B5 /* Sources */,
 				9B8975219DF5428EB51BAF9B /* Resources */,
+				C8241E9D1ABCF2F9B27FE0A6 /* Frameworks */,
 				1578B3C409C501A6F13B240C /* Embed libnrsc5 */,
 			);
 			buildRules = (
@@ -249,6 +259,7 @@
 			);
 			name = TunedTwoCore;
 			packageProductDependencies = (
+				F3C0A8A1611F84BA2352EE2D /* Collections */,
 			);
 			productName = TunedTwoCore;
 			productReference = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */;
@@ -338,6 +349,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+				315B7FBE442897A3229AA87C /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 570E5FABF70267A883DE5542 /* Products */;
@@ -836,6 +848,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		315B7FBE442897A3229AA87C /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.6.0;
+			};
+		};
 		5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-argument-parser";
@@ -851,6 +871,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
+		};
+		F3C0A8A1611F84BA2352EE2D /* Collections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 315B7FBE442897A3229AA87C /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = Collections;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

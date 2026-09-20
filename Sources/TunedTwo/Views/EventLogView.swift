@@ -75,8 +75,8 @@ struct EventCountRow: View, @MainActor Equatable {
     }
 }
 
-struct EventLogView: View {
-    let events: [LogEvent]
+struct EventLogView<Events>: View where Events: RandomAccessCollection, Events.Element == LogEvent {
+    let events: Events
     let eventCounts: [String: Int]
 
     private var sortedCounts: [(key: String, value: Int)] {
