@@ -159,6 +159,7 @@ struct ContentView: View {
             // Optimistic, so the button feels immediate; the .failed event
             // corrects this if the tuner cannot start.
             state.isPlaying = true
+            state.clearForFrequencyChange()
             await newSession.start(configuration)
         } catch {
             session = nil
