@@ -21,6 +21,12 @@ public enum TunerEvent: Sendable {
     case stopped
     case failed(message: String)
 
+    // Audio output lifecycle
+    case audioOutputRouteChanged
+    case audioOutputInterrupted
+    case audioOutputResumed
+    case audioOutputFailed(message: String)
+
     // Demodulator state
     case syncAchieved(freqOffset: Float, psmi: Int, pli: Int, hppi: Int, aabi: Int, rdbi: Int)
     case lostSync
@@ -82,6 +88,10 @@ extension TunerEvent {
         case .started: return "started"
         case .stopped: return "stopped"
         case .failed: return "failed"
+        case .audioOutputRouteChanged: return "audioOutputRouteChanged"
+        case .audioOutputInterrupted: return "audioOutputInterrupted"
+        case .audioOutputResumed: return "audioOutputResumed"
+        case .audioOutputFailed: return "audioOutputFailed"
         case .syncAchieved: return "syncAchieved"
         case .lostSync: return "lostSync"
         case .lostDevice: return "lostDevice"

@@ -149,6 +149,38 @@ extension TunerState: TunerEventSink {
         case .failed(let message):
             isPlaying = false
             status = "Error: \(message)"
+        case .audioOutputRouteChanged:
+            status = "Audio output changed"
+            appendLog(
+                LogEvent(
+                    title: "Audio Output Changed",
+                    description: "The system audio output device changed.",
+                    systemImage: "hifispeaker",
+                    tintColor: .orange))
+        case .audioOutputInterrupted:
+            status = "Audio paused for sleep"
+            appendLog(
+                LogEvent(
+                    title: "Audio Interrupted",
+                    description: "Playback was paused because the system is going to sleep.",
+                    systemImage: "moon.fill",
+                    tintColor: .orange))
+        case .audioOutputResumed:
+            status = "Playing"
+            appendLog(
+                LogEvent(
+                    title: "Audio Resumed",
+                    description: "Playback resumed after an audio output change.",
+                    systemImage: "hifispeaker.fill",
+                    tintColor: .green))
+        case .audioOutputFailed(let message):
+            status = "Audio error: \(message)"
+            appendLog(
+                LogEvent(
+                    title: "Audio Error",
+                    description: message,
+                    systemImage: "exclamationmark.triangle.fill",
+                    tintColor: .red))
         case .lostDevice:
             status = "Device lost"
             isPlaying = false

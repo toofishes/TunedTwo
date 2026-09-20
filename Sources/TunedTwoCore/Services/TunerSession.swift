@@ -419,8 +419,8 @@ public actor TunerSession {
 
     public init(sink: TunerEventSink) throws {
         self.sink = sink
-        self.audioPlayer = try AudioPlayer()
         self.currentProgram = 0
+        self.audioPlayer = try AudioPlayer()
 
         // Drain C callback events into the actor. The task holds the session
         // weakly so a released session can deinit while it runs; the context's
@@ -432,10 +432,15 @@ public actor TunerSession {
                 await self?.handle(event)
             }
         }
-    }
 
-    deinit {
-        audioPlayer.stop()
+        // Forward audio-output lifecycle events into the session actor. This
+        // is set after initialization so the closure can safely capture self.
+        self.audioPlayer.setEventHandler { [weak self] event in
+            Task { [weak self] in
+                guard let self else { return }
+                await self.handleAudioPlayerEvent(event)
+            }
+        }
     }
 
     // MARK: - Public control
@@ -489,6 +494,19 @@ public actor TunerSession {
             audioPlayer.feed(samples)
         default:
             await sink?.tunerSessionDidEmit(event)
+        }
+    }
+
+    private func handleAudioPlayerEvent(_ event: AudioPlayerEvent) async {
+        switch event {
+        case .routeChanged:
+            await sink?.tunerSessionDidEmit(.audioOutputRouteChanged)
+        case .interrupted:
+            await sink?.tunerSessionDidEmit(.audioOutputInterrupted)
+        case .resumed:
+            await sink?.tunerSessionDidEmit(.audioOutputResumed)
+        case .resumeFailed(let message):
+            await sink?.tunerSessionDidEmit(.audioOutputFailed(message: message))
         }
     }
 

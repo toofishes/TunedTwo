@@ -12,6 +12,7 @@ struct LogEventRow: View, @MainActor Equatable {
     let event: LogEvent
 
     var body: some View {
+        let _ = Self._printChanges()
         HStack(alignment: .top, spacing: 16) {
             VStack(spacing: 0) {
                 Image(systemName: event.systemImage)
@@ -83,6 +84,7 @@ struct EventLogView: View {
     }
 
     var body: some View {
+        let _ = Self._printChanges()
         HSplitView {
             eventList
                 .frame(minWidth: 240)

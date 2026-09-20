@@ -11,9 +11,11 @@ class ImageOverlay: NSObject, MKOverlay {
     let coordinate: CLLocationCoordinate2D
     let boundingMapRect: MKMapRect
     let image: CGImage
+    let opacity: CGFloat
 
-    init(image: CGImage, rect: MKMapRect) {
+    init(image: CGImage, opacity: CGFloat, rect: MKMapRect) {
         self.image = image
+        self.opacity = opacity
         self.boundingMapRect = rect
         self.coordinate = MKCoordinateRegion(rect).center
         super.init()
@@ -32,8 +34,8 @@ class ImageOverlayRenderer: MKOverlayRenderer {
         // Flip the context geometry because Core Graphics and macOS have inverted Y-axes
         context.translateBy(x: 0, y: rect.origin.y + rect.size.height)
         context.scaleBy(x: 1.0, y: -1.0)
-
         let flippedRect = CGRect(x: rect.origin.x, y: 0, width: rect.size.width, height: rect.size.height)
+        context.setAlpha(imageOverlay.opacity)
         context.draw(imageOverlay.image, in: flippedRect)
 
         context.restoreGState()
@@ -79,7 +81,7 @@ struct WeatherMapView: NSViewRepresentable {
         mapView.removeOverlays(mapView.overlays)
 
         if let image = image, let boundingBox = boundingBox {
-            let overlay = ImageOverlay(image: image, rect: boundingBox)
+            let overlay = ImageOverlay(image: image, opacity: 0.5, rect: boundingBox)
             mapView.addOverlay(overlay)
         }
     }
