@@ -120,20 +120,34 @@ public final class AudioPlayer: AudioEventSink, Sendable {
         }
     }
 
+    private func createSourceBuffer(
+        from bufferPointer: UnsafeBufferPointer<Int16>,
+        pcmFormat: AVAudioFormat
+    ) -> AVAudioPCMBuffer? {
+        let audioBuffer = AudioBuffer(
+            mNumberChannels: pcmFormat.channelCount,
+            mDataByteSize: UInt32(bufferPointer.count * MemoryLayout<Int16>.size),
+            mData: UnsafeMutableRawPointer(mutating: bufferPointer.baseAddress)
+        )
+
+        var bufferList = AudioBufferList(mNumberBuffers: 1, mBuffers: (audioBuffer))
+        let pcmBuffer = AVAudioPCMBuffer(pcmFormat: pcmFormat, bufferListNoCopy: &bufferList)
+        return pcmBuffer
+    }
+
     /// Accepts interleaved 16-bit signed PCM from nrsc5, converts it to
     /// float, and schedules it on the system audio graph.
     public func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>) {
         guard lock.withLock({ $0.isRunning && $0.currentProgram == program }) else { return }
-        guard samples.count >= 2 else { return }
+        guard samples.count >= 2 && samples.count <= (Int(NRSC5_AUDIO_FRAME_SAMPLES) * 2) else { return }
         let frames = AVAudioFrameCount(samples.count / 2)
 
-        guard let sourceBuffer = AVAudioPCMBuffer(pcmFormat: inputFormatInt16, frameCapacity: frames) else { return }
+        // createSourceBuffer avoids copying the source data, but don't let this buffer
+        // escape this function, since it is directly pointing at the nrsc5 library callback data.
+        guard let sourceBuffer = createSourceBuffer(from: samples, pcmFormat: inputFormatInt16) else { return }
         sourceBuffer.frameLength = frames
 
-        if let destPtr = sourceBuffer.int16ChannelData?[0] {
-            destPtr.initialize(from: samples.baseAddress!, count: samples.count)
-        }
-
+        // destBuffer is allocated each time, since it can't be freed until it is played.
         guard let destBuffer = AVAudioPCMBuffer(pcmFormat: outputFormatFloat, frameCapacity: frames) else { return }
         destBuffer.frameLength = frames
 
@@ -143,7 +157,6 @@ public final class AudioPlayer: AudioEventSink, Sendable {
             return
         }
 
-        // TODO: should this be guarded by withLock as well?
         player.scheduleBuffer(destBuffer)
     }
 
