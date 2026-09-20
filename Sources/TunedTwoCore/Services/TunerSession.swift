@@ -45,7 +45,7 @@ public struct TunerConfiguration: Sendable {
 }
 
 public protocol AudioEventSink: AnyObject, Sendable {
-    func feed(_ program: Int, _ samples: [Int16])
+    func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>)
 }
 
 // MARK: - C bridge
@@ -107,7 +107,8 @@ private final class Nrsc5Context {
             event = nil
         case NRSC5_EVENT_AUDIO:
             // Directly route to the audio player, avoiding a hop through the AsyncStream.
-            audioEventSink.feed(Int(raw.audio.program), copyInt16(raw.audio.data, count: raw.audio.count))
+            audioEventSink.feed(
+                Int(raw.audio.program), UnsafeBufferPointer(start: raw.audio.data, count: raw.audio.count))
             event = nil
         case NRSC5_EVENT_ID3:
             event = .id3(

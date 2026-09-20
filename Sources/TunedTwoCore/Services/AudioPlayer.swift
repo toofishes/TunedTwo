@@ -122,7 +122,7 @@ public final class AudioPlayer: AudioEventSink, Sendable {
 
     /// Accepts interleaved 16-bit signed PCM from nrsc5, converts it to
     /// float, and schedules it on the system audio graph.
-    public func feed(_ program: Int, _ samples: [Int16]) {
+    public func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>) {
         guard lock.withLock({ $0.isRunning && $0.currentProgram == program }) else { return }
         guard samples.count >= 2 else { return }
         let frames = AVAudioFrameCount(samples.count / 2)
@@ -130,10 +130,8 @@ public final class AudioPlayer: AudioEventSink, Sendable {
         guard let sourceBuffer = AVAudioPCMBuffer(pcmFormat: inputFormatInt16, frameCapacity: frames) else { return }
         sourceBuffer.frameLength = frames
 
-        samples.withUnsafeBufferPointer { srcPtr in
-            if let destPtr = sourceBuffer.int16ChannelData?[0] {
-                destPtr.initialize(from: srcPtr.baseAddress!, count: samples.count)
-            }
+        if let destPtr = sourceBuffer.int16ChannelData?[0] {
+            destPtr.initialize(from: samples.baseAddress!, count: samples.count)
         }
 
         guard let destBuffer = AVAudioPCMBuffer(pcmFormat: outputFormatFloat, frameCapacity: frames) else { return }
