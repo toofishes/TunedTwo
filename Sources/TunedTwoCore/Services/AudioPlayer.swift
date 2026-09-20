@@ -31,7 +31,7 @@ public enum AudioPlayerEvent: Sendable {
 /// All access to that state (and to `isRunning`) is serialized by `lock`, and
 /// notification callbacks dispatch recovery work asynchronously to avoid
 /// deadlocks inside `AVAudioEngine`.
-public final class AudioPlayer: Sendable {
+public final class AudioPlayer: AudioEventSink, Sendable {
     nonisolated(unsafe) private let engine = AVAudioEngine()
     nonisolated(unsafe) private let player = AVAudioPlayerNode()
 
@@ -41,6 +41,7 @@ public final class AudioPlayer: Sendable {
 
     private struct State: Sendable {
         var isRunning = false
+        var currentProgram: Int = 0
         var eventHandler: (@Sendable (AudioPlayerEvent) -> Void)?
     }
 
@@ -83,9 +84,10 @@ public final class AudioPlayer: Sendable {
         lock.withLock { $0.eventHandler = handler }
     }
 
-    func start() throws {
+    func start(_ program: Int) throws {
         try lock.withLock { state in
             try engine.start()
+            state.currentProgram = program
             player.play()
             state.isRunning = true
         }
@@ -96,6 +98,15 @@ public final class AudioPlayer: Sendable {
             state.isRunning = false
             player.stop()
             engine.stop()
+        }
+    }
+
+    func setProgram(_ program: Int) {
+        lock.withLock { state in
+            guard state.isRunning else { return }
+            player.stop()
+            state.currentProgram = program
+            player.play()
         }
     }
 
@@ -111,8 +122,8 @@ public final class AudioPlayer: Sendable {
 
     /// Accepts interleaved 16-bit signed PCM from nrsc5, converts it to
     /// float, and schedules it on the system audio graph.
-    func feed(_ samples: [Int16]) {
-        guard lock.withLock({ $0.isRunning }) else { return }
+    public func feed(_ program: Int, _ samples: [Int16]) {
+        guard lock.withLock({ $0.isRunning && $0.currentProgram == program }) else { return }
         guard samples.count >= 2 else { return }
         let frames = AVAudioFrameCount(samples.count / 2)
 

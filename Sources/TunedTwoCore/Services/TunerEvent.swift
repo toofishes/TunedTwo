@@ -78,7 +78,7 @@ public enum TunerEvent: Sendable {
     case localTime(utcOffsetMinutes: Int, dstRegional: Bool, dstLocal: Bool, dstSchedule: Int)
 
     // Decoded audio (consumed by the session, forwarded to the audio actor)
-    case audio(program: Int, samples: [Int16], flags: UInt)
+    case audio_unused(program: Int, samples: [Int16], flags: UInt)
 }
 
 extension TunerEvent {
@@ -119,7 +119,7 @@ extension TunerEvent {
         case .importerInfo: return "importerInfo"
         case .leapSecondOffset: return "leapSecondOffset"
         case .localTime: return "localTime"
-        case .audio: return "audio"
+        case .audio_unused: return "audio"
         }
     }
 }

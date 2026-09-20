@@ -405,8 +405,6 @@ extension TunerState: TunerEventSink {
                 LogEvent(
                     title: "SIG", description: "Services: \(list)",
                     systemImage: "antenna.radiowaves.left.and.right", tintColor: .purple))
-        case .audio:
-            break  // Consumed inside TunerSession; never reaches the UI.
         default:
             // Newly-added nrsc5 events are forwarded to the sink but not
             // yet displayed in the UI.

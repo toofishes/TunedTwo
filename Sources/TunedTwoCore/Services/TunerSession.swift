@@ -44,6 +44,10 @@ public struct TunerConfiguration: Sendable {
     }
 }
 
+public protocol AudioEventSink: AnyObject, Sendable {
+    func feed(_ program: Int, _ samples: [Int16])
+}
+
 // MARK: - C bridge
 
 /// Bridge for the raw libnrsc5 session, handed to the library as the
@@ -64,8 +68,11 @@ private final class Nrsc5Context {
     private let continuation: AsyncStream<TunerEvent>.Continuation
     let events: AsyncStream<TunerEvent>
 
-    init() {
+    private let audioEventSink: AudioEventSink
+
+    init(audioEventSink: AudioEventSink) {
         (events, continuation) = AsyncStream.makeStream(of: TunerEvent.self)
+        self.audioEventSink = audioEventSink
     }
 
     /// RAII teardown: releasing the last reference to this context stops the
@@ -99,10 +106,9 @@ private final class Nrsc5Context {
             // Omitting for now; this is a very low level raw data capture.
             event = nil
         case NRSC5_EVENT_AUDIO:
-            event = .audio(
-                program: Int(raw.audio.program),
-                samples: copyInt16(raw.audio.data, count: raw.audio.count),
-                flags: UInt(raw.audio.flags))
+            // Directly route to the audio player, avoiding a hop through the AsyncStream.
+            audioEventSink.feed(Int(raw.audio.program), copyInt16(raw.audio.data, count: raw.audio.count))
+            event = nil
         case NRSC5_EVENT_ID3:
             event = .id3(
                 program: Int(raw.id3.program),
@@ -410,17 +416,16 @@ private func nrsc5EventCallback(event: UnsafePointer<nrsc5_event_t>?, opaque: Un
 public actor TunerSession {
     private weak var sink: TunerEventSink?
     private let audioPlayer: AudioPlayer
-    private let context = Nrsc5Context()
+    private let context: Nrsc5Context
 
     /// Client-side program filter. nrsc5 emits all programs; we only render
     /// the selected one. Plain actor state — no lock needed.
-    private var currentProgram: Int
     private var isRunning = false
 
     public init(sink: TunerEventSink) throws {
         self.sink = sink
-        self.currentProgram = 0
         self.audioPlayer = try AudioPlayer()
+        self.context = Nrsc5Context(audioEventSink: audioPlayer)
 
         // Drain C callback events into the actor. The task holds the session
         // weakly so a released session can deinit while it runs; the context's
@@ -429,7 +434,7 @@ public actor TunerSession {
         let events = context.events
         Task { [weak self, events] in
             for await event in events {
-                await self?.handle(event)
+                await self?.sink?.tunerSessionDidEmit(event)
             }
         }
 
@@ -446,13 +451,12 @@ public actor TunerSession {
     // MARK: - Public control
 
     public func start(_ configuration: TunerConfiguration) async {
-        currentProgram = configuration.program
         context.close()  // idempotent; every start gets a fresh C session
 
         do {
             let st = try Self.openRawSession(configuration)
             context.activate(st: st)
-            try audioPlayer.start()
+            try audioPlayer.start(configuration.program)
             isRunning = true
             await sink?.tunerSessionDidEmit(.started)
         } catch {
@@ -472,8 +476,7 @@ public actor TunerSession {
     /// Switches the decoded program (HD1–HD8) and flushes queued audio so the
     /// old program does not bleed into the new one.
     public func setProgram(_ program: Int) async {
-        currentProgram = program
-        audioPlayer.flush()
+        audioPlayer.setProgram(program)
     }
 
     /// Live retune while playing (RTL-SDR only).
@@ -486,16 +489,6 @@ public actor TunerSession {
     }
 
     // MARK: - Event handling
-
-    private func handle(_ event: TunerEvent) async {
-        switch event {
-        case .audio(let program, let samples, _):
-            guard isRunning, program == currentProgram else { return }
-            audioPlayer.feed(samples)
-        default:
-            await sink?.tunerSessionDidEmit(event)
-        }
-    }
 
     private func handleAudioPlayerEvent(_ event: AudioPlayerEvent) async {
         switch event {
