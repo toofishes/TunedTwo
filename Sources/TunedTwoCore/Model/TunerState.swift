@@ -377,11 +377,14 @@ extension TunerState: TunerEventSink {
                 case .unknown:
                     "Unknown"
                 }
+            let bounds = String(format:"(%.4f, %.4f) to (%.4f, %.4f)",
+                                image.boundingBox.0.latitude, image.boundingBox.0.longitude,
+                                image.boundingBox.1.latitude, image.boundingBox.1.longitude)
             appendLog(
                 LogEvent(
                     title: "HERE Image - \(typeStr)",
                     description:
-                        "File: \(image.name), Size: \(image.data.count), Sequence: \(image.sequence), N1: \(image.n1), N2: \(image.n2) Time: \(image.time?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Bounds: \(image.boundingBox)",
+                        "File: \(image.name), Size: \(image.data.count), Sequence: \(image.sequence), N1: \(image.n1), N2: \(image.n2) Time: \(image.time?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Bounds: \(bounds)",
                     systemImage: "photo", tintColor: .blue))
         case .agc(let gainDB, let peakDBFS, let isFinal):
             if isFinal {
