@@ -32,7 +32,7 @@ public struct TMTInfo: Equatable, Sendable {
 
 /// One successfully ingested traffic tile: its parsed metadata plus the
 /// decoded image.
-public struct TrafficMapTile {
+public struct TrafficMapTile: Sendable {
     public let info: TMTInfo
     public let image: CGImage
 }
@@ -69,7 +69,7 @@ public enum TrafficMapIngestOutcome: Equatable, Sendable {
 /// - Within a slot, a tile is stored only if its timestamp is greater than
 ///   or equal to the stored tile's — equal timestamps are retransmissions
 ///   with new content and still win.
-public struct TrafficMap {
+public struct TrafficMap: Sendable {
     /// Default background color used when no TTN config file has been received.
     private static let defaultTTNBackgroundColor = RGB(red: 194, green: 187, blue: 96)
     /// Default background color used when the map source is HERE.

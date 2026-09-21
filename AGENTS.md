@@ -18,6 +18,12 @@ This file captures non-obvious project conventions and gotchas that came up duri
 
 - Run `swift format -r -i Tests Sources` from the root of the repo to ensure code matches expecting formatting standards.
 
+## Concurrency and `Sendable`
+
+- This project uses Swift 6 strict concurrency. Do not reach for `@unchecked Sendable` as a default escape hatch.
+- Many SDK types that were historically not considered `Sendable` (for example, `CGImage`) are now `Sendable` on modern Apple SDKs. Verify the current SDK behavior with the compiler rather than assuming older knowledge.
+- If a type must cross isolation boundaries, make it genuinely `Sendable` by ensuring its stored properties are `Sendable`. Only introduce `@unchecked Sendable` after explicit discussion and approval.
+
 ## CLI (`Sources/TunedTwoCLI`)
 
 - The CLI uses Apple's `swift-argument-parser`. The hand-rolled parser was removed.

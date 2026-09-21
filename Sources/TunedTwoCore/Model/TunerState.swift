@@ -125,6 +125,9 @@ public final class TunerState {
     /// Outstanding timer that will flush pending counts/logs to the observable properties.
     private var logFlushTask: Task<Void, Never>?
 
+    /// Decodes traffic/weather map images off the main actor.
+    private let mapProcessor = MapProcessor()
+
     public init() {}
 
     /// Stores an image LOT file and evicts the oldest entries once the cache
@@ -308,13 +311,17 @@ extension TunerState: TunerEventSink {
                         }
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
                         if isImage {
-                            traffic.processImageFile(name: file.name, data: file.data)
+                            let (updated, _) = await mapProcessor.processTrafficImageFile(
+                                name: file.name, data: file.data, currentMap: traffic)
+                            traffic = updated
                         } else {
                             traffic.processConfigFile(data: file.data)
                         }
                     } else if mime == NRSC5_MIME_TTN_STM_WEATHER {
                         if isImage {
-                            weather.processImageFile(name: file.name, data: file.data)
+                            let (updated, _) = await mapProcessor.processWeatherImageFile(
+                                name: file.name, data: file.data, currentMap: weather)
+                            weather = updated
                         } else {
                             weather.processConfigFile(data: file.data)
                         }
@@ -353,9 +360,11 @@ extension TunerState: TunerEventSink {
         case .hereImage(let image):
             switch image.type {
             case .traffic:
-                traffic.processHereImageFile(hereImage: image)
+                let (updated, _) = await mapProcessor.processTrafficHereImage(image, currentMap: traffic)
+                traffic = updated
             case .weather:
-                weather.processHereImageFile(hereImage: image)
+                let (updated, _) = await mapProcessor.processWeatherHereImage(image, currentMap: weather)
+                weather = updated
             case .unknown:
                 break
             }

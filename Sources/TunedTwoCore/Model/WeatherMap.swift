@@ -47,7 +47,7 @@ public enum WeatherMapIngestOutcome: Equatable, Sendable {
 }
 
 /// The current weather map.
-public struct WeatherMap {
+public struct WeatherMap: Sendable {
     /// Provider ID of the map currently being assembled (from the most
     /// recently ingested image or text config file).
     public private(set) var provider: String?
