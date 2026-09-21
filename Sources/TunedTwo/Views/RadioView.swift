@@ -11,10 +11,13 @@ struct RadioView: View {
     let programState: ProgramState
 
     var body: some View {
+        let programLot = state.lotCache[programState.programLotID]
+        let coverLot = state.lotCache[programState.coverLotID]
+
         VStack(alignment: .leading, spacing: 12) {
             StationInfo(state: state)
             Divider()
-            NowPlaying(programState: programState, lotCache: state.lotCache)
+            NowPlaying(programState: programState, programLot: programLot, coverLot: coverLot)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -41,7 +44,8 @@ struct StationInfo: View {
 
 private struct NowPlaying: View {
     let programState: ProgramState
-    var lotCache: [Int: TunerLotFile]
+    let programLot: TunerLotFile?
+    let coverLot: TunerLotFile?
 
     var body: some View {
         HStack(spacing: 20) {
@@ -53,9 +57,8 @@ private struct NowPlaying: View {
                 MetadataRow(label: "Genre", value: programState.genre)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            LotImageView(
-                lot: lotCache[programState.programLotID], defaultSystemImage: "antenna.radiowaves.left.and.right")
-            LotImageView(lot: lotCache[programState.coverLotID], defaultSystemImage: "music.note")
+            LotImageView(lot: programLot, defaultSystemImage: "antenna.radiowaves.left.and.right")
+            LotImageView(lot: coverLot, defaultSystemImage: "music.note")
         }
     }
 }

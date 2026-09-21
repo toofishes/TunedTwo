@@ -96,6 +96,12 @@ public final class TunerState {
 
     public var lotCache: [Int: TunerLotFile] = [:]
 
+    /// Insertion order used to evict the oldest image LOT entries.
+    private var lotCacheOrder: OrderedSet<Int> = []
+    /// Maximum number of image LOT files to retain. Without a cap the cache
+    /// grows forever as stations broadcast new cover art / logos.
+    private let maxLotCacheSize = 200
+
     public var logEntries: Deque<LogEvent> = Deque()
     public var eventCounts: [String: Int] = .init()
 
@@ -113,10 +119,46 @@ public final class TunerState {
     private var pendingEventCounts: [String: Int] = [:]
     /// Log entries accumulated since the last public `logEntries` update.
     private var pendingLogEntries: Deque<LogEvent> = Deque()
+    /// Maximum number of log entries retained in memory. The log is meant
+    /// for recent inspection, not an unbounded audit trail.
+    private let maxLogEntries = 10000
     /// Outstanding timer that will flush pending counts/logs to the observable properties.
     private var logFlushTask: Task<Void, Never>?
 
     public init() {}
+
+    /// Stores an image LOT file and evicts the oldest entries once the cache
+    /// grows past ``maxLotCacheSize``. Currently referenced artwork is protected
+    /// so the on-screen images do not disappear prematurely.
+    private func cacheLotFile(_ file: TunerLotFile) {
+        lotCache[file.lotID] = file
+        lotCacheOrder.remove(file.lotID)
+        lotCacheOrder.append(file.lotID)
+        pruneLotCache()
+    }
+
+    private func pruneLotCache() {
+        guard lotCache.count > maxLotCacheSize else { return }
+
+        let referencedIDs = programStates.reduce(into: Set<Int>()) { ids, program in
+            if program.coverLotID > 0 { ids.insert(program.coverLotID) }
+            if program.programLotID > 0 { ids.insert(program.programLotID) }
+        }
+
+        while lotCache.count > maxLotCacheSize, let oldest = lotCacheOrder.first {
+            if referencedIDs.contains(oldest) {
+                // Protect artwork that is still on screen, but move it to the
+                // end of the LRU so it can be evicted once it is no longer
+                // referenced. If every remaining entry is referenced, stop
+                // pruning and allow the cache to briefly exceed the limit.
+                lotCacheOrder.remove(oldest)
+                lotCacheOrder.append(oldest)
+                break
+            }
+            lotCache.removeValue(forKey: oldest)
+            lotCacheOrder.remove(oldest)
+        }
+    }
 
     public func clearForFrequencyChange() {
         stationCountry = ""
@@ -132,6 +174,9 @@ public final class TunerState {
         merLower = 0
         merUpper = 0
         ber = 0
+
+        lotCache.removeAll()
+        lotCacheOrder.removeAll()
     }
 }
 
@@ -245,7 +290,7 @@ extension TunerState: TunerEventSink {
         case .lot(let file, let service, let component):
             let isImage = file.mime == NRSC5_MIME_JPEG || file.mime == NRSC5_MIME_PNG
             if isImage {
-                lotCache[file.lotID] = file
+                cacheLotFile(file)
             }
             let mimeName = nameForNRSC5MIMEType(file.mime)
 
@@ -255,9 +300,9 @@ extension TunerState: TunerEventSink {
                 case .data(_, _, _, _, let mime):
                     compMimeName = nameForNRSC5MIMEType(mime)
                     if mime == NRSC5_MIME_PRIMARY_IMAGE && isImage {
-                        lotCache[file.lotID] = file
+                        cacheLotFile(file)
                     } else if mime == NRSC5_MIME_STATION_LOGO && isImage {
-                        lotCache[file.lotID] = file
+                        cacheLotFile(file)
                         if let ac = service?.audioComponent, case .audio(_, let port, _, _) = ac {
                             programStates[Int(port)].programLotID = file.lotID
                         }
@@ -422,18 +467,24 @@ extension TunerState {
     /// redraws for every event.
     fileprivate func recordEventCount(_ name: String) {
         pendingEventCounts[name, default: 0] += 1
-        scheduleLogFlushIfVisible()
+        scheduleLogFlushIfNeeded()
     }
 
     /// Buffers a log entry. Entries are always captured, but are only flushed to
-    /// the observable `logEntries` while the log view is visible.
+    /// the observable `logEntries` while the log view is visible or when the
+    /// pending buffer reaches a fraction of the total limit.
     fileprivate func appendLog(_ event: LogEvent) {
         pendingLogEntries.append(event)
-        scheduleLogFlushIfVisible()
+        let overflow = pendingLogEntries.count - maxLogEntries
+        if overflow > 0 {
+            pendingLogEntries.removeFirst(overflow)
+        }
+        scheduleLogFlushIfNeeded()
     }
 
-    fileprivate func scheduleLogFlushIfVisible() {
-        guard isLogsVisible, logFlushTask == nil else { return }
+    fileprivate func scheduleLogFlushIfNeeded() {
+        guard logFlushTask == nil else { return }
+        guard isLogsVisible || pendingLogEntries.count >= (maxLogEntries / 10) else { return }
         logFlushTask = Task { @MainActor [self] in
             defer { logFlushTask = nil }
             do {
@@ -446,8 +497,6 @@ extension TunerState {
     }
 
     fileprivate func flushPendingLogs() {
-        guard isLogsVisible else { return }
-
         if !pendingEventCounts.isEmpty {
             for (key, value) in pendingEventCounts {
                 eventCounts[key, default: 0] += value
@@ -458,6 +507,10 @@ extension TunerState {
         if !pendingLogEntries.isEmpty {
             logEntries.append(contentsOf: pendingLogEntries)
             pendingLogEntries.removeAll()
+        }
+
+        if logEntries.count > maxLogEntries {
+            logEntries.removeFirst(logEntries.count - maxLogEntries)
         }
     }
 }

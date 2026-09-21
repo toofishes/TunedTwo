@@ -74,18 +74,26 @@ private struct EventCountRow: View, @MainActor Equatable {
     }
 }
 
-private struct EventListView<Events>: View where Events: RandomAccessCollection, Events.Element == LogEvent {
-    let events: Events
+private struct EventListView<Events>: View
+where Events: RandomAccessCollection, Events: RangeReplaceableCollection, Events.Element == LogEvent {
+    @Binding var events: Events
 
     var body: some View {
-        List(events) { event in
-            LogEventRow(event: event)
-                .equatable()
-                .alignmentGuide(.listRowSeparatorLeading) { dimensions in
-                    dimensions[.leading]
-                }
+        VStack(alignment: .center, spacing: 10) {
+            List(events) { event in
+                LogEventRow(event: event)
+                    .equatable()
+                    .alignmentGuide(.listRowSeparatorLeading) { dimensions in
+                        dimensions[.leading]
+                    }
+            }
+
+            Button("Clear Event Log") {
+                events.removeAll()
+            }
+
+            Text("\(events.count) events in the log")
         }
-        .padding()
     }
 }
 
@@ -131,15 +139,17 @@ private struct EventCountsTable: View {
 }
 
 struct EventLogView: View {
-    let state: TunerState
+    @Bindable var state: TunerState
 
     var body: some View {
         HSplitView {
-            EventListView(events: state.logEntries)
+            EventListView(events: $state.logEntries)
+                .padding(0)
                 .frame(minWidth: 240)
                 .layoutPriority(1)
 
             EventCountsTable(eventCounts: state.eventCounts)
+                .padding(0)
                 .frame(minWidth: 240)
         }
     }
