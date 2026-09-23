@@ -36,10 +36,7 @@ public struct LogEvent: Identifiable {
         systemImage: String,
         tintColor: Color
     ) {
-        self.timestamp = Date()
-        self.title = title
-        self.description = description
-        self.systemImage = systemImage
-        self.tintColor = tintColor
+        self.init(
+            timestamp: Date(), title: title, description: description, systemImage: systemImage, tintColor: tintColor)
     }
 }
