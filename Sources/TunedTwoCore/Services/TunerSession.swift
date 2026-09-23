@@ -67,7 +67,16 @@ public actor TunerSession {
         let events = context.events
         Task { [weak self, events] in
             for await event in events {
-                await self?.sink?.tunerSessionDidEmit(event)
+                switch event {
+                // for now, we skip forwarding of packet and stream events,
+                // becuase there are a lot and we don't do anything with them.
+                case .packet:
+                    continue
+                case .stream:
+                    continue
+                default:
+                    await self?.sink?.tunerSessionDidEmit(event)
+                }
             }
         }
 

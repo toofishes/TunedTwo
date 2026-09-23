@@ -116,7 +116,7 @@ extension TunerEvent {
     }
 }
 
-public struct TunerID3: Sendable {
+public struct TunerID3: Equatable, Sendable {
     public let program: Int
     public let title: String
     public let artist: String
@@ -126,7 +126,7 @@ public struct TunerID3: Sendable {
     public let lotID: Int
 }
 
-public struct TunerLotFile: Sendable {
+public struct TunerLotFile: Equatable, Sendable {
     public let lotID: Int
     public let mime: UInt32
     public let name: String
@@ -134,6 +134,7 @@ public struct TunerLotFile: Sendable {
     public let expiry: Date?
 }
 
+// TODO: make Equatable, need to fix boundingBox property first
 public struct TunerHereImage: Sendable {
     enum ImageType {
         case traffic
@@ -152,7 +153,7 @@ public struct TunerHereImage: Sendable {
 }
 
 /// A service entry from an NRSC5 SIG (Service Information Guide) table.
-public struct TunerSigService: Sendable {
+public struct TunerSigService: Equatable, Sendable {
     public let type: Int
     public let number: Int
     public let name: String
@@ -161,14 +162,14 @@ public struct TunerSigService: Sendable {
 }
 
 /// A component belonging to a SIG service.
-public enum TunerSigComponent: Sendable {
+public enum TunerSigComponent: Equatable, Sendable {
     case data(id: Int, port: UInt16, serviceDataType: UInt16, aasType: Int, mime: UInt32)
     case audio(id: Int, port: UInt8, programType: Int, mime: UInt32)
     case unknown(id: Int)
 }
 
 /// SIS audio service descriptor (ASD).
-public struct TunerAudioServiceDescriptor: Sendable {
+public struct TunerAudioServiceDescriptor: Equatable, Sendable {
     public let program: Int
     public let access: Int
     public let type: Int
@@ -176,14 +177,14 @@ public struct TunerAudioServiceDescriptor: Sendable {
 }
 
 /// SIS data service descriptor (DSD).
-public struct TunerDataServiceDescriptor: Sendable {
+public struct TunerDataServiceDescriptor: Equatable, Sendable {
     public let access: Int
     public let type: Int
     public let mimeType: UInt32
 }
 
 // Tuner Importer or Exciter info
-public struct TunerInfo: Sendable {
+public struct TunerInfo: Equatable, Sendable {
     public let manufacturerID: String
     public let coreVersion: [Int]
     public let coreStatus: Int

@@ -207,7 +207,7 @@ final class Nrsc5Context {
                 isFinal: raw.agc.is_final != 0)
         case NRSC5_EVENT_EXCITER_INFO:
             event = .exciterInfo(
-                TunerInfo(
+                info: TunerInfo(
                     manufacturerID: makeString(raw.exciter_info.manufacturer_id),
                     coreVersion: copyCIntTuple(raw.exciter_info.core_version),
                     coreStatus: Int(raw.exciter_info.core_status),
@@ -216,7 +216,7 @@ final class Nrsc5Context {
                 importerConnected: raw.exciter_info.importer_connected != 0)
         case NRSC5_EVENT_IMPORTER_INFO:
             event = .importerInfo(
-                TunerInfo(
+                info: TunerInfo(
                     manufacturerID: makeString(raw.importer_info.manufacturer_id),
                     coreVersion: copyCIntTuple(raw.importer_info.core_version),
                     coreStatus: Int(raw.importer_info.core_status),

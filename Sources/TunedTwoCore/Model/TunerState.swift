@@ -14,7 +14,7 @@ import Combine
 import Foundation
 import nrsc5
 
-public struct ProgramState {
+public struct ProgramState: Equatable, Sendable {
     public var serviceName: String = ""
 
     public var title: String = ""
