@@ -31,7 +31,7 @@ public enum AudioPlayerEvent: Sendable {
 /// All access to that state (and to `isRunning`) is serialized by `lock`, and
 /// notification callbacks dispatch recovery work asynchronously to avoid
 /// deadlocks inside `AVAudioEngine`.
-public final class AudioPlayer: AudioEventSink, Sendable {
+public final class AudioPlayer: AudioSampleSink, Sendable {
     nonisolated(unsafe) private let engine = AVAudioEngine()
     nonisolated(unsafe) private let player = AVAudioPlayerNode()
 

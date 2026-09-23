@@ -198,6 +198,12 @@ extension TunerState: TunerEventSink {
         case .failed(let message):
             isPlaying = false
             status = "Error: \(message)"
+            appendLog(
+                LogEvent(
+                    title: "Tuner Failed",
+                    description: message,
+                    systemImage: "exclamationmark.triangle.fill",
+                    tintColor: .red))
         case .audioOutputRouteChanged:
             status = "Audio output changed"
             appendLog(
@@ -231,18 +237,30 @@ extension TunerState: TunerEventSink {
                     systemImage: "exclamationmark.triangle.fill",
                     tintColor: .red))
         case .lostDevice:
-            status = "Device lost"
+            status = "Lost device"
             isPlaying = false
+            appendLog(
+                LogEvent(
+                    title: "Lost Device",
+                    description: "The tuner device was disconnected.",
+                    systemImage: "exclamationmark.triangle.fill",
+                    tintColor: .red))
         case .syncAchieved(let freqOffset, let psmi, let pli, let hppi, let aabi, let rdbi):
             status = "Synchronized"
             appendLog(
                 LogEvent(
                     title: "Synchronized",
                     description:
-                        "Frequency Offset \(freqOffset.formatted(.number.precision(.fractionLength(0)))) Hz PSMI \(psmi) PLI \(pli) HPI \(hppi) AABI \(aabi) RDBI \(rdbi)",
-                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+                        "Frequency offset \(freqOffset.formatted(.number.precision(.fractionLength(0)))) Hz, Primary service mode \(psmi), PLI \(pli), HPPI \(hppi), AABI \(aabi), RDBI \(rdbi)",
+                    systemImage: "arrow.trianglehead.2.clockwise.rotate.90", tintColor: .blue))
         case .lostSync:
-            status = "Lost sync"
+            status = "Lost synchronization"
+            appendLog(
+                LogEvent(
+                    title: "Lost Synchronization",
+                    description: "The tuner lost synchronization with the radio signal.",
+                    systemImage: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90",
+                    tintColor: .red))
         case .mer(let lower, let upper):
             merLower = lower
             merUpper = upper
@@ -259,27 +277,27 @@ extension TunerState: TunerEventSink {
             stationName = name
             appendLog(
                 LogEvent(
-                    title: "Station Name", description: name, systemImage: "checkmark.icloud.fill",
+                    title: "Station Name", description: name, systemImage: "dot.radiowaves.right",
                     tintColor: .blue))
         case .stationSlogan(let slogan):
             stationSlogan = slogan
             appendLog(
                 LogEvent(
                     title: "Station Slogan", description: slogan,
-                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+                    systemImage: "message.fill", tintColor: .blue))
         case .stationMessage(let message):
             stationMessage = message
             appendLog(
                 LogEvent(
                     title: "Station Message", description: message,
-                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+                    systemImage: "message.fill", tintColor: .blue))
         case .stationID(let countryCode, let fccFacilityID):
             stationCountry = countryCode
             stationID = fccFacilityID
             appendLog(
                 LogEvent(
                     title: "Station ID", description: "Country \(countryCode) ID \(fccFacilityID)",
-                    systemImage: "checkmark.icloud.fill", tintColor: .blue))
+                    systemImage: "dot.radiowaves.right", tintColor: .blue))
         case .stationLocation(let location):
             stationLocation = location
             break
