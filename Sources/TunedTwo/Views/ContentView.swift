@@ -14,13 +14,16 @@ struct ContentView: View {
     @State private var retuneTask: Task<Void, Never>?
 
     var body: some View {
+        let currentProgramState = state.programStates[state.currentProgram]
         VStack(spacing: 16) {
-            header
-            controls
+            ContentHeader()
+            Controls(state: $state) {
+                togglePlayback()
+            }
             Divider()
             TabView {
                 Tab("Radio", systemImage: "radio") {
-                    RadioView(state: state, programState: state.programStates[state.currentProgram])
+                    RadioView(state: state, programState: currentProgramState)
                 }
 
                 Tab("Traffic", systemImage: "map") {
@@ -40,8 +43,8 @@ struct ContentView: View {
             Divider()
             StatusBar(
                 state: state,
-                bitsPerSecond: state.programStates[state.currentProgram].bitsPerSecond,
-                crcErrors: state.programStates[state.currentProgram].crcErrors)
+                bitsPerSecond: currentProgramState.bitsPerSecond,
+                crcErrors: currentProgramState.crcErrors)
         }
         .padding()
         .frame(minWidth: 480, minHeight: 440)
@@ -67,64 +70,6 @@ struct ContentView: View {
         }
         .onDisappear {
             retuneTask?.cancel()
-        }
-    }
-
-    // MARK: - Subviews
-
-    private var header: some View {
-        HStack {
-            Image(systemName: "radio")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.accentColor)
-            VStack(alignment: .leading) {
-                Text("TunedTwo")
-                    .font(.title2.bold())
-                Text("Native macOS HD Radio")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-    }
-
-    private var controls: some View {
-        Form {
-            Section {
-                Picker("Source", selection: $state.source) {
-                    ForEach(TunerState.Source.allCases) { source in
-                        Text(source.rawValue).tag(source)
-                    }
-                }
-
-                HStack {
-                    TextField("Frequency", text: $state.frequencyMHz)
-                        .textFieldStyle(.roundedBorder)
-                        .disabled(state.source == .sampleFile)
-                        .frame(width: 120)
-                    Text("MHz")
-                        .foregroundStyle(.secondary)
-                }
-                //.fixedSize(horizontal: true, vertical: false)
-
-                Picker("Program", selection: $state.currentProgram) {
-                    ForEach(0..<8) { i in
-                        Text("HD\(i + 1)").tag(i)
-                    }
-                }
-                .pickerStyle(.segmented)
-            }
-
-            Section {
-                Button(action: togglePlayback) {
-                    Label(
-                        state.isPlaying ? "Stop" : "Play",
-                        systemImage: state.isPlaying ? "stop.fill" : "play.fill")
-                }
-                .controlSize(.large)
-                .keyboardShortcut(.space, modifiers: [])
-            }
         }
     }
 
@@ -194,6 +139,71 @@ struct ContentView: View {
             fputs("SMOKE_FAIL: no metadata received\n", stderr)
         }
         NSApp.terminate(nil)
+    }
+}
+
+// MARK: - Subviews
+
+private struct ContentHeader: View {
+    var body: some View {
+        HStack {
+            Image(systemName: "radio")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundStyle(Color.accentColor)
+            VStack(alignment: .leading) {
+                Text("TunedTwo")
+                    .font(.title2.bold())
+                Text("Native macOS HD Radio")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+    }
+}
+
+private struct Controls: View {
+    @Binding var state: TunerState
+    let togglePlayback: () -> Void
+
+    var body: some View {
+        Form {
+            Section {
+                Picker("Source", selection: $state.source) {
+                    ForEach(TunerState.Source.allCases) { source in
+                        Text(source.rawValue).tag(source)
+                    }
+                }
+
+                HStack {
+                    TextField("Frequency", text: $state.frequencyMHz)
+                        .textFieldStyle(.roundedBorder)
+                        .disabled(state.source == .sampleFile)
+                        .frame(width: 120)
+                    Text("MHz")
+                        .foregroundStyle(.secondary)
+                }
+                //.fixedSize(horizontal: true, vertical: false)
+
+                Picker("Program", selection: $state.currentProgram) {
+                    ForEach(0..<8) { i in
+                        Text("HD\(i + 1)").tag(i)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            Section {
+                Button(action: togglePlayback) {
+                    Label(
+                        state.isPlaying ? "Stop" : "Play",
+                        systemImage: state.isPlaying ? "stop.fill" : "play.fill")
+                }
+                .controlSize(.large)
+                .keyboardShortcut(.space, modifiers: [])
+            }
+        }
     }
 }
 
