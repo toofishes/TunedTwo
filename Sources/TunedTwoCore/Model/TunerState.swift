@@ -52,7 +52,7 @@ private class BPSTracker {
 @MainActor
 @Observable
 public final class TunerState {
-    public enum Source: String, CaseIterable, Identifiable {
+    public enum Source: String, CaseIterable, Equatable, Identifiable {
         case rtlSDR = "RTL-SDR"
         case sampleFile = "Sample File"
 
