@@ -68,12 +68,8 @@ public enum TunerEvent: Sendable {
     // Alerts and infrastructure info
     case emergencyAlert(
         message: String, controlData: Data, category1: Int, category2: Int, locationFormat: Int, locations: [Int])
-    case exciterInfo(
-        manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int],
-        manufacturerStatus: Int, importerConnected: Bool)
-    case importerInfo(
-        manufacturerID: String, coreVersion: [Int], coreStatus: Int, manufacturerVersion: [Int],
-        manufacturerStatus: Int)
+    case exciterInfo(info: TunerInfo, importerConnected: Bool)
+    case importerInfo(info: TunerInfo)
     case leapSecondOffset(pendingOffset: Int, currentOffset: Int, pendingALFN: UInt)
     case localTime(utcOffsetMinutes: Int, dstRegional: Bool, dstLocal: Bool, dstSchedule: Int)
 }
@@ -184,6 +180,18 @@ public struct TunerDataServiceDescriptor: Sendable {
     public let access: Int
     public let type: Int
     public let mimeType: UInt32
+}
+
+// Tuner Importer or Exciter info
+public struct TunerInfo: Sendable {
+    public let manufacturerID: String
+    public let coreVersion: [Int]
+    public let coreStatus: Int
+    public let manufacturerVersion: [Int]
+    public let manufacturerStatus: Int
+
+    public var coreVersionString: String { coreVersion.map { String($0) }.joined(separator: ".") }
+    public var manufacturerVersionString: String { manufacturerVersion.map { String($0) }.joined(separator: ".") }
 }
 
 /// Receives tuner events. Conformers run on the MainActor (typically

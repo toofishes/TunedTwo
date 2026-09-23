@@ -207,19 +207,21 @@ final class Nrsc5Context {
                 isFinal: raw.agc.is_final != 0)
         case NRSC5_EVENT_EXCITER_INFO:
             event = .exciterInfo(
-                manufacturerID: makeString(raw.exciter_info.manufacturer_id),
-                coreVersion: copyCIntTuple(raw.exciter_info.core_version),
-                coreStatus: Int(raw.exciter_info.core_status),
-                manufacturerVersion: copyCIntTuple(raw.exciter_info.manufacturer_version),
-                manufacturerStatus: Int(raw.exciter_info.manufacturer_status),
+                TunerInfo(
+                    manufacturerID: makeString(raw.exciter_info.manufacturer_id),
+                    coreVersion: copyCIntTuple(raw.exciter_info.core_version),
+                    coreStatus: Int(raw.exciter_info.core_status),
+                    manufacturerVersion: copyCIntTuple(raw.exciter_info.manufacturer_version),
+                    manufacturerStatus: Int(raw.exciter_info.manufacturer_status)),
                 importerConnected: raw.exciter_info.importer_connected != 0)
         case NRSC5_EVENT_IMPORTER_INFO:
             event = .importerInfo(
-                manufacturerID: makeString(raw.importer_info.manufacturer_id),
-                coreVersion: copyCIntTuple(raw.importer_info.core_version),
-                coreStatus: Int(raw.importer_info.core_status),
-                manufacturerVersion: copyCIntTuple(raw.importer_info.manufacturer_version),
-                manufacturerStatus: Int(raw.importer_info.manufacturer_status))
+                TunerInfo(
+                    manufacturerID: makeString(raw.importer_info.manufacturer_id),
+                    coreVersion: copyCIntTuple(raw.importer_info.core_version),
+                    coreStatus: Int(raw.importer_info.core_status),
+                    manufacturerVersion: copyCIntTuple(raw.importer_info.manufacturer_version),
+                    manufacturerStatus: Int(raw.importer_info.manufacturer_status)))
         case NRSC5_EVENT_LEAP_SECOND_OFFSET:
             event = .leapSecondOffset(
                 pendingOffset: Int(raw.leap_second_offset.pending_offset),

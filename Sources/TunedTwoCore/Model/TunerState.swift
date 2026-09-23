@@ -245,6 +245,15 @@ extension TunerState: TunerEventSink {
                     description: "The tuner device was disconnected.",
                     systemImage: "exclamationmark.triangle.fill",
                     tintColor: .red))
+        case .agc(let gainDB, let peakDBFS, let isFinal):
+            if isFinal {
+                appendLog(
+                    LogEvent(
+                        title: "AGC",
+                        description:
+                            "Gain \(String(format: "%.1f", gainDB)) dB, Peak \(String(format: "%.1f", peakDBFS)) dBFS",
+                        systemImage: "chart.line.uptrend.xyaxis", tintColor: .orange))
+            }
         case .syncAchieved(let freqOffset, let psmi, let pli, let hppi, let aabi, let rdbi):
             status = "Synchronized"
             appendLog(
@@ -300,6 +309,13 @@ extension TunerState: TunerEventSink {
                     systemImage: "dot.radiowaves.right", tintColor: .blue))
         case .stationLocation(let location):
             stationLocation = location
+            break
+        case .emergencyAlert(let message, _, let category1, let category2, _, _):
+            appendLog(
+                LogEvent(
+                    title: "Emergency Alert",
+                    description: "\(message)\nCategory 1: \(category1), Category 2: \(category2)",
+                    systemImage: "light.beacon.min.fill", tintColor: .red))
             break
         case .id3(let program, let id3):
             programStates[program].title = id3.title
@@ -405,15 +421,6 @@ extension TunerState: TunerEventSink {
                     description:
                         "File: \(image.name), Size: \(image.data.count), Sequence: \(image.sequence), N1: \(image.n1), N2: \(image.n2) Time: \(image.time?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Bounds: \(bounds)",
                     systemImage: "photo", tintColor: .blue))
-        case .agc(let gainDB, let peakDBFS, let isFinal):
-            if isFinal {
-                appendLog(
-                    LogEvent(
-                        title: "AGC",
-                        description:
-                            "Gain \(String(format: "%.1f", gainDB)) dB, Peak \(String(format: "%.1f", peakDBFS)) dBFS",
-                        systemImage: "chart.line.uptrend.xyaxis", tintColor: .orange))
-            }
         case .audioService(
             let program, let access, let type, let codecMode, let blendControl, let digitalAudioGain, let commonDelay,
             let latency):
@@ -439,22 +446,19 @@ extension TunerState: TunerEventSink {
                         "Access \(desc.access), Type \(desc.type), MIME \(nameForNRSC5MIMEType(desc.mimeType))",
                     systemImage: "waveform",
                     tintColor: .purple))
-        case .exciterInfo(
-            let manufacturerID, let coreVersion, let coreStatus, let manufacturerVersion, let manufacturerStatus,
-            let importerConnected):
+        case .exciterInfo(let info, let importerConnected):
             appendLog(
                 LogEvent(
                     title: "Exciter Info",
                     description:
-                        "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus)), Importer \(importerConnected)",
+                        "Manufacturer \(info.manufacturerID), Core \(info.coreVersionString) (\(info.coreStatus)), Manufacturer \(info.manufacturerVersionString) (\(info.manufacturerStatus)), Importer \(importerConnected)",
                     systemImage: "antenna.radiowaves.left.and.right", tintColor: .green))
-        case .importerInfo(
-            let manufacturerID, let coreVersion, let coreStatus, let manufacturerVersion, let manufacturerStatus):
+        case .importerInfo(let info):
             appendLog(
                 LogEvent(
                     title: "Importer Info",
                     description:
-                        "Manufacturer \(manufacturerID), Core \(coreVersion.map { String($0) }.joined(separator: ".")) (\(coreStatus)), Manufacturer \(manufacturerVersion.map { String($0) }.joined(separator: ".")) (\(manufacturerStatus))",
+                        "Manufacturer \(info.manufacturerID), Core \(info.coreVersionString) (\(info.coreStatus)), Manufacturer \(info.manufacturerVersionString) (\(info.manufacturerStatus))",
                     systemImage: "arrow.down.circle.fill", tintColor: .green))
         case .leapSecondOffset(let pendingOffset, let currentOffset, let pendingALFN):
             appendLog(
@@ -482,8 +486,7 @@ extension TunerState: TunerEventSink {
                     title: "SIG", description: "Services: \(list)",
                     systemImage: "antenna.radiowaves.left.and.right", tintColor: .purple))
         default:
-            // Newly-added nrsc5 events are forwarded to the sink but not
-            // yet displayed in the UI.
+            // Newly-added nrsc5 events are forwarded to the sink but not yet displayed in the UI.
             break
         }
     }
