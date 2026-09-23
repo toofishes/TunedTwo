@@ -24,7 +24,7 @@ import TunedTwoCore
 private final class LotImageCache {
     static let shared = LotImageCache()
 
-    private var cache = {
+    private let cache = {
         let c = NSCache<NSString, PlatformImage>()
         c.countLimit = 50
         return c

@@ -130,9 +130,6 @@ struct ContentView: View {
 
     // MARK: - Actions
 
-    /// Play/stop is inherently asynchronous: commands flow down into the
-    /// tuner actor, and results (started/stopped/failed) flow back up as
-    /// events that update `state`.
     private func togglePlayback() {
         Task { await togglePlaybackAsync() }
     }
