@@ -377,9 +377,10 @@ extension TunerState: TunerEventSink {
                 case .unknown:
                     "Unknown"
                 }
-            let bounds = String(format:"(%.4f, %.4f) to (%.4f, %.4f)",
-                                image.boundingBox.0.latitude, image.boundingBox.0.longitude,
-                                image.boundingBox.1.latitude, image.boundingBox.1.longitude)
+            let bounds = String(
+                format: "(%.4f, %.4f) to (%.4f, %.4f)",
+                image.boundingBox.0.latitude, image.boundingBox.0.longitude,
+                image.boundingBox.1.latitude, image.boundingBox.1.longitude)
             appendLog(
                 LogEvent(
                     title: "HERE Image - \(typeStr)",

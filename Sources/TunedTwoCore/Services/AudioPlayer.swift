@@ -39,10 +39,12 @@ public final class AudioPlayer: AudioEventSink, Sendable {
     private let outputFormatFloat: AVAudioFormat
     private let converter: AVAudioConverter
 
+    private let continuation: AsyncStream<AudioPlayerEvent>.Continuation
+    let events: AsyncStream<AudioPlayerEvent>
+
     private struct State: Sendable {
         var isRunning = false
         var currentProgram: Int = 0
-        var eventHandler: (@Sendable (AudioPlayerEvent) -> Void)?
     }
 
     /// Mutable player state is kept inside the lock so the class can be
@@ -72,16 +74,15 @@ public final class AudioPlayer: AudioEventSink, Sendable {
         engine.attach(player)
         engine.connect(player, to: engine.mainMixerNode, format: outFmt)
 
+        (events, continuation) = AsyncStream.makeStream(of: AudioPlayerEvent.self)
+
         registerNotifications()
     }
 
     deinit {
         unregisterNotifications()
+        continuation.finish()
         stop()
-    }
-
-    func setEventHandler(_ handler: @escaping @Sendable (AudioPlayerEvent) -> Void) {
-        lock.withLock { $0.eventHandler = handler }
     }
 
     func start(_ program: Int) throws {
@@ -203,13 +204,12 @@ extension AudioPlayer {
     }
 
     @objc private func handleWillSleep(_ notification: Notification) {
-        let handler = lock.withLock { state -> (@Sendable (AudioPlayerEvent) -> Void)? in
+        lock.withLock { state in
             state.isRunning = false
             player.stop()
             engine.stop()
-            return state.eventHandler
         }
-        handler?(.interrupted)
+        continuation.yield(.interrupted)
     }
 
     @objc private func handleDidWake(_ notification: Notification) {
@@ -217,43 +217,39 @@ extension AudioPlayer {
     }
 
     private func recover(reporting successEvent: AudioPlayerEvent) {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self else { return }
+        enum RecoveryResult {
+            case restarted
+            case notRunning
+            case failed(Error)
+        }
 
-            enum RecoveryResult {
-                case restarted
-                case notRunning
-                case failed(Error)
-            }
+        let result = self.lock.withLock { state -> RecoveryResult in
+            // Only restart if we were actively playing when the change
+            // happened. If the user already pressed stop, leave it off.
+            guard state.isRunning else { return .notRunning }
 
-            let (result, handler) = self.lock.withLock {
-                state -> (RecoveryResult, (@Sendable (AudioPlayerEvent) -> Void)?) in
-                // Only restart if we were actively playing when the change
-                // happened. If the user already pressed stop, leave it off.
-                guard state.isRunning else { return (.notRunning, state.eventHandler) }
+            state.isRunning = false
+            self.player.stop()
+            self.engine.stop()
 
-                state.isRunning = false
-                self.player.stop()
-                self.engine.stop()
-
-                do {
-                    try self.engine.start()
-                    self.player.play()
-                    state.isRunning = true
-                    return (.restarted, state.eventHandler)
-                } catch {
-                    return (.failed(error), state.eventHandler)
-                }
-            }
-
-            switch result {
-            case .restarted:
-                handler?(successEvent)
-            case .notRunning:
-                break
-            case .failed(let error):
-                handler?(.resumeFailed(message: error.localizedDescription))
+            do {
+                try self.engine.start()
+                self.player.play()
+                state.isRunning = true
+                return .restarted
+            } catch {
+                return .failed(error)
             }
         }
+
+        switch result {
+        case .restarted:
+            continuation.yield(successEvent)
+        case .notRunning:
+            break
+        case .failed(let error):
+            continuation.yield(.resumeFailed(message: error.localizedDescription))
+        }
     }
+
 }

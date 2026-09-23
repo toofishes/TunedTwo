@@ -439,12 +439,11 @@ public actor TunerSession {
             }
         }
 
-        // Forward audio-output lifecycle events into the session actor. This
-        // is set after initialization so the closure can safely capture self.
-        self.audioPlayer.setEventHandler { [weak self] event in
-            Task { [weak self] in
-                guard let self else { return }
-                await self.handleAudioPlayerEvent(event)
+        // Forward audio-output lifecycle events into the session actor.
+        let audioPlayerEvents = audioPlayer.events
+        Task { [weak self, audioPlayerEvents] in
+            for await event in audioPlayerEvents {
+                await self?.handleAudioPlayerEvent(event)
             }
         }
     }
