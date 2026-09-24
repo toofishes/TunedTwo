@@ -67,6 +67,13 @@ private struct NowPlaying: View {
 private struct MetadataRow: View {
     let label: String
     let value: String
+    private let trimmedValue: String
+
+    init(label: String, value: String) {
+        self.label = label
+        self.value = value
+        self.trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     var body: some View {
         HStack {
@@ -74,7 +81,7 @@ private struct MetadataRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(width: 80, alignment: .leading)
-            Text(value.isEmpty ? "—" : value)
+            Text(trimmedValue.isEmpty ? "—" : trimmedValue)
         }
     }
 }
