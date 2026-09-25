@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C32495E58926F08936EBCD3 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = B9DC54C8E4D77DD8DC4F7426 /* GRDB */; };
 		1708D7E166216B25FBCF587E /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 29F8DA4DDDE7837B438D915E /* ArgumentParser */; };
 		18FF19175FBD475C4871D4BA /* TunedTwoCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; };
 		1C16F982482BC9C3C2719B68 /* TunedTwoCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B641508074556027BFC0A5C /* TunedTwoCore.framework */; };
@@ -143,6 +144,7 @@
 			files = (
 				718408AA5CF43FDF9B0CE44A /* TunedTwoCore.framework in Frameworks */,
 				1708D7E166216B25FBCF587E /* ArgumentParser in Frameworks */,
+				0C32495E58926F08936EBCD3 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,6 +237,7 @@
 			name = "tunedtwo-cli";
 			packageProductDependencies = (
 				29F8DA4DDDE7837B438D915E /* ArgumentParser */,
+				B9DC54C8E4D77DD8DC4F7426 /* GRDB */,
 			);
 			productName = "tunedtwo-cli";
 			productReference = 133752B5A74A306027F74D9A /* tunedtwo-cli */;
@@ -348,6 +351,7 @@
 			mainGroup = 4E1B32937EDFF8D9904015CC;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				8BD8FFD4164DBD6AAED45CAB /* XCRemoteSwiftPackageReference "grdb.swift" */,
 				5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				315B7FBE442897A3229AA87C /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
@@ -864,6 +868,14 @@
 				minimumVersion = 1.8.2;
 			};
 		};
+		8BD8FFD4164DBD6AAED45CAB /* XCRemoteSwiftPackageReference "grdb.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/grdb.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.11.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -871,6 +883,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
+		};
+		B9DC54C8E4D77DD8DC4F7426 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8BD8FFD4164DBD6AAED45CAB /* XCRemoteSwiftPackageReference "grdb.swift" */;
+			productName = GRDB;
 		};
 		F3C0A8A1611F84BA2352EE2D /* Collections */ = {
 			isa = XCSwiftPackageProductDependency;
