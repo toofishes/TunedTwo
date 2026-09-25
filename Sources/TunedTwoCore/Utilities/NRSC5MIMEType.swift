@@ -42,3 +42,24 @@ private let nrsc5MimeNames: [UInt32: String] = [
     NRSC5_MIME_UNKNOWN_B81FFAA8: "Unknown",
     NRSC5_MIME_UNKNOWN_FFFFFFFF: "Unknown",
 ]
+
+public func nameForDSDMIMEType(_ mime: UInt32) -> String {
+    if let name = dsdMimeNames[mime] {
+        return name
+    }
+    let hex = String(format: "0x%03X", mime)
+    return "Unknown (\(hex))"
+}
+
+private let dsdMimeNames: [UInt32: String] = [
+    0x536: "Image/Logo",
+    0xC3E: "NAVTEQ",
+    0xDFC: "HERE",
+    0xEB2: "TTN TPEG 1",
+    0x469: "TTN TPEG 2/3",
+    0x2D7: "TTN STM Traffic",
+    0xE96: "TTN STM Weather",
+    // I don't know what the full value for this is, but it always
+    // shows up in a DSD with type NRSC5_SERVICE_DATA_TYPE_EMERGENCY.
+    0x444: "Emergency",
+]

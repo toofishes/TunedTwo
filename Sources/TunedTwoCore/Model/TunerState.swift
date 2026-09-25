@@ -443,7 +443,7 @@ extension TunerState: TunerEventSink {
                 LogEvent(
                     title: "Data Service Descriptor",
                     description:
-                        "Access \(desc.access), Type \(desc.type), MIME \(nameForNRSC5MIMEType(desc.mimeType))",
+                        "Access \(desc.access), Type \(desc.type), MIME \(nameForDSDMIMEType(desc.mimeType))",
                     systemImage: "waveform",
                     tintColor: .purple))
         case .exciterInfo(let info, let importerConnected):
