@@ -13,7 +13,12 @@ struct TunedTwoCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tunedtwo-cli",
         abstract: "Command-line access to TunedTwoCore functionality.",
-        subcommands: [TrafficMapCommand.self, DBTestCommand.self, ScanCommand.self]
+        subcommands: [
+            DBTestCommand.self,
+            ListenCommand.self,
+            ScanCommand.self,
+            TrafficMapCommand.self,
+        ]
     )
 }
 

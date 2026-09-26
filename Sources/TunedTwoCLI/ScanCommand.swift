@@ -7,7 +7,7 @@ import ArgumentParser
 import Foundation
 import TunedTwoCore
 
-actor ScanSink: TunerEventSink {
+private actor ScanSink: TunerEventSink {
     private var events: [TunerEvent] = []
 
     func tunerSessionDidEmit(_ event: TunerEvent) async {
