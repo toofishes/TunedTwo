@@ -47,7 +47,7 @@ struct ScanCommand: AsyncParsableCommand {
             }
         }
 
-        for hz in stride(from: 87_900_000, to: 108_000_000, by: 200_000) {
+        for hz in stride(from: 87_900_000, through: 107_900_000, by: 200_000) {
             // Discard any events that were still in flight from the previous
             // frequency before retuning so we only act on post-retune state.
             _ = await sink.dequeueEvents()

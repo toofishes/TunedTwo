@@ -175,13 +175,14 @@ private struct Controls: View {
                 }
 
                 HStack {
+                    let frequencyRange = 87.9...107.9
                     let frequencyBinding = Binding<Double>(
                         get: { state.frequencyMHz },
                         set: { newValue in
-                            if newValue < 87.9 {
-                                state.frequencyMHz = 87.9
-                            } else if newValue > 107.9 {
-                                state.frequencyMHz = 107.9
+                            if newValue < frequencyRange.lowerBound {
+                                state.frequencyMHz = frequencyRange.lowerBound
+                            } else if newValue > frequencyRange.upperBound {
+                                state.frequencyMHz = frequencyRange.upperBound
                             } else {
                                 state.frequencyMHz = newValue.roundedToFMFrequency()
                             }
@@ -198,7 +199,7 @@ private struct Controls: View {
                     Text("MHz")
                         .foregroundStyle(.secondary)
 
-                    Stepper("", value: $state.frequencyMHz, in: 87.9...107.9, step: 0.2)
+                    Stepper("", value: $state.frequencyMHz, in: frequencyRange, step: 0.2)
                         .labelsHidden()
                 }
                 //.fixedSize(horizontal: true, vertical: false)
