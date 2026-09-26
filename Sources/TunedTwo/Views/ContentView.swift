@@ -9,10 +9,16 @@ import SwiftUI
 import TunedTwoCore
 
 struct ContentView: View {
-    @State private var state = TunerState()
-    @State private var session: TunerSession?
+    @State private var state: TunerState
+    private var session: TunerSession
     @State private var retuneTask: Task<Void, Never>?
     @State private var selectedTab: String = ""
+
+    init() {
+        let newState = TunerState()
+        state = newState
+        session = .init(sink: newState)
+    }
 
     var body: some View {
         let currentProgramState = state.programStates[state.currentProgram]
@@ -49,19 +55,10 @@ struct ContentView: View {
         .padding()
         .frame(minWidth: 480, minHeight: 440)
         .onChange(of: state.currentProgram) { _, newProgram in
-            guard let session else { return }
             Task { await session.setProgram(newProgram) }
         }
         .onChange(of: state.frequencyMHz) { _, _ in
             scheduleRetune()
-        }
-        .onChange(of: state.isPlaying) { _, playing in
-            if !playing {
-                // Sessions that are no longer playing can't produce more
-                // audio; dropping the reference lets the session's deinit
-                // perform any remaining teardown.
-                session = nil
-            }
         }
         .onAppear {
             if ProcessInfo.processInfo.environment["TUNEDTWO_SMOKE_TEST"] == "1" {
@@ -81,9 +78,7 @@ struct ContentView: View {
 
     private func togglePlaybackAsync() async {
         if state.isPlaying {
-            guard let current = session else { return }
-            session = nil
-            await current.stop()
+            await session.stop()
         } else {
             await startPlayback()
         }
@@ -95,12 +90,11 @@ struct ContentView: View {
             frequencyHz: state.frequencyHz,
             program: state.currentProgram)
 
-        session = TunerSession(sink: state)
         // Optimistic, so the button feels immediate; the .failed event
         // corrects this if the tuner cannot start.
         state.isPlaying = true
         state.clearForFrequencyChange()
-        await session?.start(configuration)
+        await session.start(configuration)
     }
 
     /// Retunes a running RTL-SDR session when the frequency field changes.
@@ -111,7 +105,7 @@ struct ContentView: View {
             try? await Task.sleep(for: .milliseconds(600))
             guard !Task.isCancelled else { return }
             guard state.source == .rtlSDR, state.isPlaying,
-                let session, let frequencyHz = state.frequencyHz
+                let frequencyHz = state.frequencyHz
             else { return }
             await session.retune(frequencyHz: frequencyHz)
             state.clearForFrequencyChange()
