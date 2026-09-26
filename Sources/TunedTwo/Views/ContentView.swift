@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var state = TunerState()
     @State private var session: TunerSession?
     @State private var retuneTask: Task<Void, Never>?
+    @State private var selectedTab: String = ""
 
     var body: some View {
         let currentProgramState = state.programStates[state.currentProgram]
@@ -21,24 +22,23 @@ struct ContentView: View {
                 togglePlayback()
             }
             Divider()
-            TabView {
-                Tab("Radio", systemImage: "radio") {
+            TabView(selection: $selectedTab) {
+                Tab("Radio", systemImage: "radio", value: "radio") {
                     RadioView(state: state, programState: currentProgramState)
                 }
 
-                Tab("Traffic", systemImage: "map") {
+                Tab("Traffic", systemImage: "map", value: "traffic") {
                     TrafficView(map: state.traffic)
                 }
 
-                Tab("Weather", systemImage: "sun.rain") {
+                Tab("Weather", systemImage: "sun.rain", value: "weather") {
                     WeatherView(map: state.weather)
                 }
 
-                Tab("Logs", systemImage: "list.bullet.rectangle") {
-                    EventLogView(state: state)
-                        .onAppear { state.isLogsVisible = true }
-                        .onDisappear { state.isLogsVisible = false }
+                Tab("Logs", systemImage: "list.bullet.rectangle", value: "logs") {
+                    EventLogView(state: state, visible: selectedTab == "logs")
                 }
+                .badge(state.logEntries.count)
             }
             Divider()
             StatusBar(

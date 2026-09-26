@@ -140,17 +140,22 @@ private struct EventCountsTable: View {
 
 struct EventLogView: View {
     @Bindable var state: TunerState
+    let visible: Bool
 
     var body: some View {
-        HSplitView {
-            EventListView(events: $state.logEntries)
-                .padding(0)
-                .frame(minWidth: 240)
-                .layoutPriority(1)
-
-            EventCountsTable(eventCounts: state.eventCounts)
-                .padding(0)
-                .frame(minWidth: 240)
+        if visible {
+            HSplitView {
+                EventListView(events: $state.logEntries)
+                    .padding(0)
+                    .frame(minWidth: 240)
+                    .layoutPriority(1)
+                
+                EventCountsTable(eventCounts: state.eventCounts)
+                    .padding(0)
+                    .frame(minWidth: 240)
+            }
+        } else {
+            Text("Loading Event Log...").foregroundStyle(.secondary)
         }
     }
 }

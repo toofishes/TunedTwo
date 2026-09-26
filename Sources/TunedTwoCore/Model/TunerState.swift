@@ -104,29 +104,7 @@ public final class TunerState {
 
     public var logEntries: Deque<LogEvent> = Deque()
     public var eventCounts: [String: Int] = .init()
-
-    /// Whether the Logs tab is currently on screen.
-    /// Used to skip log-entry and event-count UI updates when the log view is hidden.
-    public var isLogsVisible: Bool = false {
-        didSet {
-            if isLogsVisible {
-                flushPendingLogs()
-            }
-        }
-    }
-
-    /// Counts accumulated since the last public `eventCounts` update.
-    private var pendingEventCounts: [String: Int] = [:]
-    /// Log entries accumulated since the last public `logEntries` update.
-    private var pendingLogEntries: Deque<LogEvent> = Deque()
-    /// Maximum number of log entries retained in memory. The log is meant
-    /// for recent inspection, not an unbounded audit trail.
     private let maxLogEntries = 10000
-    /// Outstanding timer that will flush pending counts/logs to the observable properties.
-    private var logFlushTask: Task<Void, Never>?
-
-    /// Decodes traffic/weather map images off the main actor.
-    private let mapProcessor = MapProcessor()
 
     public init() {}
 
@@ -345,17 +323,13 @@ extension TunerState: TunerEventSink {
                         }
                     } else if mime == NRSC5_MIME_TTN_STM_TRAFFIC {
                         if isImage {
-                            let (updated, _) = await mapProcessor.processTrafficImageFile(
-                                name: file.name, data: file.data, currentMap: traffic)
-                            traffic = updated
+                            traffic.processImageFile(name: file.name, data: file.data)
                         } else {
                             traffic.processConfigFile(data: file.data)
                         }
                     } else if mime == NRSC5_MIME_TTN_STM_WEATHER {
                         if isImage {
-                            let (updated, _) = await mapProcessor.processWeatherImageFile(
-                                name: file.name, data: file.data, currentMap: weather)
-                            weather = updated
+                            weather.processImageFile(name: file.name, data: file.data)
                         } else {
                             weather.processConfigFile(data: file.data)
                         }
@@ -394,11 +368,9 @@ extension TunerState: TunerEventSink {
         case .hereImage(let image):
             switch image.type {
             case .traffic:
-                let (updated, _) = await mapProcessor.processTrafficHereImage(image, currentMap: traffic)
-                traffic = updated
+                traffic.processHereImageFile(hereImage: image)
             case .weather:
-                let (updated, _) = await mapProcessor.processWeatherHereImage(image, currentMap: weather)
-                weather = updated
+                weather.processHereImageFile(hereImage: image)
             case .unknown:
                 break
             }
@@ -500,51 +472,17 @@ extension TunerState {
     /// observable `eventCounts` while the log view is visible, to avoid SwiftUI
     /// redraws for every event.
     fileprivate func recordEventCount(_ name: String) {
-        pendingEventCounts[name, default: 0] += 1
-        scheduleLogFlushIfNeeded()
+        eventCounts[name, default: 0] += 1
     }
 
     /// Buffers a log entry. Entries are always captured, but are only flushed to
     /// the observable `logEntries` while the log view is visible or when the
     /// pending buffer reaches a fraction of the total limit.
     fileprivate func appendLog(_ event: LogEvent) {
-        pendingLogEntries.append(event)
-        let overflow = pendingLogEntries.count - maxLogEntries
+        logEntries.append(event)
+        let overflow = logEntries.count - maxLogEntries
         if overflow > 0 {
-            pendingLogEntries.removeFirst(overflow)
-        }
-        scheduleLogFlushIfNeeded()
-    }
-
-    fileprivate func scheduleLogFlushIfNeeded() {
-        guard logFlushTask == nil else { return }
-        guard isLogsVisible || pendingLogEntries.count >= (maxLogEntries / 10) else { return }
-        logFlushTask = Task { @MainActor [self] in
-            defer { logFlushTask = nil }
-            do {
-                try await Task.sleep(for: .milliseconds(395))
-            } catch {
-                return
-            }
-            flushPendingLogs()
-        }
-    }
-
-    fileprivate func flushPendingLogs() {
-        if !pendingEventCounts.isEmpty {
-            for (key, value) in pendingEventCounts {
-                eventCounts[key, default: 0] += value
-            }
-            pendingEventCounts.removeAll()
-        }
-
-        if !pendingLogEntries.isEmpty {
-            logEntries.append(contentsOf: pendingLogEntries)
-            pendingLogEntries.removeAll()
-        }
-
-        if logEntries.count > maxLogEntries {
-            logEntries.removeFirst(logEntries.count - maxLogEntries)
+            logEntries.removeFirst(overflow)
         }
     }
 }
