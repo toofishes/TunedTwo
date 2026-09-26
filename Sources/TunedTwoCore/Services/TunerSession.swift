@@ -11,11 +11,14 @@
 //    is to copy each C event into a Sendable `TunerEvent` value (while the
 //    C pointers are still valid) and yield it into an `AsyncStream`; it
 //    never touches mutable Swift state.
+//  - For audio, we optimize by avoiding buffer copies. The audio player gets
+//    an unsafe pointer directly (via the `AudioSampleSink` protocol) and
+//    does any processing necessary to get it queued up for the audio system,
+//    avoiding a hop through an AsyncStream.
 //  - A single long-lived consumer task drains the stream into the actor.
 //    It holds the session weakly so the session can deinit while it runs:
 //    the context tears the C session down, finishes the stream, the loop
-//    ends, and every resource (worker thread, C session, audio) is
-//    reclaimed — no leaks, no retain cycles.
+//    ends, and every resource (worker thread, C session, audio) is reclaimed.
 //  - UI state is only ever touched via the awaited `TunerEventSink`
 //    (MainActor), held weakly.
 //
@@ -47,17 +50,15 @@ public struct TunerConfiguration: Sendable {
 // MARK: - Session
 
 public actor TunerSession {
-    private weak var sink: TunerEventSink?
+    private var sink: TunerEventSink?
     private let audioPlayer: AudioPlayer
     private let context: Nrsc5Context
 
-    /// Client-side program filter. nrsc5 emits all programs; we only render
-    /// the selected one. Plain actor state — no lock needed.
     private var isRunning = false
 
-    public init(sink: TunerEventSink) throws {
+    public init(sink: TunerEventSink) {
         self.sink = sink
-        self.audioPlayer = try AudioPlayer()
+        self.audioPlayer = AudioPlayer()
         self.context = Nrsc5Context(audioEventSink: audioPlayer)
 
         // Drain C callback events into the actor. The task holds the session

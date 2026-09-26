@@ -29,7 +29,7 @@ struct ScanCommand: AsyncParsableCommand {
 
     mutating func run() async throws {
         let sink = ScanSink()
-        let session = try TunerSession(sink: sink)
+        let session = TunerSession(sink: sink)
 
         await session.start(
             TunerConfiguration(

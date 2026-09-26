@@ -35,9 +35,9 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     nonisolated(unsafe) private let engine = AVAudioEngine()
     nonisolated(unsafe) private let player = AVAudioPlayerNode()
 
-    private let inputFormatInt16: AVAudioFormat
-    private let outputFormatFloat: AVAudioFormat
-    private let converter: AVAudioConverter
+    private let nrsc5Format: AVAudioFormat
+    private let outputFormat: AVAudioFormat
+    private let converter: AVAudioConverter?
 
     private let continuation: AsyncStream<AudioPlayerEvent>.Continuation
     let events: AsyncStream<AudioPlayerEvent>
@@ -51,28 +51,15 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     /// `Sendable` without an unchecked conformance.
     private let lock = OSAllocatedUnfairLock(initialState: State())
 
-    init() throws {
+    init() {
         let sr = Double(NRSC5_SAMPLE_RATE_AUDIO)
-        guard
-            let inFmt = AVAudioFormat(
-                commonFormat: .pcmFormatInt16,
-                sampleRate: sr,
-                channels: 2,
-                interleaved: true),
-            let outFmt = AVAudioFormat(
-                standardFormatWithSampleRate: sr,
-                channels: 2),
-            let conv = AVAudioConverter(from: inFmt, to: outFmt)
-        else {
-            throw AudioError.formatUnsupported
-        }
-
-        self.inputFormatInt16 = inFmt
-        self.outputFormatFloat = outFmt
-        self.converter = conv
+        nrsc5Format = AVAudioFormat(
+            commonFormat: .pcmFormatInt16, sampleRate: sr, channels: 2, interleaved: true)!
+        outputFormat = AVAudioFormat(standardFormatWithSampleRate: sr, channels: 2)!
+        converter = AVAudioConverter(from: nrsc5Format, to: outputFormat)
 
         engine.attach(player)
-        engine.connect(player, to: engine.mainMixerNode, format: outFmt)
+        engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
 
         (events, continuation) = AsyncStream.makeStream(of: AudioPlayerEvent.self)
 
@@ -145,15 +132,15 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
 
         // createSourceBuffer avoids copying the source data, but don't let this buffer
         // escape this function, since it is directly pointing at the nrsc5 library callback data.
-        guard let sourceBuffer = createSourceBuffer(from: samples, pcmFormat: inputFormatInt16) else { return }
+        guard let sourceBuffer = createSourceBuffer(from: samples, pcmFormat: nrsc5Format) else { return }
         sourceBuffer.frameLength = frames
 
         // destBuffer is allocated each time, since it can't be freed until it is played.
-        guard let destBuffer = AVAudioPCMBuffer(pcmFormat: outputFormatFloat, frameCapacity: frames) else { return }
+        guard let destBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: frames) else { return }
         destBuffer.frameLength = frames
 
         do {
-            try converter.convert(to: destBuffer, from: sourceBuffer)
+            try converter?.convert(to: destBuffer, from: sourceBuffer)
         } catch {
             return
         }

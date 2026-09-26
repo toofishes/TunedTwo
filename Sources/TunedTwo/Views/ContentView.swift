@@ -95,18 +95,12 @@ struct ContentView: View {
             frequencyHz: state.frequencyHz,
             program: state.currentProgram)
 
-        do {
-            let newSession = try TunerSession(sink: state)
-            session = newSession
-            // Optimistic, so the button feels immediate; the .failed event
-            // corrects this if the tuner cannot start.
-            state.isPlaying = true
-            state.clearForFrequencyChange()
-            await newSession.start(configuration)
-        } catch {
-            session = nil
-            state.status = "Error: \(error.localizedDescription)"
-        }
+        session = TunerSession(sink: state)
+        // Optimistic, so the button feels immediate; the .failed event
+        // corrects this if the tuner cannot start.
+        state.isPlaying = true
+        state.clearForFrequencyChange()
+        await session?.start(configuration)
     }
 
     /// Retunes a running RTL-SDR session when the frequency field changes.
