@@ -48,11 +48,19 @@ private class BPSTracker {
         }
         return false
     }
+
+    func clear() {
+        byteCount = 0
+        receiveCount = 0
+        bitsPerSecond = 0
+    }
 }
 
 @MainActor
 @Observable
 public final class TunerState {
+    private static let allowedProgramCount: Int = 5
+
     public enum Source: String, CaseIterable, Equatable, Identifiable {
         case rtlSDR = "RTL-SDR"
         case sampleFile = "Sample File"
@@ -79,8 +87,8 @@ public final class TunerState {
     public var stationSlogan: String = ""
     public var stationMessage: String = ""
 
-    public var programStates: [ProgramState] = Array(repeating: .init(), count: 8)
-    private var bpsTrackers: [BPSTracker] = Array(repeating: .init(), count: 8)
+    public var programStates: [ProgramState] = Array(repeating: .init(), count: allowedProgramCount)
+    private var bpsTrackers: [BPSTracker] = Array(repeating: .init(), count: allowedProgramCount)
 
     public var merLower: Float = 0
     public var merUpper: Float = 0
@@ -150,8 +158,8 @@ public final class TunerState {
         stationSlogan = ""
         stationMessage = ""
 
-        programStates = Array(repeating: .init(), count: 8)
-        bpsTrackers = Array(repeating: .init(), count: 8)
+        programStates = Array(repeating: .init(), count: programStates.count)
+        bpsTrackers.forEach { $0.clear() }
 
         merLower = 0
         merUpper = 0

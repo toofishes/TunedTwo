@@ -175,7 +175,7 @@ private struct Controls: View {
                 //.fixedSize(horizontal: true, vertical: false)
 
                 Picker("Program", selection: $state.currentProgram) {
-                    ForEach(0..<8) { i in
+                    ForEach(state.programStates.indices, id: \.self) { i in
                         Text("HD\(i + 1)").tag(i).selectionDisabled(state.programStates[i].available == false)
                     }
                 }
