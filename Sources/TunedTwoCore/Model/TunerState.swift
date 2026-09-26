@@ -15,6 +15,7 @@ import Foundation
 import nrsc5
 
 public struct ProgramState: Equatable, Sendable {
+    public var available: Bool = false
     public var serviceName: String = ""
 
     public var title: String = ""
@@ -394,15 +395,16 @@ extension TunerState: TunerEventSink {
                         "File: \(image.name), Size: \(image.data.count), Sequence: \(image.sequence), N1: \(image.n1), N2: \(image.n2) Time: \(image.time?.formatted(date: .numeric, time: .shortened) ?? "N/A"), Bounds: \(bounds)",
                     systemImage: "photo", tintColor: .blue))
         case .audioService(
-            let program, let access, let type, let codecMode, let blendControl, let digitalAudioGain, let commonDelay,
-            let latency):
+            let program, let access, let type, let codecMode, let blendControl, let gain, let delay, let latency):
+            programStates[program].available = true
             appendLog(
                 LogEvent(
                     title: "Audio Service",
                     description:
-                        "Program \(program), Access \(access), Type \(type), Codec \(codecMode), Blend \(blendControl), Gain \(digitalAudioGain), Delay \(commonDelay), Latency \(latency)",
+                        "Program \(program), Access \(access), Type \(type), Codec \(codecMode), Blend \(blendControl), Gain \(gain), Delay \(delay), Latency \(latency)",
                     systemImage: "speaker.wave.2.fill", tintColor: .blue))
         case .audioServiceDescriptor(let desc):
+            programStates[desc.program].available = true
             appendLog(
                 LogEvent(
                     title: "Audio Service Descriptor",

@@ -176,7 +176,7 @@ private struct Controls: View {
 
                 Picker("Program", selection: $state.currentProgram) {
                     ForEach(0..<8) { i in
-                        Text("HD\(i + 1)").tag(i)
+                        Text("HD\(i + 1)").tag(i).selectionDisabled(state.programStates[i].available == false)
                     }
                 }
                 .pickerStyle(.segmented)
