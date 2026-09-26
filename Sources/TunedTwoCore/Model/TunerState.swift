@@ -71,7 +71,7 @@ public final class TunerState {
     public var source: Source = .rtlSDR
 
     /// Frequency in MHz when using an RTL-SDR.
-    public var frequencyMHz: String = "103.5"
+    public var frequencyMHz: Double = 103.5
 
     /// Selected HD Radio program (0 = HD1, 7 = HD8).
     public var currentProgram: Int = 0
@@ -95,9 +95,7 @@ public final class TunerState {
     public var ber: Float = 0
 
     public var frequencyHz: Float? {
-        let trimmed = frequencyMHz.trimmingCharacters(in: .whitespaces)
-        guard let mhz = Double(trimmed), mhz > 0 else { return nil }
-        return Float(mhz * 1_000_000)
+        return Float(frequencyMHz * 1_000_000)
     }
 
     public var traffic = TrafficMap()

@@ -149,7 +149,7 @@ struct EventLogView: View {
                     .padding(0)
                     .frame(minWidth: 240)
                     .layoutPriority(1)
-                
+
                 EventCountsTable(eventCounts: state.eventCounts)
                     .padding(0)
                     .frame(minWidth: 240)

@@ -151,6 +151,16 @@ private struct ContentHeader: View {
     }
 }
 
+extension BinaryFloatingPoint {
+    func roundedToFMFrequency() -> Self {
+        // US FM frequencies range from 87.9 to 107.9
+        // Align the grid to multiples of 0.2 by subtracting 0.1
+        let shifted = (self - 0.1) * 5.0
+        let rounded = shifted.rounded(.toNearestOrEven)
+        return (rounded * 0.2) + 0.1
+    }
+}
+
 private struct Controls: View {
     @Binding var state: TunerState
     let togglePlayback: () -> Void
@@ -165,12 +175,31 @@ private struct Controls: View {
                 }
 
                 HStack {
-                    TextField("Frequency", text: $state.frequencyMHz)
-                        .textFieldStyle(.roundedBorder)
-                        .disabled(state.source == .sampleFile)
-                        .frame(width: 120)
+                    let frequencyBinding = Binding<Double>(
+                        get: { state.frequencyMHz },
+                        set: { newValue in
+                            if newValue < 87.9 {
+                                state.frequencyMHz = 87.9
+                            } else if newValue > 107.9 {
+                                state.frequencyMHz = 107.9
+                            } else {
+                                state.frequencyMHz = newValue.roundedToFMFrequency()
+                            }
+                        }
+                    )
+                    TextField(
+                        "Frequency", value: frequencyBinding,
+                        format: .number.grouping(.never).precision(.fractionLength(1))
+                    )
+                    .textFieldStyle(.roundedBorder)
+                    .disabled(state.source == .sampleFile)
+                    .frame(width: 120)
+
                     Text("MHz")
                         .foregroundStyle(.secondary)
+
+                    Stepper("", value: $state.frequencyMHz, in: 87.9...107.9, step: 0.2)
+                        .labelsHidden()
                 }
                 //.fixedSize(horizontal: true, vertical: false)
 
