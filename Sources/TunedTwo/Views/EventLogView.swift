@@ -87,6 +87,7 @@ where Events: RandomAccessCollection, Events: RangeReplaceableCollection, Events
                         dimensions[.leading]
                     }
             }
+            .textSelection(.enabled)
 
             Button("Clear Event Log") {
                 events.removeAll()

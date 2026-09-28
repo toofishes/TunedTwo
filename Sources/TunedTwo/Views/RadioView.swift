@@ -82,6 +82,7 @@ private struct MetadataRow: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 80, alignment: .leading)
             Text(trimmedValue.isEmpty ? "—" : trimmedValue)
+                .textSelection(.enabled)
         }
     }
 }
