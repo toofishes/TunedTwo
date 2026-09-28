@@ -229,7 +229,7 @@ extension TunerState: TunerEventSink {
             appendLog(
                 LogEvent(
                     title: "Audio Resumed",
-                    description: "Playback resumed after an audio output change.",
+                    description: "Playback is resuming after the system awoke from sleep.",
                     systemImage: "hifispeaker.fill",
                     tintColor: .green))
         case .audioOutputFailed(let message):

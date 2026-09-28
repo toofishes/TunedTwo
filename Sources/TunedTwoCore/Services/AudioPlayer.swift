@@ -43,8 +43,8 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     let events: AsyncStream<AudioPlayerEvent>
 
     private struct State: Sendable {
-        var isRunning = false
         var currentProgram: Int = 0
+        var wasPlayingBeforeSleep: Bool = false
     }
 
     /// Mutable player state is kept inside the lock so the class can be
@@ -77,13 +77,11 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
             try engine.start()
             state.currentProgram = program
             player.play()
-            state.isRunning = true
         }
     }
 
     func stop() {
         lock.withLock { state in
-            state.isRunning = false
             player.stop()
             engine.stop()
         }
@@ -91,10 +89,14 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
 
     func setProgram(_ program: Int) {
         lock.withLock { state in
-            guard state.isRunning else { return }
-            player.stop()
+            let isPlaying = player.isPlaying
+            if isPlaying {
+                player.stop()
+            }
             state.currentProgram = program
-            player.play()
+            if isPlaying {
+                player.play()
+            }
         }
     }
 
@@ -102,7 +104,7 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     /// resumes accepting buffers, keeping the engine running.
     func flush() {
         lock.withLock { state in
-            guard state.isRunning else { return }
+            guard player.isPlaying else { return }
             player.stop()
             player.play()
         }
@@ -126,7 +128,7 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     /// Accepts interleaved 16-bit signed PCM from nrsc5, converts it to
     /// float, and schedules it on the system audio graph.
     public func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>) {
-        guard lock.withLock({ $0.isRunning && $0.currentProgram == program }) else { return }
+        guard lock.withLock({ player.isPlaying && $0.currentProgram == program }) else { return }
         guard samples.count >= 2 && samples.count <= (Int(NRSC5_AUDIO_FRAME_SAMPLES) * 2) else { return }
         let frames = AVAudioFrameCount(samples.count / 2)
 
@@ -187,19 +189,29 @@ extension AudioPlayer {
         // The engine stops and uninitializes itself when the hardware
         // configuration changes (e.g. headphones unplugged). Do not touch
         // the engine synchronously from this handler to avoid deadlocks.
+        print("handling configuration change")
         recover(reporting: .routeChanged)
     }
 
     @objc private func handleWillSleep(_ notification: Notification) {
-        lock.withLock { state in
-            state.isRunning = false
-            player.stop()
-            engine.stop()
+        print("handling will sleep")
+        let wasPlaying = lock.withLock { state in
+            state.wasPlayingBeforeSleep = player.isPlaying
+            if player.isPlaying {
+                player.stop()
+            }
+            if engine.isRunning {
+                engine.stop()
+            }
+            return state.wasPlayingBeforeSleep
         }
-        continuation.yield(.interrupted)
+        if wasPlaying {
+            continuation.yield(.interrupted)
+        }
     }
 
     @objc private func handleDidWake(_ notification: Notification) {
+        print("handling did wake")
         recover(reporting: .resumed)
     }
 
@@ -210,19 +222,16 @@ extension AudioPlayer {
             case failed(Error)
         }
 
-        let result = self.lock.withLock { state -> RecoveryResult in
-            // Only restart if we were actively playing when the change
-            // happened. If the user already pressed stop, leave it off.
-            guard state.isRunning else { return .notRunning }
-
-            state.isRunning = false
-            self.player.stop()
-            self.engine.stop()
+        let result = lock.withLock { state -> RecoveryResult in
+            guard state.wasPlayingBeforeSleep || player.isPlaying else {
+                return .notRunning
+            }
+            player.stop()
+            engine.stop()
 
             do {
-                try self.engine.start()
-                self.player.play()
-                state.isRunning = true
+                try engine.start()
+                player.play()
                 return .restarted
             } catch {
                 return .failed(error)
