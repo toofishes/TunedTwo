@@ -189,12 +189,10 @@ extension AudioPlayer {
         // The engine stops and uninitializes itself when the hardware
         // configuration changes (e.g. headphones unplugged). Do not touch
         // the engine synchronously from this handler to avoid deadlocks.
-        print("handling configuration change")
         recover(reporting: .routeChanged)
     }
 
     @objc private func handleWillSleep(_ notification: Notification) {
-        print("handling will sleep")
         let wasPlaying = lock.withLock { state in
             state.wasPlayingBeforeSleep = player.isPlaying
             if player.isPlaying {
@@ -211,7 +209,6 @@ extension AudioPlayer {
     }
 
     @objc private func handleDidWake(_ notification: Notification) {
-        print("handling did wake")
         recover(reporting: .resumed)
     }
 
