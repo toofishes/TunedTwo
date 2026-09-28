@@ -64,8 +64,8 @@ struct LotImageView: View {
                 .aspectRatio(1.0, contentMode: .fit)
                 .frame(idealWidth: 100, maxWidth: 100, idealHeight: 100, maxHeight: 100)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            Text(lot?.lotID.formatted(.number.grouping(.never)) ?? "")
-            Text(lot?.expiry?.formatted(date: .numeric, time: .shortened) ?? "")
+            Text(lot?.lotID.formatted(.number.grouping(.never)) ?? "No ID")
+            Text(lot?.expiry?.formatted(date: .numeric, time: .shortened) ?? "No Expiry")
         }
     }
 

@@ -8,9 +8,9 @@ import TunedTwoCore
 
 struct RadioView: View {
     let state: TunerState
-    let programState: ProgramState
 
     var body: some View {
+        let programState = state.currentProgramState
         let programLot = state.lotCache[programState.programLotID]
         let coverLot = state.lotCache[programState.coverLotID]
 

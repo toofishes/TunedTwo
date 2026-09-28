@@ -21,7 +21,6 @@ struct ContentView: View {
     }
 
     var body: some View {
-        let currentProgramState = state.programStates[state.currentProgram]
         VStack(spacing: 16) {
             ContentHeader()
             Controls(state: $state) {
@@ -30,7 +29,7 @@ struct ContentView: View {
             Divider()
             TabView(selection: $selectedTab) {
                 Tab("Radio", systemImage: "radio", value: "radio") {
-                    RadioView(state: state, programState: currentProgramState)
+                    RadioView(state: state)
                 }
 
                 Tab("Traffic", systemImage: "map", value: "traffic") {
@@ -44,13 +43,9 @@ struct ContentView: View {
                 Tab("Logs", systemImage: "list.bullet.rectangle", value: "logs") {
                     EventLogView(state: state, visible: selectedTab == "logs")
                 }
-                .badge(state.logEntries.count)
             }
             Divider()
-            StatusBar(
-                state: state,
-                bitsPerSecond: currentProgramState.bitsPerSecond,
-                crcErrors: currentProgramState.crcErrors)
+            StatusBar(state: state)
         }
         .padding()
         .frame(minWidth: 480, minHeight: 440)
@@ -120,7 +115,7 @@ struct ContentView: View {
         state.source = .sampleFile
         await startPlayback()
         try? await Task.sleep(for: .seconds(8))
-        let ps = state.programStates[state.currentProgram]
+        let ps = state.currentProgramState
         if !state.stationName.isEmpty || !ps.title.isEmpty {
             fputs("SMOKE_OK: station='\(state.stationName)' title='\(ps.title)'\n", stderr)
         } else {
@@ -169,7 +164,7 @@ private struct Controls: View {
         Form {
             Section {
                 Picker("Source", selection: $state.source) {
-                    ForEach(TunerState.Source.allCases) { source in
+                    ForEach(TunerState.Source.allCases, id: \.rawValue) { source in
                         Text(source.rawValue).tag(source)
                     }
                 }
@@ -227,16 +222,15 @@ private struct Controls: View {
 
 private struct StatusBar: View {
     let state: TunerState
-    let bitsPerSecond: Int
-    let crcErrors: Int
 
     var body: some View {
         HStack {
+            let programState = state.currentProgramState
             Text(state.status)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(String(format: "%.1f kbps", Double(bitsPerSecond) / 1000.0))
+            Text(String(format: "%.1f kbps", Double(programState.bitsPerSecond) / 1000.0))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -248,7 +242,7 @@ private struct StatusBar: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .monospacedDigit()
-            .help("\(crcErrors) CRC Errors")
+            .help("\(programState.crcErrors) CRC Errors")
         }
     }
 }

@@ -19,7 +19,7 @@
 ## Next (metadata & UX polish)
 
 - [ ] Display SIG service list and active data services.
-- [ ] Live signal quality gauges (MER lower/upper, BER).
+- [x] Live signal quality gauges (MER lower/upper, BER).
 - [ ] Persist user settings (frequency, program, last window frame).
 - [ ] Better native macOS chrome: menu bar items, keyboard shortcuts, toolbar.
 - [ ] App icon and asset catalog.
@@ -27,8 +27,8 @@
 
 ## Later (advanced features from nrsc5-studio)
 
-- [ ] Album art / station logo (LOT image decode).
-- [ ] Traffic map / weather radar (HERE images).
+- [x] Album art / station logo (LOT image decode).
+- [x] Traffic map / weather radar (HERE images).
 - [ ] 24-hour song log + CSV export.
 - [ ] Spectrum / waterfall visualization.
 - [ ] QPSK constellation plot.

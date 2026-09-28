@@ -14,7 +14,8 @@ import Combine
 import Foundation
 import nrsc5
 
-public struct ProgramState: Equatable, Sendable {
+@Observable
+public final class ProgramState {
     public var available: Bool = false
     public var serviceName: String = ""
 
@@ -29,6 +30,20 @@ public struct ProgramState: Equatable, Sendable {
 
     public var bitsPerSecond: Int = 0
     public var crcErrors: Int = 0
+
+    func clear() {
+        available = false
+        serviceName = ""
+        title = ""
+        artist = ""
+        album = ""
+        genre = ""
+        showCover = false
+        coverLotID = -1
+        programLotID = -1
+        bitsPerSecond = 0
+        crcErrors = 0
+    }
 }
 
 private class BPSTracker {
@@ -87,8 +102,12 @@ public final class TunerState {
     public var stationSlogan: String = ""
     public var stationMessage: String = ""
 
-    public var programStates: [ProgramState] = Array(repeating: .init(), count: allowedProgramCount)
-    private var bpsTrackers: [BPSTracker] = Array(repeating: .init(), count: allowedProgramCount)
+    private var bpsTrackers: [BPSTracker] = (0..<allowedProgramCount).map { _ in BPSTracker() }
+    public var programStates: [ProgramState] = (0..<allowedProgramCount).map { _ in ProgramState() }
+
+    public var currentProgramState: ProgramState {
+        programStates[currentProgram]
+    }
 
     public var merLower: Float = 0
     public var merUpper: Float = 0
@@ -156,7 +175,7 @@ public final class TunerState {
         stationSlogan = ""
         stationMessage = ""
 
-        programStates = Array(repeating: .init(), count: programStates.count)
+        programStates.forEach { $0.clear() }
         bpsTrackers.forEach { $0.clear() }
 
         merLower = 0
@@ -303,12 +322,13 @@ extension TunerState: TunerEventSink {
                     systemImage: "light.beacon.min.fill", tintColor: .red))
             break
         case .id3(let program, let id3):
-            programStates[program].title = id3.title
-            programStates[program].artist = id3.artist
-            programStates[program].album = id3.album
-            programStates[program].genre = id3.genre
-            programStates[program].showCover = id3.showCover
-            programStates[program].coverLotID = id3.lotID
+            let ps = programStates[program]
+            ps.title = id3.title
+            ps.artist = id3.artist
+            ps.album = id3.album
+            ps.genre = id3.genre
+            ps.showCover = id3.showCover
+            ps.coverLotID = id3.lotID
         case .lot(let file, let service, let component):
             let isImage = file.mime == NRSC5_MIME_JPEG || file.mime == NRSC5_MIME_PNG
             if isImage {
