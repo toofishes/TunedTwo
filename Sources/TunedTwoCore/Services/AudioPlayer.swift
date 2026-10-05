@@ -32,8 +32,8 @@ public enum AudioPlayerEvent: Sendable {
 /// notification callbacks dispatch recovery work asynchronously to avoid
 /// deadlocks inside `AVAudioEngine`.
 public final class AudioPlayer: AudioSampleSink, Sendable {
-    nonisolated(unsafe) private let engine = AVAudioEngine()
-    nonisolated(unsafe) private let player = AVAudioPlayerNode()
+    private let engine = AVAudioEngine()
+    private let player = AVAudioPlayerNode()
 
     private let nrsc5Format: AVAudioFormat
     private let outputFormat: AVAudioFormat
