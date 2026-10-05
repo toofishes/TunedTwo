@@ -46,6 +46,7 @@ targets:
     deploymentTarget: "15.0"
     sources:
       - path: Sources/TunedTwoCore
+      - path: Modules
     dependencies:
       - package: swift-collections
         product: Collections
@@ -53,7 +54,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.tunedtwo.TunedTwoCore
         DEFINES_MODULE: YES
+        ENABLE_MODULE_VERIFIER: YES
         LIBRARY_SEARCH_PATHS: $(SRCROOT)/Vendor/nrsc5/build/src
+        MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS: gnu11 gnu++14
         OTHER_LDFLAGS: -lnrsc5
         # libnrsc5.dylib (install name @rpath/libnrsc5.dylib) is embedded
         # in the framework's own Frameworks/ directory.

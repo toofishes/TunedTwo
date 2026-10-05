@@ -135,6 +135,15 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		F626E6CD3A761FEE95E9029A /* Modules */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Modules;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -196,6 +205,7 @@
 		4E1B32937EDFF8D9904015CC = {
 			isa = PBXGroup;
 			children = (
+				F626E6CD3A761FEE95E9029A /* Modules */,
 				C34D3EDA9AECBE617641FD42 /* Resources */,
 				0C7BE9BAA7D114ADB9DE90EE /* Sources */,
 				3928A950F79A892FB9BAAC1F /* Tests */,
@@ -258,6 +268,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				F626E6CD3A761FEE95E9029A /* Modules */,
 				6BDB84486AE14C5F6C9F6BA7 /* TunedTwoCore */,
 			);
 			name = TunedTwoCore;
@@ -607,6 +618,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -614,6 +626,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/build/src";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
 				OTHER_LDFLAGS = "-lnrsc5";
 				PRODUCT_BUNDLE_IDENTIFIER = io.tunedtwo.TunedTwoCore;
 				SDKROOT = macosx;
@@ -786,6 +799,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -793,6 +807,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Vendor/nrsc5/build/src";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
 				OTHER_LDFLAGS = "-lnrsc5";
 				PRODUCT_BUNDLE_IDENTIFIER = io.tunedtwo.TunedTwoCore;
 				SDKROOT = macosx;
