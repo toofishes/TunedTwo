@@ -10,7 +10,7 @@ packages:
     from: 1.8.2
   swift-collections:
     url: https://github.com/apple/swift-collections
-    from: 1.6.0
+    from: 1.7.4
 options:
   bundleIdPrefix: io.tunedtwo
   deploymentTarget:

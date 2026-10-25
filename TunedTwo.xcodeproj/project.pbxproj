@@ -872,7 +872,7 @@
 			repositoryURL = "https://github.com/apple/swift-collections";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.6.0;
+				minimumVersion = 1.7.4;
 			};
 		};
 		5DBD83FBEF29DC556F952CE0 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
