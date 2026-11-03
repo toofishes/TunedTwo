@@ -3,8 +3,8 @@
 //  TunedTwo
 //
 
-import Foundation
 import CNrsc5
+import Foundation
 
 public protocol AudioSampleSink: AnyObject, Sendable {
     func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>)

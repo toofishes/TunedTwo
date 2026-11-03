@@ -5,8 +5,8 @@
 //  Human-readable names for NRSC5 MIME type constants.
 //
 
-import Foundation
 import CNrsc5
+import Foundation
 
 /// Returns a display name for an NRSC5 MIME type value.
 ///

@@ -7,8 +7,8 @@
 
 import AVFoundation
 import AppKit
-import Foundation
 import CNrsc5
+import Foundation
 import os
 
 /// Events raised by the audio player when macOS changes the audio hardware

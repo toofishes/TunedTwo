@@ -9,10 +9,10 @@
 //  methods, so UI-owned state is only ever mutated on the main thread.
 //
 
+import CNrsc5
 import Collections
 import Combine
 import Foundation
-import CNrsc5
 
 @Observable
 public final class ProgramState {

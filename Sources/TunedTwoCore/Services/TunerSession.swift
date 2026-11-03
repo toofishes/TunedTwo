@@ -24,8 +24,8 @@
 //
 
 import AVFoundation
-import Foundation
 import CNrsc5
+import Foundation
 import os
 
 /// Configuration snapshot taken on the MainActor when playback starts, so
