@@ -12,7 +12,7 @@ let nrsc5BuildTreeRpath: [LinkerSetting] = [
 
 let package = Package(
     name: "TunedTwo",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v15)],
     products: [
         .executable(name: "TunedTwo", targets: ["TunedTwo"]),
         .executable(name: "tunedtwo-cli", targets: ["TunedTwoCLI"]),

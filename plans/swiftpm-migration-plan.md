@@ -15,7 +15,7 @@ Move TunedTwo from an XcodeGen-generated `.xcodeproj` to a root-level `Package.s
 - Swift 6 strict concurrency.
 - `swift-format` configuration and formatting conventions.
 - The `Vendor/nrsc5` Git submodule.
-- macOS 26 deployment target (SwiftPM tools version 6.2).
+- macOS 15 deployment target (SwiftPM tools version 6.2).
 - The core app/CLI/test source layout under `Sources/` and `Tests/`.
 
 ## Target repository layout
@@ -296,7 +296,7 @@ let nrsc5BuildTreeRpath: [LinkerSetting] = [
 
 let package = Package(
     name: "TunedTwo",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v15)],
     products: [
         .executable(name: "TunedTwo", targets: ["TunedTwo"]),
         .executable(name: "tunedtwo-cli", targets: ["TunedTwoCLI"]),
@@ -368,7 +368,7 @@ Read this section if you are picking up this plan in a new terminal/agent sessio
 
 ### Prerequisites assumed by this plan
 
-- macOS 26 host.
+- macOS 15 host (or newer).
 - Xcode 16 / Swift 6 toolchain (`swift --version` should report 6.x).
 - `git` and standard macOS CLI tools.
 - Homebrew-installed build tools: `cmake`, `libtool`, `pkg-config`. These are still needed to run `scripts/build-nrsc5.sh` in Phase 1–5.

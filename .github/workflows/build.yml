@@ -1,0 +1,69 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel any older run for the same ref so the queue doesn't pile up
+# while you're force-pushing fixups to a PR.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (${{ matrix.config }})
+    runs-on: macos-15
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [debug, release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          xcode-select -p
+          xcodebuild -version
+          swift --version
+
+      - name: Cache SwiftPM checkouts
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: ${{ runner.os }}-spm-${{ matrix.config }}-${{ hashFiles('Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-${{ matrix.config }}-
+            ${{ runner.os }}-spm-
+
+      - name: Build libnrsc5
+        run: scripts/build-nrsc5.sh
+
+      - name: Build ${{ matrix.config }}
+        run: make check CONFIG=${{ matrix.config }}
+
+      - name: Run tests
+        if: matrix.config == 'debug'
+        run: make test
+
+      - name: Verify .app bundle
+        if: matrix.config == 'debug'
+        run: |
+          set -euo pipefail
+          make build
+          APP="build/TunedTwo.app"
+          test -d "$APP" || { echo "✗ no $APP"; exit 1; }
+          test -x "$APP/Contents/MacOS/TunedTwo" || { echo "✗ executable missing"; exit 1; }
+          test -f "$APP/Contents/Info.plist" || { echo "✗ Info.plist missing"; exit 1; }
+          test -f "$APP/Contents/Resources/sample.bin" || { echo "✗ sample.bin missing"; exit 1; }
+          test -f "$APP/Contents/Frameworks/libnrsc5.dylib" || { echo "✗ libnrsc5.dylib missing"; exit 1; }
+          otool -L "$APP/Contents/MacOS/TunedTwo" | grep -q "@rpath/libnrsc5.dylib" || { echo "✗ libnrsc5 not linked via rpath"; exit 1; }
+          echo "✓ bundle looks healthy"
