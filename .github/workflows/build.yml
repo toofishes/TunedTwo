@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -36,13 +36,16 @@ jobs:
           swift --version
 
       - name: Cache SwiftPM checkouts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .build
           key: ${{ runner.os }}-spm-${{ matrix.config }}-${{ hashFiles('Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-spm-${{ matrix.config }}-
             ${{ runner.os }}-spm-
+
+      - name: Install autotools
+        run: brew install autoconf automake libtool
 
       - name: Build libnrsc5
         run: scripts/build-nrsc5.sh
