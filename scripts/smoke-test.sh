@@ -3,12 +3,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-APP="${ROOT_DIR}/DerivedData/Build/Products/Debug/TunedTwo.app"
+APP="${ROOT_DIR}/build/TunedTwo.app"
 BINARY="${APP}/Contents/MacOS/TunedTwo"
 
 if [[ ! -d "${APP}" ]]; then
     echo "[smoke-test] App not built. Building now..."
-    xcodebuild -project "${ROOT_DIR}/TunedTwo.xcodeproj" -scheme TunedTwo -configuration Debug -derivedDataPath "${ROOT_DIR}/DerivedData" build
+    make -C "${ROOT_DIR}" build
 fi
 
 echo "[smoke-test] Running TunedTwo in smoke-test mode..."

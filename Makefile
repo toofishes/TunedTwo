@@ -47,7 +47,7 @@ DEV_IDENTITY  ?= -
 # Distribution signing. Developer ID + hardened runtime + notarization.
 # Fill TEAM_ID / CERT_NAME in before the first `make dist`.
 TEAM_ID       ?=
-CERT_NAME     ?= $(if $(TEAM_ID),Developer ID Application: Thomas Ptacek ($(TEAM_ID)),)
+CERT_NAME     ?= $(if $(TEAM_ID),Developer ID Application: TunedTwo ($(TEAM_ID)),)
 
 # Notarization credentials profile name. Populate once with
 # `make notary-setup` (interactive; never puts the password on the cmdline).
