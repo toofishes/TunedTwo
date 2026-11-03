@@ -5,16 +5,17 @@ xcuserdata/
 *.xccheckout
 *.xcscmblueprint
 DerivedData/
-build/
 
-# XcodeGen generated project (kept checked in for convenience, but can be regenerated)
-# TunedTwo.xcodeproj/
+# Generated Xcode projects (SwiftPM is the source of truth)
+*.xcodeproj/
+*.xcworkspace/
+
+# Build outputs
+build/
+dist/
 
 # nrsc5 build artifacts (inside submodule, but ignore just in case)
 Vendor/nrsc5/build/
-
-# App sandbox / signing artifacts
-*.entitlements
 
 # Swift Package Manager
 .build/
