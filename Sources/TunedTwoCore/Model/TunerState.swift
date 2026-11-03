@@ -12,7 +12,7 @@
 import Collections
 import Combine
 import Foundation
-import nrsc5
+import CNrsc5
 
 @Observable
 public final class ProgramState {

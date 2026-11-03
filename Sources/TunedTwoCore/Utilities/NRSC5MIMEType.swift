@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import nrsc5
+import CNrsc5
 
 /// Returns a display name for an NRSC5 MIME type value.
 ///

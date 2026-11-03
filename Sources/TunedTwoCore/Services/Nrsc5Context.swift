@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import nrsc5
+import CNrsc5
 
 public protocol AudioSampleSink: AnyObject, Sendable {
     func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>)
