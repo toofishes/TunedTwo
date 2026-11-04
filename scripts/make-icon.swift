@@ -3,10 +3,8 @@
 // make-icon.swift — render the app icon at every macOS size.
 //
 // Draws the SF Symbol "radio" in white on a rounded-rect tile with a soft
-// gradient. This is a placeholder icon — replace the `drawGlyph` body with
-// your own mark once you have a final asset. Runs under plain `swift`; the
-// Makefile runs `iconutil -c icns build/AppIcon.iconset` on the PNGs this
-// writes.
+// gradient. Runs under plain `swift`; the Makefile runs
+// `iconutil -c icns build/AppIcon.iconset` on the PNGs this writes.
 
 import AppKit
 
@@ -67,7 +65,7 @@ func drawGlyph(into ctx: CGContext, tile: CGRect) {
     guard let radio = NSImage(systemSymbolName: "radio", accessibilityDescription: nil)?
             .withSymbolConfiguration(symbolConfig)
     else {
-        fatalError("Unable to load SF Symbol 'radio' for the placeholder icon")
+        fatalError("Unable to load SF Symbol 'radio' for the app icon")
     }
 
     let size = radio.size
