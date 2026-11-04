@@ -17,10 +17,10 @@ This file captures non-obvious project conventions and gotchas that came up duri
 
 ## Build system
 
-- **`Package.swift` is the source of truth.** There is no `.xcodeproj` or `project.yml`.
+Build-system details live in [`plans/build-system.md`](plans/build-system.md). The short version for day-to-day work:
+
 - Use `make` as the front door: `make check`, `make test`, `make build`, `make run`, `make cli`.
-- The vendored `libnrsc5` dynamic library is built by `scripts/build-nrsc5.sh` before Swift compilation.
-- `build.sh` assembles `build/TunedTwo.app` and `build/tunedtwo-cli` and handles codesigning.
+- `Package.swift` is the source of truth; there is no `.xcodeproj` or `project.yml`.
 
 ## Code linting and formatting
 
@@ -43,7 +43,7 @@ This file captures non-obvious project conventions and gotchas that came up duri
 
 - `Sources/CNrsc5/` is a SwiftPM `systemLibrary` target exposing `Vendor/nrsc5/include/nrsc5.h`.
 - Import it as `import CNrsc5` in `TunedTwoCore`.
-- Linker settings for the prebuilt `libnrsc5.dylib` are duplicated in `Package.swift` on every target that needs them because SwiftPM does not propagate `unsafeFlags` across target boundaries.
+- See [`plans/build-system.md`](plans/build-system.md) for how `libnrsc5.dylib` is built and linked.
 
 ## Git / submodules
 
