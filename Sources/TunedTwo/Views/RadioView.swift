@@ -14,7 +14,7 @@ struct RadioView: View {
         let programLot = state.lotCache[programState.programLotID]
         let coverLot = state.lotCache[programState.coverLotID]
 
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Theme.groupSpacing) {
             StationInfo(state: state)
             Divider()
             NowPlaying(programState: programState, programLot: programLot, coverLot: coverLot)
@@ -28,7 +28,7 @@ struct StationInfo: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Theme.groupSpacing) {
                 MetadataRow(label: "Station", value: state.stationName)
                 MetadataRow(label: "Slogan", value: state.stationSlogan)
                 MetadataRow(label: "Message", value: state.stationMessage)
@@ -49,7 +49,7 @@ private struct NowPlaying: View {
 
     var body: some View {
         HStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Theme.groupSpacing) {
                 MetadataRow(label: "Service", value: programState.serviceName)
                 MetadataRow(label: "Title", value: programState.title)
                 MetadataRow(label: "Artist", value: programState.artist)
@@ -78,9 +78,9 @@ private struct MetadataRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.caption)
+                .font(Theme.Fonts.meta)
                 .foregroundStyle(.secondary)
-                .frame(width: 80, alignment: .leading)
+                .frame(width: Theme.metadataLabelWidth, alignment: .leading)
             Text(trimmedValue.isEmpty ? "—" : trimmedValue)
                 .textSelection(.enabled)
         }

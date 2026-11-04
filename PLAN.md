@@ -19,8 +19,10 @@ See the [`Makefile`](Makefile) for the full target list (`make help`).
 - [`plans/swiftpm-migration-plan.md`](plans/swiftpm-migration-plan.md) — how and why we moved from XcodeGen to SwiftPM.
 - [`plans/build-system.md`](plans/build-system.md) — how `Package.swift`, `Makefile`, and `build.sh` work together.
 - [`plans/architecture.md`](plans/architecture.md) — targets, data flow, and how the pieces fit.
+- [`plans/design-system.md`](plans/design-system.md) — the `Theme` type scale + metrics and the macOS idioms applied.
 - [`plans/nrsc5-native-build.md`](plans/nrsc5-native-build.md) — *future* plan for making the C library build fully native inside SwiftPM.
 - [`AGENTS.md`](AGENTS.md) — conventions for agents working in this repo.
+- [`SWIFTUI-RULES.md`](SWIFTUI-RULES.md) — hard-won SwiftUI rules from the template this app is based on.
 - [`PROGRESS.md`](PROGRESS.md) — running log of meaningful changes.
 - [`PROBLEMS.md`](PROBLEMS.md) — hard-won, project-specific gotchas.
 

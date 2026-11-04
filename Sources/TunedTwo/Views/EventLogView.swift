@@ -12,29 +12,29 @@ private struct LogEventRow: View, @MainActor Equatable {
     let event: LogEvent
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .top, spacing: Theme.sectionSpacing) {
             VStack(spacing: 0) {
                 Image(systemName: event.systemImage)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(Theme.Fonts.logIcon)
                     .foregroundColor(.white)
-                    .frame(width: 32, height: 32)
+                    .frame(width: Theme.logIconSize, height: Theme.logIconSize)
                     .background(event.tintColor)
                     .clipShape(Circle())
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.labelSpacing) {
                 HStack {
                     Text(event.title)
-                        .font(.headline)
+                        .font(Theme.Fonts.sectionTitle)
                         .foregroundColor(.primary)
                     Spacer()
                     Text(event.timestamp, format: .dateTime.hour().minute().second())
-                        .font(.caption)
+                        .font(Theme.Fonts.meta)
                         .foregroundColor(.secondary)
                 }
 
                 Text(event.description)
-                    .font(.subheadline)
+                    .font(Theme.Fonts.bodySecondary)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -51,21 +51,21 @@ private struct EventCountRow: View, @MainActor Equatable {
     let highlight: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.tightSpacing) {
             Text(entry.key)
-                .font(.caption)
+                .font(Theme.Fonts.meta)
                 .lineLimit(1)
             Spacer()
             Text("\(entry.value)")
-                .font(.caption.bold())
+                .font(Theme.Fonts.metaBold)
                 .monospacedDigit()
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
+                .padding(.horizontal, Theme.chipPaddingHorizontal)
+                .padding(.vertical, Theme.chipPaddingVertical)
                 .background(Color.accentColor.opacity(0.15))
                 .clipShape(Capsule())
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, Theme.cardPaddingHorizontal)
+        .padding(.vertical, Theme.cardPaddingVertical)
         .background(!highlight ? Color.clear : Color.gray.opacity(0.08))
     }
 
@@ -79,7 +79,7 @@ where Events: RandomAccessCollection, Events: RangeReplaceableCollection, Events
     @Binding var events: Events
 
     var body: some View {
-        VStack(alignment: .center, spacing: 10) {
+        VStack(alignment: .center, spacing: Theme.itemSpacing) {
             List(events) { event in
                 LogEventRow(event: event)
                     .equatable()
@@ -109,13 +109,13 @@ private struct EventCountsTable: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Event")
-                    .font(.caption.bold())
+                    .font(Theme.Fonts.metaBold)
                 Spacer()
                 Text("Count")
-                    .font(.caption.bold())
+                    .font(Theme.Fonts.metaBold)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Theme.cardPaddingHorizontal)
+            .padding(.vertical, Theme.cardHeaderPaddingVertical)
             .background(Color.gray.opacity(0.15))
 
             Divider()
@@ -130,12 +130,12 @@ private struct EventCountsTable: View {
             }
         }
         .background(.background)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: Theme.cardCornerRadius)
                 .stroke(.separator, lineWidth: 0.5)
         )
-        .padding([.top, .leading, .trailing], 12)
+        .padding([.top, .leading, .trailing], Theme.cardPaddingHorizontal)
     }
 }
 
@@ -148,12 +148,12 @@ struct EventLogView: View {
             HSplitView {
                 EventListView(events: $state.logEntries)
                     .padding(0)
-                    .frame(minWidth: 240)
+                    .frame(minWidth: Theme.sidePanelMinWidth)
                     .layoutPriority(1)
 
                 EventCountsTable(eventCounts: state.eventCounts)
                     .padding(0)
-                    .frame(minWidth: 240)
+                    .frame(minWidth: Theme.sidePanelMinWidth)
             }
         } else {
             Text("Loading Event Log...").foregroundStyle(.secondary)

@@ -159,20 +159,28 @@ struct WeatherView: View {
     @State private var visibleRect: MKMapRect = usBoundingBox
 
     var body: some View {
-        VStack(alignment: .center, spacing: 10) {
-            WeatherMapView(
-                visibleRect: $visibleRect,
-                image: map.image,
-                // TODO: a bit hacky, but helps with the two types of radar maps we've seen
-                opacity: map.provider == "HERE" ? 0.7 : 1.0,
-                boundingBox: radarBoundingBox ?? Self.usBoundingBox,
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(alignment: .center, spacing: Theme.itemSpacing) {
+            if let image = map.image {
+                WeatherMapView(
+                    visibleRect: $visibleRect,
+                    image: image,
+                    // TODO: a bit hacky, but helps with the two types of radar maps we've seen
+                    opacity: map.provider == "HERE" ? 0.7 : 1.0,
+                    boundingBox: radarBoundingBox ?? Self.usBoundingBox,
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ContentUnavailableView(
+                    "No Weather Radar",
+                    systemImage: "sun.rain",
+                    description: Text("Weather radar will appear here when received from the station."))
+            }
 
-            HStack(spacing: 16) {
+            HStack(spacing: Theme.sectionSpacing) {
                 Button("Reset Radar View") {
                     visibleRect = radarBoundingBox ?? Self.usBoundingBox
                 }
+                .disabled(map.image == nil)
                 Text(updated)
             }
         }

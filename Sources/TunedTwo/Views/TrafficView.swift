@@ -10,12 +10,15 @@ struct TrafficView: View {
     let map: TrafficMap
 
     var body: some View {
-        VStack(alignment: .center, spacing: 10) {
+        VStack(alignment: .center, spacing: Theme.itemSpacing) {
             if let composite = map.composite {
                 Image(composite, scale: 1.0, orientation: .up, label: Text("Traffic"))
                     .resizable().scaledToFit()
             } else {
-                Image(systemName: "map").resizable().scaledToFit()
+                ContentUnavailableView(
+                    "No Traffic Data",
+                    systemImage: "map",
+                    description: Text("Traffic maps will appear here when received from the station."))
             }
             Text(updated)
         }

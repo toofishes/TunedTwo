@@ -21,7 +21,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Theme.sectionSpacing) {
             ContentHeader()
             Controls(state: $state) {
                 togglePlayback()
@@ -47,8 +47,8 @@ struct ContentView: View {
             Divider()
             StatusBar(state: state)
         }
-        .padding()
-        .frame(minWidth: 480, minHeight: 440)
+        .padding(Theme.defaultPadding)
+        .frame(minWidth: Theme.windowMinWidth, minHeight: Theme.windowMinHeight)
         .onChange(of: state.currentProgram) { _, newProgram in
             Task { await session.setProgram(newProgram) }
         }
@@ -131,14 +131,13 @@ private struct ContentHeader: View {
     var body: some View {
         HStack {
             Image(systemName: "radio")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(Theme.Fonts.appIcon)
                 .foregroundStyle(Color.accentColor)
             VStack(alignment: .leading) {
                 Text("TunedTwo")
-                    .font(.title2.bold())
+                    .font(Theme.Fonts.appTitle)
                 Text("Native macOS HD Radio")
-                    .font(.caption)
+                    .font(Theme.Fonts.meta)
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -189,9 +188,10 @@ private struct Controls: View {
                     )
                     .textFieldStyle(.roundedBorder)
                     .disabled(state.source == .sampleFile)
-                    .frame(width: 120)
+                    .frame(width: Theme.frequencyFieldWidth)
 
                     Text("MHz")
+                        .font(Theme.Fonts.meta)
                         .foregroundStyle(.secondary)
 
                     Stepper("", value: $state.frequencyMHz, in: frequencyRange, step: 0.2)
@@ -227,11 +227,11 @@ private struct StatusBar: View {
         HStack {
             let programState = state.currentProgramState
             Text(state.status)
-                .font(.caption)
+                .font(Theme.Fonts.meta)
                 .foregroundStyle(.secondary)
             Spacer()
             Text(String(format: "%.1f kbps", Double(programState.bitsPerSecond) / 1000.0))
-                .font(.caption)
+                .font(Theme.Fonts.meta)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
             Text(
@@ -239,7 +239,7 @@ private struct StatusBar: View {
                     format: "MER %.1f / %.1f dB · BER %.6f",
                     state.merLower, state.merUpper, state.ber)
             )
-            .font(.caption)
+            .font(Theme.Fonts.meta)
             .foregroundStyle(.secondary)
             .monospacedDigit()
             .help("\(programState.crcErrors) CRC Errors")
