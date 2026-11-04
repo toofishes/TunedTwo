@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.1
 import PackageDescription
 
 let nrsc5BuildTreePath = "\(Context.packageDirectory)/Vendor/nrsc5/build/src"
