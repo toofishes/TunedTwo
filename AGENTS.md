@@ -36,3 +36,8 @@ This file captures non-obvious project conventions and gotchas that came up duri
 - `Sources/CNrsc5/` is a SwiftPM `systemLibrary` target exposing `Vendor/nrsc5/include/nrsc5.h`.
 - Import it as `import CNrsc5` in `TunedTwoCore`.
 - Linker settings for the prebuilt `libnrsc5.dylib` are duplicated in `Package.swift` on every target that needs them because SwiftPM does not propagate `unsafeFlags` across target boundaries.
+
+## Git / submodules
+
+- Do not commit or push changes without asking the user first.
+- `Vendor/nrsc5/` is a Git submodule pointing at a separate repository (`toofishes/nrsc5`). Never push to the submodule repository or update the submodule pointer in the parent repo without explicit user approval.
