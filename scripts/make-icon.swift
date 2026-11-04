@@ -2,12 +2,11 @@
 //
 // make-icon.swift — render the app icon at every macOS size.
 //
-// Draws a simple "document" glyph (a few text lines over a small table grid)
-// on a rounded-rect tile with a soft gradient. Pure CoreGraphics, no assets,
-// no dependencies — runs under plain `swift`. The Makefile runs
-// `iconutil -c icns build/AppIcon.iconset` on the PNGs this writes.
-//
-// Replace the `drawGlyph` body with your own mark when you fork the template.
+// Draws the SF Symbol "radio" in white on a rounded-rect tile with a soft
+// gradient. This is a placeholder icon — replace the `drawGlyph` body with
+// your own mark once you have a final asset. Runs under plain `swift`; the
+// Makefile runs `iconutil -c icns build/AppIcon.iconset` on the PNGs this
+// writes.
 
 import AppKit
 
@@ -54,57 +53,58 @@ func draw(into ctx: CGContext, size s: CGFloat) {
 }
 
 func drawGlyph(into ctx: CGContext, tile: CGRect) {
-    // A white "page" centered in the tile.
-    let pageW = tile.width * 0.52
-    let pageH = pageW * 1.28
-    let page = CGRect(
-        x: tile.midX - pageW / 2,
-        y: tile.midY - pageH / 2,
-        width: pageW, height: pageH)
-    let radius = pageW * 0.08
-    ctx.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 0.96))
-    ctx.addPath(CGPath(roundedRect: page, cornerWidth: radius, cornerHeight: radius, transform: nil))
+    // Render a white SF Symbol "radio" centered in the tile.
+    let nsctx = NSGraphicsContext(cgContext: ctx, flipped: false)
+    let previous = NSGraphicsContext.current
+    NSGraphicsContext.current = nsctx
+    defer { NSGraphicsContext.current = previous }
+
+    let symbolConfig = NSImage.SymbolConfiguration(
+        pointSize: tile.height * 0.55,
+        weight: .medium
+    ).applying(NSImage.SymbolConfiguration(paletteColors: [.white]))
+
+    guard let radio = NSImage(systemSymbolName: "radio", accessibilityDescription: nil)?
+            .withSymbolConfiguration(symbolConfig)
+    else {
+        drawFallbackRadio(into: ctx, tile: tile)
+        return
+    }
+
+    let size = radio.size
+    let rect = CGRect(
+        x: tile.midX - size.width / 2,
+        y: tile.midY - size.height / 2,
+        width: size.width,
+        height: size.height)
+
+    radio.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1.0)
+}
+
+func drawFallbackRadio(into ctx: CGContext, tile: CGRect) {
+    // Simple white radio silhouette used if the SF Symbol is unavailable.
+    ctx.saveGState()
+    defer { ctx.restoreGState() }
+
+    let bodyW = tile.width * 0.50
+    let bodyH = tile.height * 0.35
+    let corner = bodyH * 0.25
+    let body = CGRect(
+        x: tile.midX - bodyW / 2,
+        y: tile.midY - bodyH / 2,
+        width: bodyW,
+        height: bodyH)
+
+    let white = CGColor(gray: 1, alpha: 0.95)
+    ctx.setFillColor(white)
+    ctx.addPath(CGPath(roundedRect: body, cornerWidth: corner, cornerHeight: corner, transform: nil))
     ctx.fillPath()
 
-    let accent = CGColor(red: 0.20, green: 0.34, blue: 0.85, alpha: 1)
-    let muted = CGColor(red: 0.62, green: 0.68, blue: 0.82, alpha: 1)
-    let padX = page.width * 0.16
-    let lineH = page.height * 0.045
-    let lineGap = page.height * 0.075
-
-    // Three "text lines" at the top — the first (a heading) is accent-tinted
-    // and wider; the next two are muted body lines.
-    var y = page.maxY - page.height * 0.16
-    let lineSpecs: [(CGColor, CGFloat)] = [
-        (accent, 0.68), (muted, 0.56), (muted, 0.44),
-    ]
-    for (color, widthFraction) in lineSpecs {
-        let bar = CGRect(
-            x: page.minX + padX, y: y - lineH,
-            width: (page.width - 2 * padX) * widthFraction, height: lineH)
-        ctx.setFillColor(color)
-        ctx.addPath(CGPath(roundedRect: bar, cornerWidth: lineH / 2, cornerHeight: lineH / 2, transform: nil))
-        ctx.fillPath()
-        y -= lineGap
-    }
-
-    // A small 2×3 "table" grid in the lower half — the data table.
-    let gridTop = y - page.height * 0.04
-    let gridRect = CGRect(
-        x: page.minX + padX, y: page.minY + page.height * 0.14,
-        width: page.width - 2 * padX, height: gridTop - (page.minY + page.height * 0.14))
-    ctx.setStrokeColor(muted)
-    ctx.setLineWidth(max(1, page.width * 0.012))
-    ctx.addRect(gridRect)
-    // Two interior verticals, one interior horizontal.
-    for i in 1...2 {
-        let x = gridRect.minX + gridRect.width * CGFloat(i) / 3
-        ctx.move(to: CGPoint(x: x, y: gridRect.minY))
-        ctx.addLine(to: CGPoint(x: x, y: gridRect.maxY))
-    }
-    let midY = gridRect.minY + gridRect.height / 2
-    ctx.move(to: CGPoint(x: gridRect.minX, y: midY))
-    ctx.addLine(to: CGPoint(x: gridRect.maxX, y: midY))
+    let antennaW = max(1, tile.width * 0.025)
+    ctx.setLineWidth(antennaW)
+    ctx.setStrokeColor(white)
+    ctx.move(to: CGPoint(x: tile.midX, y: body.maxY))
+    ctx.addLine(to: CGPoint(x: tile.midX, y: tile.maxY - tile.height * 0.12))
     ctx.strokePath()
 }
 
