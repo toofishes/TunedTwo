@@ -57,7 +57,7 @@ NOTES_FILE       ?=
 
 .PHONY: all deps build check test release run cli clean install uninstall register help \
         icon check-version notary-setup sign zip-notary notarize staple zip-release \
-        checksum verify-release dist github-release print-version format
+        checksum verify-release dist github-release print-version format coverage coverage-text
 
 all: build
 
@@ -73,6 +73,8 @@ help:
 	@echo "  clean             Remove ./build/ ./.build/ ./dist/"
 	@echo "  deps              Verify build prerequisites (auto-run before build)"
 	@echo "  format            Run swift-format on Sources and Tests"
+	@echo "  coverage          Run tests with coverage and generate build/coverage HTML report"
+	@echo "  coverage-text     Run tests with coverage and print a text summary"
 	@echo ""
 	@echo "Local install:"
 	@echo "  install           Copy $(APP_NAME).app to /Applications/ and register it"
@@ -154,6 +156,35 @@ check: deps $(NRSC5_DYLIB)
 test: deps $(NRSC5_DYLIB)
 	swift test
 	@echo "✓ tests pass"
+
+# Run tests with coverage and generate an HTML report under build/coverage.
+coverage: deps $(NRSC5_DYLIB)
+	@rm -rf build/coverage
+	@swift test --enable-code-coverage
+	@mkdir -p build/coverage
+	@BIN=$$(find .build -name TunedTwoTests -path '*TunedTwoTests.xctest/*' | head -1); \
+	 PROF=$$(find .build -name default.profdata -path '*/codecov/*' | head -1); \
+	 if [ -z "$$BIN" ] || [ -z "$$PROF" ]; then \
+	   echo "✗ could not locate coverage binaries"; exit 1; \
+	 fi; \
+	 xcrun llvm-cov show "$$BIN" \
+	   -instr-profile="$$PROF" \
+	   -format=html \
+	   -output-dir=build/coverage \
+	   -ignore-filename-regex='(\.build|Tests|Vendor)/'
+	@echo "✓ coverage report: build/coverage/index.html"
+
+# Run tests with coverage and print a text summary.
+coverage-text: deps $(NRSC5_DYLIB)
+	@swift test --enable-code-coverage
+	@BIN=$$(find .build -name TunedTwoTests -path '*TunedTwoTests.xctest/*' | head -1); \
+	 PROF=$$(find .build -name default.profdata -path '*/codecov/*' | head -1); \
+	 if [ -z "$$BIN" ] || [ -z "$$PROF" ]; then \
+	   echo "✗ could not locate coverage binaries"; exit 1; \
+	 fi; \
+	 xcrun llvm-cov report "$$BIN" \
+	   -instr-profile="$$PROF" \
+	   -ignore-filename-regex='(\.build|Tests|Vendor)/'
 
 # Build the CLI tool without assembling the full app bundle.
 cli: deps $(NRSC5_DYLIB)
