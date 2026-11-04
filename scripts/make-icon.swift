@@ -67,8 +67,7 @@ func drawGlyph(into ctx: CGContext, tile: CGRect) {
     guard let radio = NSImage(systemSymbolName: "radio", accessibilityDescription: nil)?
             .withSymbolConfiguration(symbolConfig)
     else {
-        drawFallbackRadio(into: ctx, tile: tile)
-        return
+        fatalError("Unable to load SF Symbol 'radio' for the placeholder icon")
     }
 
     let size = radio.size
@@ -79,33 +78,6 @@ func drawGlyph(into ctx: CGContext, tile: CGRect) {
         height: size.height)
 
     radio.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1.0)
-}
-
-func drawFallbackRadio(into ctx: CGContext, tile: CGRect) {
-    // Simple white radio silhouette used if the SF Symbol is unavailable.
-    ctx.saveGState()
-    defer { ctx.restoreGState() }
-
-    let bodyW = tile.width * 0.50
-    let bodyH = tile.height * 0.35
-    let corner = bodyH * 0.25
-    let body = CGRect(
-        x: tile.midX - bodyW / 2,
-        y: tile.midY - bodyH / 2,
-        width: bodyW,
-        height: bodyH)
-
-    let white = CGColor(gray: 1, alpha: 0.95)
-    ctx.setFillColor(white)
-    ctx.addPath(CGPath(roundedRect: body, cornerWidth: corner, cornerHeight: corner, transform: nil))
-    ctx.fillPath()
-
-    let antennaW = max(1, tile.width * 0.025)
-    ctx.setLineWidth(antennaW)
-    ctx.setStrokeColor(white)
-    ctx.move(to: CGPoint(x: tile.midX, y: body.maxY))
-    ctx.addLine(to: CGPoint(x: tile.midX, y: tile.maxY - tile.height * 0.12))
-    ctx.strokePath()
 }
 
 for (name, px) in variants {
