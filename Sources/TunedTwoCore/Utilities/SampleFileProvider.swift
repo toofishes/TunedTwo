@@ -26,8 +26,16 @@ enum SampleFileProvider {
             return url.path
         }
 
-        // Fallback: development path next to the app bundle.
-        let repoRoot = bundle.bundleURL.deletingLastPathComponent().deletingLastPathComponent()
+        // Fallback: locate Resources/sample.bin relative to this source file.
+        // This works for `swift run`, SwiftPM tests, and other development
+        // invocations where Bundle.main is not the project directory.
+        let sourceFile = URL(fileURLWithPath: #filePath)
+        let repoRoot =
+            sourceFile
+            .deletingLastPathComponent()  // Utilities
+            .deletingLastPathComponent()  // TunedTwoCore
+            .deletingLastPathComponent()  // Sources
+            .deletingLastPathComponent()  // repository root
         let devPath = repoRoot.appendingPathComponent("Resources/sample.bin")
         if FileManager.default.fileExists(atPath: devPath.path) {
             return devPath.path
