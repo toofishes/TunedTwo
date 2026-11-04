@@ -44,7 +44,7 @@ if [ ! -x "$CLI_EXECUTABLE" ]; then
 	exit 1
 fi
 
-# SwiftPM records the deployment target (15.0) as the binary's linked SDK
+# SwiftPM records the deployment target (26.0) as the binary's linked SDK
 # version. macOS uses that value for "linked-on-or-after" checks that decide
 # whether AppKit/SwiftUI render modern controls or fall back to legacy Aqua.
 # Cap the SDK stamp at 26.0 so the app is treated as linked against macOS 26,
@@ -52,7 +52,7 @@ fi
 # drift. minOS stays at the deployment target.
 SDK_VERSION="26.0"
 echo "→ restamping executable LC_BUILD_VERSION sdk=$SDK_VERSION"
-xcrun vtool -set-build-version macos 15.0 "$SDK_VERSION" \
+xcrun vtool -set-build-version macos 26.0 "$SDK_VERSION" \
 	-replace -output "$EXECUTABLE.vtool" "$EXECUTABLE"
 mv "$EXECUTABLE.vtool" "$EXECUTABLE"
 chmod +x "$EXECUTABLE"

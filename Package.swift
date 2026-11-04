@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2
 import PackageDescription
 
 let nrsc5BuildTreePath = "\(Context.packageDirectory)/Vendor/nrsc5/build/src"
@@ -12,7 +12,7 @@ let nrsc5BuildTreeRpath: [LinkerSetting] = [
 
 let package = Package(
     name: "TunedTwo",
-    platforms: [.macOS(.v15)],
+    platforms: [.macOS(.v26)],
     products: [
         .executable(name: "TunedTwo", targets: ["TunedTwo"]),
         .executable(name: "tunedtwo-cli", targets: ["TunedTwoCLI"]),

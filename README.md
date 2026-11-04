@@ -17,8 +17,8 @@ See [`TODO.md`](TODO.md) for the full roadmap and known loose ends.
 
 ## Requirements
 
-- macOS 15.0+
-- Xcode 16+ or the Swift 6.2+ toolchain
+- macOS 26.0+
+- Xcode 27+ or the Swift 6.4+ toolchain
 - Homebrew:
   - `cmake`, `libtool`, `pkg-config`
   - `swift-format` (optional, for `make format`)

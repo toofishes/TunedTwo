@@ -18,8 +18,7 @@ CONFIG       := debug
 APP          := build/TunedTwo.app
 CLI          := build/tunedtwo-cli
 LSREGISTER   := /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister
-MIN_MACOS    := 15
-MIN_SWIFT    := 6.1
+MIN_MACOS    := 26
 
 APP_NAME      := TunedTwo
 CLI_NAME      := tunedtwo-cli
