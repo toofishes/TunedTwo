@@ -7,6 +7,14 @@ This file captures non-obvious project conventions and gotchas that came up duri
 - Build-system details are in [`plans/build-system.md`](plans/build-system.md).
 - Architecture notes are in [`plans/architecture.md`](plans/architecture.md).
 
+## Agent workflow and skills
+
+- Keep [`PLAN.md`](PLAN.md) as the master documentation index; put depth in `plans/whatever.md` and record day-to-day work in [`PROGRESS.md`](PROGRESS.md).
+- Before and after deciding on UI code, run the **swiftui-pro** skill to verify we're following modern SwiftUI best practices (see also [`SWIFTUI-RULES.md`](SWIFTUI-RULES.md)).
+- When setting type, run the **typography-designer** skill to keep the type scale and hierarchy consistent.
+- When designing macOS UI, run the **macos-design** skill to keep the app aligned with modern professional macOS idioms.
+- Do not commit or push changes without asking the user first. You may open PRs, but you must never merge them to `main` yourself.
+
 ## Build system
 
 - **`Package.swift` is the source of truth.** There is no `.xcodeproj` or `project.yml`.
