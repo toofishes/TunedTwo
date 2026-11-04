@@ -7,9 +7,8 @@ Running log of meaningful changes. Newest first.
 ## 2026-11-04 — Added tuner coverage tests
 
 Added headless smoke tests for `nameForDSDMIMEType`, `TunerSession`
-initialization/teardown, and `Nrsc5Context` decoding the bundled
-`sample.bin` with a stubbed audio sink. Fixed `SampleFileProvider`'s
-dev fallback so SwiftPM tests can locate `Resources/sample.bin`.
+init/teardown, and `Nrsc5Context` decoding the bundled `sample.bin`.
+Fixed `SampleFileProvider`'s dev fallback for SwiftPM tests.
 
 ## 2026-11-04 — Raised minimum target to macOS 26
 

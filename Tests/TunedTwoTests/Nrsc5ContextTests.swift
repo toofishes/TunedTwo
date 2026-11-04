@@ -9,13 +9,23 @@
 
 import Foundation
 import Testing
+import os
 
 @testable import TunedTwoCore
 
-/// Stub sink that drops audio samples. Used so the test does not need a
-/// real audio output device.
-private final class NullAudioSampleSink: AudioSampleSink, Sendable {
-    func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>) {}
+/// Stub sink that counts audio feeds. Used so the test does not need a
+/// real audio output device, while still verifying that the audio callback
+/// is routed through the `AudioSampleSink` interface.
+private final class CountingAudioSink: AudioSampleSink, Sendable {
+    private let lock = OSAllocatedUnfairLock(initialState: 0)
+
+    func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>) {
+        lock.withLock { $0 += 1 }
+    }
+
+    var feedCount: Int {
+        lock.withLock { $0 }
+    }
 }
 
 /// Holds the non-Sendable `Nrsc5Context` so a timeout task can release it
@@ -45,12 +55,13 @@ private actor Nrsc5ContextHolder {
 struct Nrsc5ContextTests {
     /// Runs the bundled `sample.bin` through a real libnrsc5 session and
     /// verifies that the bridge converts C callbacks into `TunerEvent`
-    /// values. Audio is dropped by a stub sink so no output hardware is
-    /// needed. This is a coarse integration test: it only requires that
-    /// the file decodes far enough to achieve sync.
-    @Test("decodes events from the bundled sample file")
+    /// values and routes audio samples to the injected `AudioSampleSink`.
+    /// No output hardware is needed. This is a coarse integration test:
+    /// it only requires that the file decodes far enough to achieve sync
+    /// and emit at least one audio frame.
+    @Test("decodes events and audio from the bundled sample file")
     func decodesSampleFileEvents() async throws {
-        let sink = NullAudioSampleSink()
+        let sink = CountingAudioSink()
         let holder = Nrsc5ContextHolder(Nrsc5Context(audioEventSink: sink))
 
         try await holder.activate(
@@ -61,28 +72,37 @@ struct Nrsc5ContextTests {
             return
         }
 
-        let foundSync = await withTaskGroup(of: Bool.self) { group in
-            group.addTask {
-                for await event in events {
-                    if case .syncAchieved = event {
-                        return true
-                    }
+        // Drain events until we've verified both sync and at least one
+        // audio feed. Audio frames are routed directly to the sink, not
+        // sent through the event stream, so we poll the sink count as
+        // events arrive. A separate timeout task releases the context to
+        // finish the stream if the consumer is still awaiting.
+        let consumer = Task {
+            var sawSync = false
+            let deadline = ContinuousClock().now + .seconds(2)
+            for await event in events {
+                if case .syncAchieved = event {
+                    sawSync = true
                 }
-                return false
+                if sawSync, sink.feedCount > 0 {
+                    break
+                }
+                if ContinuousClock().now >= deadline {
+                    break
+                }
             }
-
-            group.addTask {
-                try? await Task.sleep(for: .seconds(5))
-                await holder.release()
-                return false
-            }
-
-            let result = await group.next()!
-            await holder.release()
-            group.cancelAll()
-            return result
+            return sawSync
         }
 
+        let timeout = Task {
+            try? await Task.sleep(for: .seconds(2))
+            await holder.release()
+        }
+
+        let foundSync = await consumer.value
+        timeout.cancel()
+
         #expect(foundSync, "Expected the sample file to achieve sync within the deadline")
+        #expect(sink.feedCount > 0, "Expected audio samples to be routed to the sink")
     }
 }
