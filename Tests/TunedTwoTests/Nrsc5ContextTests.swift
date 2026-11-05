@@ -64,8 +64,16 @@ struct Nrsc5ContextTests {
         let sink = CountingAudioSink()
         let holder = Nrsc5ContextHolder(Nrsc5Context(audioEventSink: sink))
 
+        let samplePath = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()  // TunedTwoTests
+            .deletingLastPathComponent()  // Tests
+            .deletingLastPathComponent()  // repository root
+            .appendingPathComponent("Resources/sample.bin")
+            .path
+
         try await holder.activate(
-            TunerConfiguration(source: .sampleFile, frequencyHz: nil, program: 0))
+            TunerConfiguration(
+                source: .sampleFile(path: samplePath), frequencyHz: nil, program: 0))
 
         guard let events = await holder.events else {
             Issue.record("Context was released before events could be read")

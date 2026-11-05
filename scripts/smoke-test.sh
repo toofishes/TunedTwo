@@ -11,8 +11,11 @@ if [[ ! -d "${APP}" ]]; then
     make -C "${ROOT_DIR}" build
 fi
 
+SAMPLE_FILE="${ROOT_DIR}/Resources/sample.bin"
+make -C "${ROOT_DIR}" Resources/sample.bin
+
 echo "[smoke-test] Running TunedTwo in smoke-test mode..."
-TUNEDTWO_SMOKE_TEST=1 "${BINARY}" 2>&1 | tee /tmp/tunedtwo-smoke.log &
+TUNEDTWO_SAMPLE_FILE="${SAMPLE_FILE}" TUNEDTWO_SMOKE_TEST=1 "${BINARY}" 2>&1 | tee /tmp/tunedtwo-smoke.log &
 PID=$!
 
 # The app self-terminates after ~8 seconds, but guard against hangs.

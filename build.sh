@@ -98,14 +98,6 @@ else
 	echo "  (no $BUILD_DIR/AppIcon.icns — run 'make icon'; bundling without one)"
 fi
 
-# Bundled sample I/Q file.
-if [ -f "Resources/sample.bin" ]; then
-	cp "Resources/sample.bin" "$APP/Contents/Resources/sample.bin"
-else
-	echo "✗ Resources/sample.bin missing" >&2
-	exit 1
-fi
-
 # libnrsc5 dynamic library.
 cp "$NRSC5_DYLIB_SRC" "$APP/Contents/Frameworks/libnrsc5.dylib"
 

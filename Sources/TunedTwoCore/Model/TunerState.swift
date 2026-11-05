@@ -76,17 +76,14 @@ private class BPSTracker {
 public final class TunerState {
     private static let allowedProgramCount: Int = 5
 
-    public enum Source: String, CaseIterable, Equatable, Identifiable {
-        case rtlSDR = "RTL-SDR"
-        case sampleFile = "Sample File"
-
-        public var id: String { rawValue }
-    }
-
-    public var source: Source = .rtlSDR
-
     /// Frequency in MHz when using an RTL-SDR.
     public var frequencyMHz: Double = 103.5
+
+    /// Set when the current session is playing from `TUNEDTWO_SAMPLE_FILE`.
+    public var isSampleFile: Bool = false
+
+    /// The resolved path of the sample file being played, if any.
+    public var sampleFilePath: String? = nil
 
     /// Selected HD Radio program (0 = HD1, 7 = HD8).
     public var currentProgram: Int = 0

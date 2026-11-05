@@ -4,6 +4,15 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-05 — Removed source selector, sample file via env var
+
+Removed the Source dropdown from the UI. Sample-file playback is now
+triggered by `TUNEDTWO_SAMPLE_FILE`; when set, the app auto-starts and the
+frequency line shows the file name. `TUNEDTWO_SMOKE_TEST` still controls the
+self-terminating smoke-test report. The app bundle no longer includes
+`sample.bin`; tests and the smoke-test script use the extracted
+`Resources/sample.bin` directly.
+
 ## 2026-11-04 — HERE traffic and weather map tests
 
 Added HERE ingest tests for `TrafficMap` and `WeatherMap`, plus per-tile

@@ -148,10 +148,10 @@ $(SAMPLE_BIN): $(SAMPLE_XZ)
 	@xz -d -c $< > $@
 	@echo "✓ $(SAMPLE_BIN)"
 
-build: deps $(NRSC5_DYLIB) $(APP_ICON) $(SAMPLE_BIN)
+build: deps $(NRSC5_DYLIB) $(APP_ICON)
 	SIGN_IDENTITY="$(DEV_IDENTITY)" PROVISION_PROFILE="$(PROVISION_PROFILE)" VERSION="$(VERSION)" ./build.sh $(CONFIG)
 
-release: deps $(NRSC5_DYLIB) $(APP_ICON) $(SAMPLE_BIN)
+release: deps $(NRSC5_DYLIB) $(APP_ICON)
 	SIGN_IDENTITY="$(DEV_IDENTITY)" PROVISION_PROFILE="$(PROVISION_PROFILE)" VERSION="$(VERSION)" ./build.sh release
 
 # Compile-only gate — no .app, no signing. CI / agent verification.
@@ -160,12 +160,12 @@ check: deps $(NRSC5_DYLIB)
 	@echo "✓ compiles ($(CONFIG))"
 
 # Run the test suite.
-test: deps $(NRSC5_DYLIB)
+test: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
 	swift test
 	@echo "✓ tests pass"
 
 # Run tests with coverage and generate an HTML report under build/coverage.
-coverage: deps $(NRSC5_DYLIB)
+coverage: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
 	@rm -rf build/coverage
 	@swift test --enable-code-coverage
 	@mkdir -p build/coverage
@@ -182,7 +182,7 @@ coverage: deps $(NRSC5_DYLIB)
 	@echo "✓ coverage report: build/coverage/index.html"
 
 # Run tests with coverage and print a text summary.
-coverage-text: deps $(NRSC5_DYLIB)
+coverage-text: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
 	@swift test --enable-code-coverage
 	@BIN=$$(find .build -name TunedTwoTests -path '*TunedTwoTests.xctest/*' | head -1); \
 	 PROF=$$(find .build -name default.profdata -path '*/codecov/*' | head -1); \

@@ -66,7 +66,6 @@ jobs:
           test -d "$APP" || { echo "✗ no $APP"; exit 1; }
           test -x "$APP/Contents/MacOS/TunedTwo" || { echo "✗ executable missing"; exit 1; }
           test -f "$APP/Contents/Info.plist" || { echo "✗ Info.plist missing"; exit 1; }
-          test -f "$APP/Contents/Resources/sample.bin" || { echo "✗ sample.bin missing"; exit 1; }
           test -f "$APP/Contents/Frameworks/libnrsc5.dylib" || { echo "✗ libnrsc5.dylib missing"; exit 1; }
           otool -L "$APP/Contents/MacOS/TunedTwo" | grep -q "@rpath/libnrsc5.dylib" || { echo "✗ libnrsc5 not linked via rpath"; exit 1; }
           echo "✓ bundle looks healthy"

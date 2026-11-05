@@ -32,4 +32,4 @@ The SwiftPM target is `TunedTwoCLI`, but the produced executable is `tunedtwo-cl
 
 ## Resources live at the repo root, not in a SwiftPM target bundle
 
-`traffic_sample/` and `weather_sample/` remain at `Resources/` because the CLI takes filesystem paths and tests locate them relative to `#filePath`. The app bundle only includes `sample.bin`; the sample directories are test/CLI data, not runtime app resources.
+`traffic_sample/` and `weather_sample/` remain at `Resources/` because the CLI takes filesystem paths and tests locate them relative to `#filePath`. The sample directories are test/CLI data, not runtime app resources; the app only plays a sample file when launched with `TUNEDTWO_SAMPLE_FILE`.

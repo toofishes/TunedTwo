@@ -20,7 +20,7 @@ struct TunerStateTests {
     @Test func defaultState() {
         let state = TunerState()
 
-        #expect(state.source == .rtlSDR)
+        #expect(state.isSampleFile == false)
         #expect(state.frequencyMHz == 103.5)
         #expect(state.frequencyHz == 103_500_000)
         #expect(state.currentProgram == 0)

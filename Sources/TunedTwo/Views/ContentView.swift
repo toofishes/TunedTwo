@@ -16,6 +16,10 @@ struct ContentView: View {
 
     init() {
         let newState = TunerState()
+        if let samplePath = ProcessInfo.processInfo.environment["TUNEDTWO_SAMPLE_FILE"] {
+            newState.isSampleFile = true
+            newState.sampleFilePath = samplePath
+        }
         state = newState
         session = .init(sink: newState)
     }
@@ -80,10 +84,22 @@ struct ContentView: View {
     }
 
     private func startPlayback() async {
-        let configuration = TunerConfiguration(
-            source: state.source == .rtlSDR ? .rtlSDR(deviceIndex: 0) : .sampleFile,
-            frequencyHz: state.frequencyHz,
-            program: state.currentProgram)
+        let configuration: TunerConfiguration
+        if let samplePath = ProcessInfo.processInfo.environment["TUNEDTWO_SAMPLE_FILE"] {
+            configuration = TunerConfiguration(
+                source: .sampleFile(path: samplePath),
+                frequencyHz: nil,
+                program: state.currentProgram)
+            state.isSampleFile = true
+            state.sampleFilePath = samplePath
+        } else {
+            configuration = TunerConfiguration(
+                source: .rtlSDR(deviceIndex: 0),
+                frequencyHz: state.frequencyHz,
+                program: state.currentProgram)
+            state.isSampleFile = false
+            state.sampleFilePath = nil
+        }
 
         // Optimistic, so the button feels immediate; the .failed event
         // corrects this if the tuner cannot start.
@@ -99,7 +115,7 @@ struct ContentView: View {
         retuneTask = Task {
             try? await Task.sleep(for: .milliseconds(600))
             guard !Task.isCancelled else { return }
-            guard state.source == .rtlSDR, state.isPlaying,
+            guard !state.isSampleFile, state.isPlaying,
                 let frequencyHz = state.frequencyHz
             else { return }
             await session.retune(frequencyHz: frequencyHz)
@@ -109,10 +125,9 @@ struct ContentView: View {
 
     // MARK: - Smoke test
 
-    /// Plays the bundled sample file and self-terminates, printing
-    /// `SMOKE_OK` if metadata was received.
+    /// Starts playback and waits for metadata, then self-terminates and
+    /// prints `SMOKE_OK` or `SMOKE_FAIL`.
     private func runSmokeTest() async {
-        state.source = .sampleFile
         await startPlayback()
         try? await Task.sleep(for: .seconds(8))
         let ps = state.currentProgramState
@@ -162,42 +177,42 @@ private struct Controls: View {
     var body: some View {
         Form {
             Section {
-                Picker("Source", selection: $state.source) {
-                    ForEach(TunerState.Source.allCases, id: \.rawValue) { source in
-                        Text(source.rawValue).tag(source)
+                if state.isSampleFile {
+                    LabeledContent("Sample File") {
+                        Text(state.sampleFilePath ?? "")
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                } else {
+                    HStack {
+                        let frequencyRange = 87.9...107.9
+                        let frequencyBinding = Binding<Double>(
+                            get: { state.frequencyMHz },
+                            set: { newValue in
+                                if newValue < frequencyRange.lowerBound {
+                                    state.frequencyMHz = frequencyRange.lowerBound
+                                } else if newValue > frequencyRange.upperBound {
+                                    state.frequencyMHz = frequencyRange.upperBound
+                                } else {
+                                    state.frequencyMHz = newValue.roundedToFMFrequency()
+                                }
+                            }
+                        )
+                        TextField(
+                            "Frequency", value: frequencyBinding,
+                            format: .number.grouping(.never).precision(.fractionLength(1))
+                        )
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: Theme.frequencyFieldWidth)
+
+                        Text("MHz")
+                            .font(Theme.Fonts.meta)
+                            .foregroundStyle(.secondary)
+
+                        Stepper("", value: $state.frequencyMHz, in: frequencyRange, step: 0.2)
+                            .labelsHidden()
                     }
                 }
-
-                HStack {
-                    let frequencyRange = 87.9...107.9
-                    let frequencyBinding = Binding<Double>(
-                        get: { state.frequencyMHz },
-                        set: { newValue in
-                            if newValue < frequencyRange.lowerBound {
-                                state.frequencyMHz = frequencyRange.lowerBound
-                            } else if newValue > frequencyRange.upperBound {
-                                state.frequencyMHz = frequencyRange.upperBound
-                            } else {
-                                state.frequencyMHz = newValue.roundedToFMFrequency()
-                            }
-                        }
-                    )
-                    TextField(
-                        "Frequency", value: frequencyBinding,
-                        format: .number.grouping(.never).precision(.fractionLength(1))
-                    )
-                    .textFieldStyle(.roundedBorder)
-                    .disabled(state.source == .sampleFile)
-                    .frame(width: Theme.frequencyFieldWidth)
-
-                    Text("MHz")
-                        .font(Theme.Fonts.meta)
-                        .foregroundStyle(.secondary)
-
-                    Stepper("", value: $state.frequencyMHz, in: frequencyRange, step: 0.2)
-                        .labelsHidden()
-                }
-                //.fixedSize(horizontal: true, vertical: false)
 
                 Picker("Program", selection: $state.currentProgram) {
                     ForEach(state.programStates.indices, id: \.self) { i in

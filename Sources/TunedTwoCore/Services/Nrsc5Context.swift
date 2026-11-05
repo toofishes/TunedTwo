@@ -266,8 +266,7 @@ final class Nrsc5Context {
     /// starts demodulation. Context can outlive the C session.
     func activate(_ configuration: TunerConfiguration) throws {
         switch configuration.source {
-        case .sampleFile:
-            let path = try SampleFileProvider.sampleFilePath()
+        case .sampleFile(let path):
             guard let fp = fopen(path, "rb") else {
                 throw TunerError.cannotOpenSample
             }

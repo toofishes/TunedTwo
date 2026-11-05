@@ -6,7 +6,7 @@ No Xcode project, no `xcodebuild`, no XcodeGen. `swift build` compiles; `build.s
 
 - **`Package.swift`** — SwiftPM manifest. Defines the `CNrsc5` system-library wrapper, the `TunedTwoCore` library, the `TunedTwo` app executable, the `TunedTwoCLI` executable, and the `TunedTwoTests` test target. Also carries the `-L` and rpath flags needed to link the prebuilt `libnrsc5.dylib`.
 - **`Makefile`** — the front door. `make help` lists everything.
-- **`build.sh`** — `swift build` → assemble `build/TunedTwo.app` (Info.plist with version placeholders, PkgInfo, icon, sample.bin, dependency bundles, `libnrsc5.dylib`) → copy `build/tunedtwo-cli` → codesign. Falls back to ad-hoc signing (`-`) when no real identity is available.
+- **`build.sh`** — `swift build` → assemble `build/TunedTwo.app` (Info.plist with version placeholders, PkgInfo, icon, dependency bundles, `libnrsc5.dylib`) → copy `build/tunedtwo-cli` → codesign. Falls back to ad-hoc signing (`-`) when no real identity is available.
 - **`Resources/Info.plist`** — bundle metadata. Version strings are placeholders filled at build time.
 - **`TunedTwo/TunedTwo.entitlements`** — hardened-runtime exceptions for loading the locally-built `libnrsc5.dylib`.
 
