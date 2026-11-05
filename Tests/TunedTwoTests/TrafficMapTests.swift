@@ -349,6 +349,49 @@ struct TrafficMapTests {
         }
     }
 
+    @Test("parses a HERE traffic filename")
+    func parseHereTrafficName() throws {
+        let info = try #require(TrafficMap.parseHereTrafficName("1793835363_trafficMap_1_2_u40h.png"))
+
+        #expect(info.name == "1793835363_trafficMap_1_2_u40h.png")
+        #expect(info.sequence == 65535)
+        #expect(info.n1 == 6)
+        #expect(info.n2 == 9)
+        #expect(info.time == Date(timeIntervalSince1970: 1_793_835_363))
+    }
+
+    @Test("parses a HERE traffic filename ignoring any trailing suffix")
+    func parseHereTrafficNameIgnoresTrailingSuffix() throws {
+        let info = try #require(TrafficMap.parseHereTrafficName("1793835363_trafficMap_0_0.png"))
+
+        #expect(info.n1 == 1)
+        #expect(info.n2 == 9)
+    }
+
+    @Test("returns nil for non-HERE traffic filenames")
+    func rejectsNonHereTrafficNames() {
+        #expect(TrafficMap.parseHereTrafficName("WeatherImage_0_0_u40h.png") == nil)
+        #expect(TrafficMap.parseHereTrafficName("TMT_035apk_1_1_20260914_1514_036f.png") == nil)
+        #expect(TrafficMap.parseHereTrafficName("1793835363_trafficMap_0_0_u40h.jpg") == nil)
+        #expect(TrafficMap.parseHereTrafficName("1793835363_trafficMap_3_0_u40h.png") == nil)
+        #expect(TrafficMap.parseHereTrafficName("trafficMap_0_0_u40h.png") == nil)
+    }
+
+    @Test("stores a HERE traffic tile from file metadata")
+    func storesHereTrafficTileFromInfo() throws {
+        var map = TrafficMap()
+        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let info = HereTrafficFileInfo(
+            name: "trafficMap_1_1_u40h.png", sequence: 65535, n1: 5, n2: 9,
+            time: Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31))
+
+        let outcome = map.processHereImageFile(info: info, data: tile)
+
+        #expect(outcome == .stored)
+        #expect(map.provider == "HERE")
+        #expect(map.populatedTileCount() == 1)
+    }
+
     @Test("reference bounding boxes cover all nine HERE traffic slots")
     func hereTrafficBoundsAreComplete() throws {
         for n1 in 1...9 {
@@ -537,9 +580,11 @@ struct TrafficMapTests {
         guard let bounds = Self.hereTrafficTileBounds[n1] else {
             fatalError("No reference bounding box for HERE traffic tile n1=\(n1)")
         }
+        let row = (n1 - 1) / 3
+        let column = (n1 - 1) % 3
         return TunerHereImage(
             type: .traffic,
-            name: "trafficMap_\(n1)_u40h.png",
+            name: "1793835363_trafficMap_\(row)_\(column)_u40h.png",
             sequence: sequence,
             n1: n1,
             n2: n2,

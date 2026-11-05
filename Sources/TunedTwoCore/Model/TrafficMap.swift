@@ -30,6 +30,25 @@ public struct TMTInfo: Equatable, Sendable {
     public let hex: UInt16
 }
 
+/// Parsed parts of a dumped HERE traffic filename.
+///
+/// Capture tools emit names like:
+///   `1793835363_trafficMap_0_0_u40h.png`
+///
+/// The leading numeric prefix is a Unix timestamp; the trailing portion is
+/// `trafficMap_{row}_{column}_*.png`. Row and column are 0-based in the
+/// filename. `n1` and `n2` are reconstructed so the tile lands in the same
+/// 3×3 grid the live stream uses; `n2` is assumed to be 9 because the
+/// filename does not carry grid size. `sequence` is set to 65535 as a
+/// marker that the real stream sequence number is unavailable.
+public struct HereTrafficFileInfo: Equatable, Sendable {
+    public let name: String
+    public let sequence: Int
+    public let n1: Int
+    public let n2: Int
+    public let time: Date?
+}
+
 /// One successfully ingested traffic tile: its parsed metadata plus the
 /// decoded image.
 public struct TrafficMapTile: Sendable {
@@ -145,6 +164,37 @@ public struct TrafficMap: Sendable {
         return TMTInfo(provider: provider, row: row, column: column, timestamp: timestamp, hex: hex)
     }
 
+    /// Parse a dumped HERE traffic filename into metadata.
+    ///
+    /// Expects a leading Unix timestamp and the tile row/column, e.g.
+    /// `1793835363_trafficMap_0_0_u40h.png`. Row and column are 0-based in
+    /// the filename; any trailing suffix after the column is ignored.
+    public static func parseHereTrafficName(_ lotName: String) -> HereTrafficFileInfo? {
+        guard lotName.hasSuffix(".png") else { return nil }
+
+        let baseName = String(lotName.dropLast(4))
+        let components = baseName.components(separatedBy: "_")
+
+        guard components.count >= 4,
+            let timestamp = TimeInterval(components[0])
+        else { return nil }
+
+        guard components[1] == "trafficMap" else { return nil }
+        guard let row = Int(components[2]),
+            let column = Int(components[3])
+        else { return nil }
+
+        let n2 = 9
+        guard (0..<3).contains(row),
+            (0..<3).contains(column)
+        else { return nil }
+        let n1 = row * 3 + column + 1
+
+        return HereTrafficFileInfo(
+            name: lotName, sequence: 65535, n1: n1, n2: n2,
+            time: Date(timeIntervalSince1970: timestamp))
+    }
+
     // MARK: - Filename parsing
 
     // MARK: - Ingest
@@ -223,6 +273,27 @@ public struct TrafficMap: Sendable {
         tiles[hereImage.n1 - 1] = TrafficMapTile(info: info, image: image)
         backgroundColor = Self.defaultHereBackgroundColor
         return .stored
+    }
+
+    /// Parse and store a HERE traffic map image from dumped-file metadata.
+    ///
+    /// The bounding box is unknown for files restored from disk, so a
+    /// placeholder is used; it is not needed to render the composite.
+    @discardableResult
+    public mutating func processHereImageFile(info: HereTrafficFileInfo, data: Data) -> TrafficMapIngestOutcome {
+        let hereImage = TunerHereImage(
+            type: .traffic,
+            name: info.name,
+            sequence: info.sequence,
+            n1: info.n1,
+            n2: info.n2,
+            time: info.time,
+            boundingBox: (
+                Location(latitude: 0.0, longitude: 0.0),
+                Location(latitude: 0.0, longitude: 0.0)
+            ),
+            data: data)
+        return processHereImageFile(hereImage: hereImage)
     }
 
     // MARK: - Tile Timestamps and Counts

@@ -9,6 +9,12 @@ Running log of meaningful changes. Newest first.
 Added HERE ingest tests for `TrafficMap` and `WeatherMap`, plus per-tile
 bounding-box reference data in `TrafficMapTests`.
 
+## 2026-11-04 — CLI traffic-map handles HERE tiles
+
+`traffic-map` now ingests dumped HERE tiles (`*_trafficMap_*.png`) and only
+parses `TMI_*.txt` config files. Added `TrafficMap.parseHereTrafficName` and
+`processHereImageFile(info:data:)`.
+
 ## 2026-11-04 — Added tuner coverage tests
 
 Added headless smoke tests for `nameForDSDMIMEType`, `TunerSession`
