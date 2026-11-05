@@ -30,7 +30,7 @@ struct TrafficMapTests {
         #expect(info.column == 1)
         #expect(info.hex == 0x036f)
 
-        let expectedTimestamp = Self.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 14)
+        let expectedTimestamp = MapTestHelpers.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 14)
         #expect(info.timestamp == expectedTimestamp)
     }
 
@@ -72,7 +72,7 @@ struct TrafficMapTests {
     @Test("rejects non-TMT filenames without storing anything")
     func rejectsNonTMTFiles() throws {
         var map = TrafficMap()
-        let png = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let png = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
 
         let outcome = map.processImageFile(name: "STN_035apk_2_1_20260914_1514_036f.png", data: png)
         #expect(outcome == .notTrafficMapFile)
@@ -110,8 +110,8 @@ struct TrafficMapTests {
     @Test("keeps the stored tile when an older duplicate arrives")
     func ignoresStaleTile() throws {
         var map = TrafficMap()
-        let newer = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        let older = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
+        let newer = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
+        let older = try #require(MapTestHelpers.pngData(color: MapTestHelpers.blue, width: 8, height: 8))
 
         map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: newer)
         let outcome = map.processImageFile(name: "TMT_prov_1_1_20260913_1500_0002.png", data: older)
@@ -119,15 +119,15 @@ struct TrafficMapTests {
         #expect(
             outcome
                 == .ignoredStale(
-                    existingTimestamp: Self.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 0),
-                    incomingTimestamp: Self.utcDate(year: 2026, month: 9, day: 13, hour: 15, minute: 0)))
+                    existingTimestamp: MapTestHelpers.utcDate(year: 2026, month: 9, day: 14, hour: 15, minute: 0),
+                    incomingTimestamp: MapTestHelpers.utcDate(year: 2026, month: 9, day: 13, hour: 15, minute: 0)))
     }
 
     @Test("replaces the stored tile when the timestamp is equal (retransmission)")
     func equalTimestampReplaces() throws {
         var map = TrafficMap()
-        let first = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        let retransmission = try #require(Self.pngData(color: Self.green, width: 8, height: 8))
+        let first = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
+        let retransmission = try #require(MapTestHelpers.pngData(color: MapTestHelpers.green, width: 8, height: 8))
 
         map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: first)
         let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0002.png", data: retransmission)
@@ -135,14 +135,14 @@ struct TrafficMapTests {
         #expect(outcome == .stored)
 
         let composite = try #require(map.composite)
-        #expect(Self.pixelColor(in: composite, x: 4, yFromTop: 4) == Self.green)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 4, yFromTop: 4) == MapTestHelpers.green)
     }
 
     @Test("replaces the stored tile when a newer one arrives")
     func newerTileReplaces() throws {
         var map = TrafficMap()
-        let older = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        let newer = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
+        let older = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
+        let newer = try #require(MapTestHelpers.pngData(color: MapTestHelpers.blue, width: 8, height: 8))
 
         map.processImageFile(name: "TMT_prov_1_1_20260914_1500_0001.png", data: older)
         let outcome = map.processImageFile(name: "TMT_prov_1_1_20260914_1600_0002.png", data: newer)
@@ -150,7 +150,7 @@ struct TrafficMapTests {
         #expect(outcome == .stored)
 
         let composite = try #require(map.composite)
-        #expect(Self.pixelColor(in: composite, x: 4, yFromTop: 4) == Self.blue)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 4, yFromTop: 4) == MapTestHelpers.blue)
     }
 
     // MARK: - Provider reset
@@ -158,8 +158,8 @@ struct TrafficMapTests {
     @Test("a new provider resets the map")
     func providerChangeResets() throws {
         var map = TrafficMap()
-        let tileA = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        let tileB = try #require(Self.pngData(color: Self.cyan, width: 8, height: 8))
+        let tileA = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
+        let tileB = try #require(MapTestHelpers.pngData(color: MapTestHelpers.cyan, width: 8, height: 8))
 
         map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: tileA)
         map.processImageFile(name: "TMT_035apk_3_3_20260914_1500_0002.png", data: tileA)
@@ -173,9 +173,9 @@ struct TrafficMapTests {
 
         // The old provider's tiles are gone; only 2_2 (middle) holds a tile.
         let composite = try #require(map.composite)
-        #expect(Self.pixelColor(in: composite, x: 4, yFromTop: 4) == Self.mapBackground)
-        #expect(Self.pixelColor(in: composite, x: 12, yFromTop: 12) == Self.cyan)
-        #expect(Self.pixelColor(in: composite, x: 20, yFromTop: 20) == Self.mapBackground)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 4, yFromTop: 4) == MapTestHelpers.mapBackground)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 12, yFromTop: 12) == MapTestHelpers.cyan)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 20, yFromTop: 20) == MapTestHelpers.mapBackground)
     }
 
     // MARK: - Config files
@@ -201,7 +201,7 @@ struct TrafficMapTests {
     @Test("a config from a different provider resets the map")
     func configProviderChangeResets() throws {
         var map = TrafficMap()
-        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let tile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
         map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: tile)
         #expect(map.populatedTileCount() == 1)
 
@@ -227,7 +227,7 @@ struct TrafficMapTests {
     @Test("uses the config background color in the composite")
     func configBackgroundColorOverride() throws {
         var map = TrafficMap()
-        let tile = try #require(Self.pngData(color: Self.red, width: 10, height: 10))
+        let tile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 10, height: 10))
         map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: tile)
 
         let config = """
@@ -247,7 +247,7 @@ struct TrafficMapTests {
 
         let composite = try #require(map.composite)
         // Bottom-right background cell should now be red instead of the default tan.
-        #expect(Self.pixelColor(in: composite, x: 25, yFromTop: 25) == Self.red)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 25, yFromTop: 25) == MapTestHelpers.red)
     }
 
     // MARK: - Helpers
@@ -271,7 +271,7 @@ struct TrafficMapTests {
     @Test("stores a valid HERE traffic tile")
     func storesValidHereTrafficTile() throws {
         var map = TrafficMap()
-        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let tile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
         let hereImage = Self.hereTrafficTile(n1: 1, n2: 9, sequence: 1, data: tile)
 
         let outcome = map.processHereImageFile(hereImage: hereImage)
@@ -285,14 +285,14 @@ struct TrafficMapTests {
     @Test("rejects a HERE weather image as not a traffic map")
     func rejectsHereWeatherImage() throws {
         var map = TrafficMap()
-        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let tile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
         let hereImage = TunerHereImage(
             type: .weather,
             name: "WeatherImage_0_0_u40h.png",
             sequence: 1,
             n1: 1,
             n2: 1,
-            time: Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 36),
+            time: MapTestHelpers.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 36),
             boundingBox: (
                 Location(latitude: 42.38810, longitude: -88.29440),
                 Location(latitude: 41.56410, longitude: -87.47040)
@@ -321,16 +321,16 @@ struct TrafficMapTests {
         var map = TrafficMap()
         // colors[row][column] using the 0-based row/column derived from n1.
         let colors: [[(CGFloat, CGFloat, CGFloat)]] = [
-            [Self.red, Self.green, Self.blue],
-            [Self.yellow, Self.cyan, Self.magenta],
-            [Self.orange, Self.purple, Self.brown],
+            [MapTestHelpers.red, MapTestHelpers.green, MapTestHelpers.blue],
+            [MapTestHelpers.yellow, MapTestHelpers.cyan, MapTestHelpers.magenta],
+            [MapTestHelpers.orange, MapTestHelpers.purple, MapTestHelpers.brown],
         ]
 
         for n1 in 1...9 {
             let row = (n1 - 1) / 3
             let column = (n1 - 1) % 3
             let color = colors[row][column]
-            let tile = try #require(Self.pngData(color: color, width: 8, height: 8))
+            let tile = try #require(MapTestHelpers.pngData(color: color, width: 8, height: 8))
             let hereImage = Self.hereTrafficTile(n1: n1, n2: 9, sequence: 1, data: tile)
             map.processHereImageFile(hereImage: hereImage)
         }
@@ -345,7 +345,8 @@ struct TrafficMapTests {
             let row = (n1 - 1) / 3
             let column = (n1 - 1) % 3
             let point = (x: column * 8 + 4, yFromTop: row * 8 + 4)
-            #expect(Self.pixelColor(in: composite, x: point.x, yFromTop: point.yFromTop) == colors[row][column])
+            #expect(
+                MapTestHelpers.pixelColor(in: composite, x: point.x, yFromTop: point.yFromTop) == colors[row][column])
         }
     }
 
@@ -380,10 +381,10 @@ struct TrafficMapTests {
     @Test("stores a HERE traffic tile from file metadata")
     func storesHereTrafficTileFromInfo() throws {
         var map = TrafficMap()
-        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let tile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
         let info = HereTrafficFileInfo(
             name: "trafficMap_1_1_u40h.png", sequence: 65535, n1: 5, n2: 9,
-            time: Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31))
+            time: MapTestHelpers.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31))
 
         let outcome = map.processHereImageFile(info: info, data: tile)
 
@@ -405,8 +406,8 @@ struct TrafficMapTests {
     @Test("overwrites a HERE tile when the same slot arrives again")
     func hereTileOverwriteSameSlot() throws {
         var map = TrafficMap()
-        let redTile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
-        let blueTile = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
+        let redTile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
+        let blueTile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.blue, width: 8, height: 8))
 
         map.processHereImageFile(hereImage: Self.hereTrafficTile(n1: 5, n2: 9, sequence: 1, data: redTile))
         let outcome = map.processHereImageFile(
@@ -417,7 +418,7 @@ struct TrafficMapTests {
         #expect(map.populatedTileCount() == 1)
 
         let composite = try #require(map.composite)
-        #expect(Self.pixelColor(in: composite, x: 12, yFromTop: 12) == Self.blue)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 12, yFromTop: 12) == MapTestHelpers.blue)
     }
 
     // MARK: - Tile stitching
@@ -431,7 +432,7 @@ struct TrafficMapTests {
     @Test("stitches a single tile onto a 3x3 background canvas")
     func stitchesSingleTile() throws {
         var map = TrafficMap()
-        let tileData = try #require(Self.pngData(color: Self.red, width: 10, height: 10))
+        let tileData = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 10, height: 10))
 
         // 1_1 is the upper-left tile.
         map.processImageFile(name: "TMT_prov_1_1_20260914_1514_0001.png", data: tileData)
@@ -441,10 +442,10 @@ struct TrafficMapTests {
         #expect(composite.height == 30)
 
         // The upper-left cell matches the tile color; the rest is background.
-        #expect(Self.pixelColor(in: composite, x: 4, yFromTop: 4) == Self.red)
-        #expect(Self.pixelColor(in: composite, x: 25, yFromTop: 25) == Self.mapBackground)
-        #expect(Self.pixelColor(in: composite, x: 25, yFromTop: 4) == Self.mapBackground)
-        #expect(Self.pixelColor(in: composite, x: 4, yFromTop: 25) == Self.mapBackground)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 4, yFromTop: 4) == MapTestHelpers.red)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 25, yFromTop: 25) == MapTestHelpers.mapBackground)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 25, yFromTop: 4) == MapTestHelpers.mapBackground)
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 4, yFromTop: 25) == MapTestHelpers.mapBackground)
     }
 
     @Test("places tiles in the correct 3x3 grid positions (row 1 = top, column 1 = left)")
@@ -452,15 +453,15 @@ struct TrafficMapTests {
         var map = TrafficMap()
         // colors[row - 1][column - 1]
         let colors: [[(CGFloat, CGFloat, CGFloat)]] = [
-            [Self.red, Self.green, Self.blue],
-            [Self.yellow, Self.cyan, Self.magenta],
-            [Self.orange, Self.purple, Self.brown],
+            [MapTestHelpers.red, MapTestHelpers.green, MapTestHelpers.blue],
+            [MapTestHelpers.yellow, MapTestHelpers.cyan, MapTestHelpers.magenta],
+            [MapTestHelpers.orange, MapTestHelpers.purple, MapTestHelpers.brown],
         ]
 
         for row in 1...3 {
             for column in 1...3 {
                 let color = colors[row - 1][column - 1]
-                let tileData = try #require(Self.pngData(color: color, width: 8, height: 8))
+                let tileData = try #require(MapTestHelpers.pngData(color: color, width: 8, height: 8))
                 let name = String(
                     format: "TMT_prov_%d_%d_20260914_1514_%04x.png", row, column, (row - 1) * 3 + (column - 1))
                 map.processImageFile(name: name, data: tileData)
@@ -476,7 +477,8 @@ struct TrafficMapTests {
             for column in 1...3 {
                 let point = (x: (column - 1) * 8 + 4, yFromTop: (row - 1) * 8 + 4)
                 #expect(
-                    Self.pixelColor(in: composite, x: point.x, yFromTop: point.yFromTop) == colors[row - 1][column - 1]
+                    MapTestHelpers.pixelColor(in: composite, x: point.x, yFromTop: point.yFromTop)
+                        == colors[row - 1][column - 1]
                 )
             }
         }
@@ -484,96 +486,23 @@ struct TrafficMapTests {
 
     // MARK: - Helpers
 
-    private static let red = (CGFloat(1), CGFloat(0), CGFloat(0))
-    private static let green = (CGFloat(0), CGFloat(1), CGFloat(0))
-    private static let blue = (CGFloat(0), CGFloat(0), CGFloat(1))
-    private static let cyan = (CGFloat(0), CGFloat(1), CGFloat(1))
-    private static let mapBackground = (CGFloat(194) / 255, CGFloat(187) / 255, CGFloat(96) / 255)
-
-    private static let orange = (CGFloat(1), CGFloat(0.5), CGFloat(0))
-    private static let purple = (CGFloat(0.5), CGFloat(0), CGFloat(0.5))
-    private static let brown = (CGFloat(0.6), CGFloat(0.4), CGFloat(0.2))
-    private static let yellow = (CGFloat(1), CGFloat(1), CGFloat(0))
-    private static let magenta = (CGFloat(1), CGFloat(0), CGFloat(1))
-
-    private static func utcDate(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Date {
-        var components = DateComponents()
-        components.year = year
-        components.month = month
-        components.day = day
-        components.hour = hour
-        components.minute = minute
-        return Calendar.utc.date(from: components)!
-    }
-
-    /// Render a solid color into a PNG, using only CoreGraphics.
-    private static func pngData(color: (CGFloat, CGFloat, CGFloat), width: Int, height: Int) -> Data? {
-        guard let context = Self.makeRGBContext(width: width, height: height) else { return nil }
-        context.setFillColor(red: color.0, green: color.1, blue: color.2, alpha: 1)
-        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
-        guard let image = context.makeImage() else { return nil }
-
-        let mutableData = NSMutableData()
-        guard let destination = CGImageDestinationCreateWithData(mutableData, "public.png" as CFString, 1, nil) else {
-            return nil
-        }
-        CGImageDestinationAddImage(destination, image, nil)
-        guard CGImageDestinationFinalize(destination) else { return nil }
-        return mutableData as Data
-    }
-
-    /// Read a pixel from a CGImage. `yFromTop` measures from the top of the
-    /// image (row 1 of the traffic map is the top row).
-    private static func pixelColor(in image: CGImage, x: Int, yFromTop: Int) -> (CGFloat, CGFloat, CGFloat)? {
-        guard let context = Self.makeRGBContext(width: image.width, height: image.height) else { return nil }
-        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
-        guard let base = context.data else { return nil }
-        let bytes = base.assumingMemoryBound(to: UInt8.self)
-        let offset = yFromTop * context.bytesPerRow + x * 4
-        guard offset >= 0, offset + 2 < image.width * image.height * 4 else { return nil }
-        return (CGFloat(bytes[offset]) / 255, CGFloat(bytes[offset + 1]) / 255, CGFloat(bytes[offset + 2]) / 255)
+    private static func makeCoords(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> (Location, Location) {
+        (Location(latitude: lat1, longitude: lon1), Location(latitude: lat2, longitude: lon2))
     }
 
     /// Reference per-tile bounding boxes for a 3×3 HERE traffic grid (`n2=9`).
     /// `boundingBox.0` is the north-west corner, `boundingBox.1` is the
     /// south-east corner.
     private static let hereTrafficTileBounds: [Int: (Location, Location)] = [
-        1: (
-            Location(latitude: 41.97378, longitude: -88.01971),
-            Location(latitude: 41.76926, longitude: -87.74505)
-        ),
-        2: (
-            Location(latitude: 41.97378, longitude: -88.29437),
-            Location(latitude: 41.76926, longitude: -87.47039)
-        ),
-        3: (
-            Location(latitude: 41.97378, longitude: -88.56903),
-            Location(latitude: 41.76926, longitude: -87.19573)
-        ),
-        4: (
-            Location(latitude: 42.17765, longitude: -88.01971),
-            Location(latitude: 41.56408, longitude: -87.74505)
-        ),
-        5: (
-            Location(latitude: 42.17765, longitude: -88.29437),
-            Location(latitude: 41.56408, longitude: -87.47039)
-        ),
-        6: (
-            Location(latitude: 42.17765, longitude: -88.56903),
-            Location(latitude: 41.56408, longitude: -87.19573)
-        ),
-        7: (
-            Location(latitude: 42.38086, longitude: -88.01971),
-            Location(latitude: 41.35825, longitude: -87.74505)
-        ),
-        8: (
-            Location(latitude: 42.38086, longitude: -88.29437),
-            Location(latitude: 41.35825, longitude: -87.47039)
-        ),
-        9: (
-            Location(latitude: 42.38086, longitude: -88.56903),
-            Location(latitude: 41.35825, longitude: -87.19573)
-        ),
+        1: makeCoords(lat1: 41.97378, lon1: -88.01971, lat2: 41.76926, lon2: -87.74505),
+        2: makeCoords(lat1: 41.97378, lon1: -88.29437, lat2: 41.76926, lon2: -87.47039),
+        3: makeCoords(lat1: 41.97378, lon1: -88.56903, lat2: 41.76926, lon2: -87.19573),
+        4: makeCoords(lat1: 42.17765, lon1: -88.01971, lat2: 41.56408, lon2: -87.74505),
+        5: makeCoords(lat1: 42.17765, lon1: -88.29437, lat2: 41.56408, lon2: -87.47039),
+        6: makeCoords(lat1: 42.17765, lon1: -88.56903, lat2: 41.56408, lon2: -87.19573),
+        7: makeCoords(lat1: 42.38086, lon1: -88.01971, lat2: 41.35825, lon2: -87.74505),
+        8: makeCoords(lat1: 42.38086, lon1: -88.29437, lat2: 41.35825, lon2: -87.47039),
+        9: makeCoords(lat1: 42.38086, lon1: -88.56903, lat2: 41.35825, lon2: -87.19573),
     ]
 
     private static func hereTrafficTile(n1: Int, n2: Int, sequence: Int, data: Data) -> TunerHereImage {
@@ -588,27 +517,8 @@ struct TrafficMapTests {
             sequence: sequence,
             n1: n1,
             n2: n2,
-            time: Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31),
+            time: MapTestHelpers.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31),
             boundingBox: bounds,
             data: data)
     }
-
-    private static func makeRGBContext(width: Int, height: Int) -> CGContext? {
-        CGContext(
-            data: nil,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: CGColorSpace(name: CGColorSpace.sRGB)!,
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
-    }
-}
-
-/// Exact RGB tuple equality for test colors (all colors here are opaque and
-/// pass through the same sRGB pipeline, so exact comparison is meaningful).
-private func == (lhs: (CGFloat, CGFloat, CGFloat)?, rhs: (CGFloat, CGFloat, CGFloat)) -> Bool {
-    guard let lhs else { return false }
-    let tolerance: CGFloat = 0.02
-    return abs(lhs.0 - rhs.0) < tolerance && abs(lhs.1 - rhs.1) < tolerance && abs(lhs.2 - rhs.2) < tolerance
 }
