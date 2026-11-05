@@ -4,6 +4,11 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-04 — HERE traffic and weather map tests
+
+Added HERE ingest tests for `TrafficMap` and `WeatherMap`, plus per-tile
+bounding-box reference data in `TrafficMapTests`.
+
 ## 2026-11-04 — Added tuner coverage tests
 
 Added headless smoke tests for `nameForDSDMIMEType`, `TunerSession`

@@ -10,6 +10,7 @@ This file captures non-obvious project conventions and gotchas that came up duri
 ## Agent workflow and skills
 
 - Keep [`PLAN.md`](PLAN.md) as the master documentation index; put depth in `plans/whatever.md` and record day-to-day work in [`PROGRESS.md`](PROGRESS.md).
+- Keep [`PROGRESS.md`](PROGRESS.md) entries brief — one or two lines is usually enough.
 - Before and after deciding on UI code, run the **swiftui-pro** skill to verify we're following modern SwiftUI best practices (see also [`SWIFTUI-RULES.md`](SWIFTUI-RULES.md)).
 - When setting type, run the **typography-designer** skill to keep the type scale and hierarchy consistent.
 - When designing macOS UI, run the **macos-design** skill to keep the app aligned with modern professional macOS idioms.

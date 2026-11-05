@@ -266,6 +266,117 @@ struct TrafficMapTests {
         CopyrightNotice="Copyright © 2014 iHeartMedia, Inc. All rights reserved."
         """
 
+    // MARK: - HERE images
+
+    @Test("stores a valid HERE traffic tile")
+    func storesValidHereTrafficTile() throws {
+        var map = TrafficMap()
+        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let hereImage = Self.hereTrafficTile(n1: 1, n2: 9, sequence: 1, data: tile)
+
+        let outcome = map.processHereImageFile(hereImage: hereImage)
+
+        #expect(outcome == .stored)
+        #expect(map.provider == "HERE")
+        #expect(map.populatedTileCount() == 1)
+        #expect(map.tileCount() == 9)
+    }
+
+    @Test("rejects a HERE weather image as not a traffic map")
+    func rejectsHereWeatherImage() throws {
+        var map = TrafficMap()
+        let tile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let hereImage = TunerHereImage(
+            type: .weather,
+            name: "WeatherImage_0_0_u40h.png",
+            sequence: 1,
+            n1: 1,
+            n2: 1,
+            time: Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 36),
+            boundingBox: (
+                Location(latitude: 42.38810, longitude: -88.29440),
+                Location(latitude: 41.56410, longitude: -87.47040)
+            ),
+            data: tile)
+
+        let outcome = map.processHereImageFile(hereImage: hereImage)
+
+        #expect(outcome == .notTrafficMapFile)
+        #expect(map.populatedTileCount() == 0)
+    }
+
+    @Test("rejects undecodable HERE traffic bytes")
+    func rejectsUndecodableHereTrafficBytes() {
+        var map = TrafficMap()
+        let hereImage = Self.hereTrafficTile(n1: 1, n2: 9, sequence: 1, data: Data("not a png".utf8))
+
+        let outcome = map.processHereImageFile(hereImage: hereImage)
+
+        #expect(outcome == .undecodableImage)
+        #expect(map.populatedTileCount() == 0)
+    }
+
+    @Test("stitches HERE traffic tiles into the correct grid positions")
+    func stitchesHereTrafficTiles() throws {
+        var map = TrafficMap()
+        // colors[row][column] using the 0-based row/column derived from n1.
+        let colors: [[(CGFloat, CGFloat, CGFloat)]] = [
+            [Self.red, Self.green, Self.blue],
+            [Self.yellow, Self.cyan, Self.magenta],
+            [Self.orange, Self.purple, Self.brown],
+        ]
+
+        for n1 in 1...9 {
+            let row = (n1 - 1) / 3
+            let column = (n1 - 1) % 3
+            let color = colors[row][column]
+            let tile = try #require(Self.pngData(color: color, width: 8, height: 8))
+            let hereImage = Self.hereTrafficTile(n1: n1, n2: 9, sequence: 1, data: tile)
+            map.processHereImageFile(hereImage: hereImage)
+        }
+
+        #expect(map.populatedTileCount() == 9)
+
+        let composite = try #require(map.composite)
+        #expect(composite.width == 24)
+        #expect(composite.height == 24)
+
+        for n1 in 1...9 {
+            let row = (n1 - 1) / 3
+            let column = (n1 - 1) % 3
+            let point = (x: column * 8 + 4, yFromTop: row * 8 + 4)
+            #expect(Self.pixelColor(in: composite, x: point.x, yFromTop: point.yFromTop) == colors[row][column])
+        }
+    }
+
+    @Test("reference bounding boxes cover all nine HERE traffic slots")
+    func hereTrafficBoundsAreComplete() throws {
+        for n1 in 1...9 {
+            let bounds = try #require(Self.hereTrafficTileBounds[n1])
+            // boundingBox.0 is the north-west corner, boundingBox.1 is the south-east corner.
+            #expect(bounds.0.latitude > bounds.1.latitude)
+            #expect(bounds.0.longitude < bounds.1.longitude)
+        }
+    }
+
+    @Test("overwrites a HERE tile when the same slot arrives again")
+    func hereTileOverwriteSameSlot() throws {
+        var map = TrafficMap()
+        let redTile = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let blueTile = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
+
+        map.processHereImageFile(hereImage: Self.hereTrafficTile(n1: 5, n2: 9, sequence: 1, data: redTile))
+        let outcome = map.processHereImageFile(
+            hereImage: Self.hereTrafficTile(n1: 5, n2: 9, sequence: 2, data: blueTile))
+
+        // The HERE path currently overwrites on every ingest; it does not suppress stale tiles.
+        #expect(outcome == .stored)
+        #expect(map.populatedTileCount() == 1)
+
+        let composite = try #require(map.composite)
+        #expect(Self.pixelColor(in: composite, x: 12, yFromTop: 12) == Self.blue)
+    }
+
     // MARK: - Tile stitching
 
     @Test("leaves composite nil when no tiles are available")
@@ -378,6 +489,63 @@ struct TrafficMapTests {
         let offset = yFromTop * context.bytesPerRow + x * 4
         guard offset >= 0, offset + 2 < image.width * image.height * 4 else { return nil }
         return (CGFloat(bytes[offset]) / 255, CGFloat(bytes[offset + 1]) / 255, CGFloat(bytes[offset + 2]) / 255)
+    }
+
+    /// Reference per-tile bounding boxes for a 3×3 HERE traffic grid (`n2=9`).
+    /// `boundingBox.0` is the north-west corner, `boundingBox.1` is the
+    /// south-east corner.
+    private static let hereTrafficTileBounds: [Int: (Location, Location)] = [
+        1: (
+            Location(latitude: 41.97378, longitude: -88.01971),
+            Location(latitude: 41.76926, longitude: -87.74505)
+        ),
+        2: (
+            Location(latitude: 41.97378, longitude: -88.29437),
+            Location(latitude: 41.76926, longitude: -87.47039)
+        ),
+        3: (
+            Location(latitude: 41.97378, longitude: -88.56903),
+            Location(latitude: 41.76926, longitude: -87.19573)
+        ),
+        4: (
+            Location(latitude: 42.17765, longitude: -88.01971),
+            Location(latitude: 41.56408, longitude: -87.74505)
+        ),
+        5: (
+            Location(latitude: 42.17765, longitude: -88.29437),
+            Location(latitude: 41.56408, longitude: -87.47039)
+        ),
+        6: (
+            Location(latitude: 42.17765, longitude: -88.56903),
+            Location(latitude: 41.56408, longitude: -87.19573)
+        ),
+        7: (
+            Location(latitude: 42.38086, longitude: -88.01971),
+            Location(latitude: 41.35825, longitude: -87.74505)
+        ),
+        8: (
+            Location(latitude: 42.38086, longitude: -88.29437),
+            Location(latitude: 41.35825, longitude: -87.47039)
+        ),
+        9: (
+            Location(latitude: 42.38086, longitude: -88.56903),
+            Location(latitude: 41.35825, longitude: -87.19573)
+        ),
+    ]
+
+    private static func hereTrafficTile(n1: Int, n2: Int, sequence: Int, data: Data) -> TunerHereImage {
+        guard let bounds = Self.hereTrafficTileBounds[n1] else {
+            fatalError("No reference bounding box for HERE traffic tile n1=\(n1)")
+        }
+        return TunerHereImage(
+            type: .traffic,
+            name: "trafficMap_\(n1)_u40h.png",
+            sequence: sequence,
+            n1: n1,
+            n2: n2,
+            time: Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31),
+            boundingBox: bounds,
+            data: data)
     }
 
     private static func makeRGBContext(width: Int, height: Int) -> CGContext? {

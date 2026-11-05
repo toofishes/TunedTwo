@@ -134,7 +134,128 @@ struct WeatherMapTests {
         #expect(map.image == nil)
     }
 
+    // MARK: - HERE images
+
+    @Test("stores a valid HERE weather image")
+    func storesValidHereWeatherImage() throws {
+        var map = WeatherMap()
+        let image = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let hereImage = Self.hereWeatherImage(sequence: 1, data: image)
+        let expectedTimestamp = Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 36)
+
+        let outcome = map.processHereImageFile(hereImage: hereImage)
+
+        #expect(outcome == .stored)
+        #expect(map.provider == "HERE")
+        #expect(map.timestamp == expectedTimestamp)
+        #expect(map.image != nil)
+        #expect(map.coordinates?.count == 2)
+        #expect(map.coordinates?.first == Location(latitude: 42.38810, longitude: -88.29440))
+        #expect(map.coordinates?.last == Location(latitude: 41.56410, longitude: -87.47040))
+    }
+
+    @Test("rejects a HERE traffic image as not a weather map")
+    func rejectsHereTrafficImage() throws {
+        var map = WeatherMap()
+        let image = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let hereImage = TunerHereImage(
+            type: .traffic,
+            name: "trafficMap_0_0_u40h.png",
+            sequence: 1,
+            n1: 1,
+            n2: 9,
+            time: Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31),
+            boundingBox: (
+                Location(latitude: 42.17765, longitude: -88.29437),
+                Location(latitude: 41.56408, longitude: -87.47039)
+            ),
+            data: image)
+
+        let outcome = map.processHereImageFile(hereImage: hereImage)
+
+        #expect(outcome == .notWeatherMapFile)
+        #expect(map.image == nil)
+    }
+
+    @Test("rejects undecodable HERE weather bytes")
+    func rejectsUndecodableHereWeatherBytes() {
+        var map = WeatherMap()
+        let hereImage = Self.hereWeatherImage(sequence: 1, data: Data("not a png".utf8))
+
+        let outcome = map.processHereImageFile(hereImage: hereImage)
+
+        #expect(outcome == .undecodableImage)
+        #expect(map.image == nil)
+    }
+
+    @Test("keeps the stored image when an older HERE weather image arrives")
+    func ignoresStaleHereWeatherImage() throws {
+        var map = WeatherMap()
+        let newer = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let older = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
+
+        let newerTime = Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 36)
+        let olderTime = Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31)
+
+        map.processHereImageFile(hereImage: Self.hereWeatherImage(sequence: 1, time: newerTime, data: newer))
+        let outcome = map.processHereImageFile(
+            hereImage: Self.hereWeatherImage(sequence: 2, time: olderTime, data: older))
+
+        #expect(outcome == .ignoredStale(existingTimestamp: newerTime, incomingTimestamp: olderTime))
+        #expect(map.timestamp == newerTime)
+    }
+
+    @Test("replaces the stored image when a newer HERE weather image arrives")
+    func newerHereWeatherImageReplaces() throws {
+        var map = WeatherMap()
+        let older = try #require(Self.pngData(color: Self.red, width: 8, height: 8))
+        let newer = try #require(Self.pngData(color: Self.blue, width: 8, height: 8))
+
+        let olderTime = Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 31)
+        let newerTime = Self.utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 36)
+
+        map.processHereImageFile(hereImage: Self.hereWeatherImage(sequence: 1, time: olderTime, data: older))
+        let outcome = map.processHereImageFile(
+            hereImage: Self.hereWeatherImage(sequence: 2, time: newerTime, data: newer))
+
+        #expect(outcome == .stored)
+        #expect(map.timestamp == newerTime)
+
+        let storedImage = try #require(map.image)
+        #expect(Self.pixelColor(in: storedImage, x: 4, yFromTop: 4) == Self.blue)
+    }
+
     // MARK: - Helpers
+
+    private static func hereWeatherImage(sequence: Int, data: Data) -> TunerHereImage {
+        hereWeatherImage(
+            sequence: sequence, time: utcDate(year: 2026, month: 11, day: 4, hour: 23, minute: 36), data: data)
+    }
+
+    private static func hereWeatherImage(sequence: Int, time: Date, data: Data) -> TunerHereImage {
+        TunerHereImage(
+            type: .weather,
+            name: "WeatherImage_0_0_u40h.png",
+            sequence: sequence,
+            n1: 8536,
+            n2: 8536,
+            time: time,
+            boundingBox: (
+                Location(latitude: 42.38810, longitude: -88.29440),
+                Location(latitude: 41.56410, longitude: -87.47040)
+            ),
+            data: data)
+    }
+
+    private static func pixelColor(in image: CGImage, x: Int, yFromTop: Int) -> (CGFloat, CGFloat, CGFloat)? {
+        guard let context = Self.makeRGBContext(width: image.width, height: image.height) else { return nil }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        guard let base = context.data else { return nil }
+        let bytes = base.assumingMemoryBound(to: UInt8.self)
+        let offset = yFromTop * context.bytesPerRow + x * 4
+        guard offset >= 0, offset + 2 < image.width * image.height * 4 else { return nil }
+        return (CGFloat(bytes[offset]) / 255, CGFloat(bytes[offset + 1]) / 255, CGFloat(bytes[offset + 2]) / 255)
+    }
 
     private static let sampleConfig = """
         DopplerWeatherRadarProtocolVersionID="1.0"
@@ -185,4 +306,12 @@ struct WeatherMapTests {
             space: CGColorSpace(name: CGColorSpace.sRGB)!,
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
     }
+}
+
+/// Exact RGB tuple equality for test colors (all colors here are opaque and
+/// pass through the same sRGB pipeline, so exact comparison is meaningful).
+private func == (lhs: (CGFloat, CGFloat, CGFloat)?, rhs: (CGFloat, CGFloat, CGFloat)) -> Bool {
+    guard let lhs else { return false }
+    let tolerance: CGFloat = 0.02
+    return abs(lhs.0 - rhs.0) < tolerance && abs(lhs.1 - rhs.1) < tolerance && abs(lhs.2 - rhs.2) < tolerance
 }
