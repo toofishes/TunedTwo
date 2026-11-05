@@ -102,6 +102,13 @@ struct TunerStateTests {
         #expect(state.ber == 0.00123)
     }
 
+    @Test func hdcEventsUpdateBPS() async {
+        let state = TunerState()
+
+        await state.tunerSessionDidEmit(.hdc(program: 0, size: 598, flags: 0x0))
+        #expect(state.programStates[0].bitsPerSecond == 103014)
+    }
+
     @Test func stationMetadataEventsUpdateStateAndLog() async {
         let state = TunerState()
 
