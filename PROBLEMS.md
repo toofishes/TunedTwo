@@ -18,9 +18,9 @@ Using `-Wl,…` produces `error: unknown argument` from the Swift compiler.
 
 Every target that ultimately links `libnrsc5` needs its own `-L` search path and rpath flags, even if it depends on `TunedTwoCore` which already specifies them. The current `Package.swift` defines a shared `nrsc5LinkerSettings` array and applies it to `TunedTwoCore`, `TunedTwo`, `TunedTwoCLI`, and `TunedTwoTests`.
 
-## `swift build` does not build every executable product by default
+## Multiple `--product` flags are not additive
 
-`swift build -c debug` produced `TunedTwo` but not `tunedtwo-cli` until we passed `--product TunedTwo --product tunedtwo-cli`. `build.sh` now does this explicitly so both binaries are available for bundling.
+`swift build --product TunedTwo --product tunedtwo-cli` only builds the last product (`tunedtwo-cli`); SwiftPM ignores all but the final `--product` value. `build.sh` therefore runs a separate `swift build --product …` invocation for each executable product instead of passing both flags at once.
 
 ## The copied CLI binary name follows the product name, not the target name
 

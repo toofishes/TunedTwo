@@ -4,6 +4,10 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-05 — Fixed `make release` for SwiftPM 6.4
+
+`build.sh` no longer passes multiple `--product` flags to `swift build`; Swift 6.4 only honors the last one, so release builds were emitting only `tunedtwo-cli` and missing `TunedTwo`. Changed to separate `swift build --product TunedTwo` and `swift build --product tunedtwo-cli` invocations so both products are produced reliably across Swift 6.2+ and both native/swiftbuild build systems.
+
 ## 2026-11-05 — Removed source selector, sample file via env var
 
 Removed the Source dropdown from the UI. Sample-file playback is now

@@ -30,7 +30,11 @@ NRSC5_DYLIB_SRC="Vendor/nrsc5/build/src/libnrsc5.dylib"
 BUILD_NUMBER="$(date +%Y%m%d%H%M 2>/dev/null || echo 1)"
 
 echo "→ swift build -c $CONFIG"
-swift build -c "$CONFIG" --product TunedTwo --product tunedtwo-cli
+# SwiftPM only honors the last `--product` flag when multiple are passed, so
+# build each executable product individually. This is also more robust across
+# Swift 6.2 (native build system) and 6.4+ (swiftbuild default).
+swift build -c "$CONFIG" --product TunedTwo
+swift build -c "$CONFIG" --product tunedtwo-cli
 
 BIN_PATH="$(swift build -c "$CONFIG" --show-bin-path)"
 EXECUTABLE="$BIN_PATH/$APP_NAME"
