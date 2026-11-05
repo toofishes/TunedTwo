@@ -33,3 +33,18 @@ The SwiftPM target is `TunedTwoCLI`, but the produced executable is `tunedtwo-cl
 ## Resources live at the repo root, not in a SwiftPM target bundle
 
 `traffic_sample/` and `weather_sample/` remain at `Resources/` because the CLI takes filesystem paths and tests locate them relative to `#filePath`. The sample directories are test/CLI data, not runtime app resources; the app only plays a sample file when launched with `TUNEDTWO_SAMPLE_FILE`.
+
+## `make run` can launch a stale Xcode/DerivedData build
+
+Xcode and the Makefile both produce a `TunedTwo.app` with bundle ID `io.tunedtwo.TunedTwo`. Xcode registers its `DerivedData` copy with LaunchServices, so `open build/TunedTwo.app` may resolve to a stale or non-existent Xcode build instead of the freshly-built Makefile app.
+
+Quick fix:
+
+```bash
+lsregister -u /Users/dmcgee/projects/tunedtwo/DerivedData/Build/Products/Debug/TunedTwo.app
+make register
+```
+
+Longer-term options:
+- Launch the executable directly in `make run` (`"$(APP)/Contents/MacOS/$(APP_NAME)" &`) to bypass LaunchServices entirely.
+- Use a distinct bundle ID (e.g. `io.tunedtwo.TunedTwo.dev`) for Makefile dev builds.
