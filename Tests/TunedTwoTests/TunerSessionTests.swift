@@ -26,6 +26,7 @@ struct TunerSessionTests {
     func initializesAndTearsDown() async {
         let sink = MockTunerEventSink()
         let session = TunerSession(sink: sink)
+        await session.setProgram(1)
         await session.stop()
     }
 }
