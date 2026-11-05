@@ -230,6 +230,8 @@ public struct TrafficMap: Sendable {
         guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return .undecodableImage }
 
         if let currentProvider = provider, currentProvider != info.provider {
+            config = nil
+            backgroundColor = Self.defaultTTNBackgroundColor
             tiles = Array(repeating: nil, count: rowCount * columnCount)
         }
         provider = info.provider

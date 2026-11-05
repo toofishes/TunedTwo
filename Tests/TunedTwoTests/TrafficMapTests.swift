@@ -178,6 +178,27 @@ struct TrafficMapTests {
         #expect(MapTestHelpers.pixelColor(in: composite, x: 20, yFromTop: 20) == MapTestHelpers.mapBackground)
     }
 
+    @Test("reverts to default TTN background when a TTM tile replaces a HERE map")
+    func ttmTileResetsBackgroundAfterHere() throws {
+        var map = TrafficMap()
+        let hereTile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.red, width: 8, height: 8))
+        let ttmTile = try #require(MapTestHelpers.pngData(color: MapTestHelpers.blue, width: 8, height: 8))
+
+        map.processHereImageFile(hereImage: Self.hereTrafficTile(n1: 1, n2: 9, sequence: 1, data: hereTile))
+        #expect(map.provider == "HERE")
+
+        let outcome = map.processImageFile(name: "TMT_035apk_1_1_20260914_1500_0001.png", data: ttmTile)
+        #expect(outcome == .stored)
+        #expect(map.provider == "035apk")
+
+        let composite = try #require(map.composite)
+        #expect(composite.width == 24)
+        #expect(composite.height == 24)
+        // The stored tile is blue in the upper-left; the empty center cell
+        // should use the default TTN tan, not the HERE background color.
+        #expect(MapTestHelpers.pixelColor(in: composite, x: 12, yFromTop: 12) == MapTestHelpers.mapBackground)
+    }
+
     // MARK: - Config files
 
     @Test("stores a parsed config file")
