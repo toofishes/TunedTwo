@@ -44,7 +44,7 @@ enum Theme {
     // MARK: Frames
     static let metadataLabelWidth: CGFloat = 80
     static let frequencyFieldWidth: CGFloat = 120
-    static let logIconSize: CGFloat = 32
+    static let logIconSize: CGFloat = 24
     static let lotImageSize: CGFloat = 100
     static let sidePanelMinWidth: CGFloat = 240
 

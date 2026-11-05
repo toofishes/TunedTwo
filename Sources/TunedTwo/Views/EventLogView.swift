@@ -91,17 +91,27 @@ where Events: RandomAccessCollection, Events: RangeReplaceableCollection, Events
             List(events) { event in
                 LogEventRow(event: event)
                     .equatable()
-                    .alignmentGuide(.listRowSeparatorLeading) { dimensions in
-                        dimensions[.leading]
-                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: Theme.tightSpacing,
+                            leading: Theme.cardPaddingHorizontal,
+                            bottom: Theme.tightSpacing,
+                            trailing: Theme.cardPaddingHorizontal))
             }
+            .listStyle(.inset)
+            .scrollContentBackground(.hidden)
             .textSelection(.enabled)
 
-            Button("Clear Event Log") {
-                events.removeAll()
+            HStack(spacing: Theme.sectionSpacing) {
+                Button("Clear Log") {
+                    events.removeAll()
+                }
+                Text("\(events.count) logged events")
+                    .font(Theme.Fonts.bodySecondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
-
-            Text("\(events.count) events in the log")
         }
     }
 }

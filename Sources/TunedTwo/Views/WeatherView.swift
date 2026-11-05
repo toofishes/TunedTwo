@@ -159,31 +159,34 @@ struct WeatherView: View {
     @State private var visibleRect: MKMapRect = usBoundingBox
 
     var body: some View {
-        VStack(alignment: .center, spacing: Theme.itemSpacing) {
+        Group {
             if let image = map.image {
-                WeatherMapView(
-                    visibleRect: $visibleRect,
-                    image: image,
-                    // TODO: a bit hacky, but helps with the two types of radar maps we've seen
-                    opacity: map.provider == "HERE" ? 0.7 : 1.0,
-                    boundingBox: radarBoundingBox ?? Self.usBoundingBox,
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(alignment: .center, spacing: Theme.itemSpacing) {
+                    WeatherMapView(
+                        visibleRect: $visibleRect,
+                        image: image,
+                        // TODO: a bit hacky, but helps with the two types of radar maps we've seen
+                        opacity: map.provider == "HERE" ? 0.7 : 1.0,
+                        boundingBox: radarBoundingBox ?? Self.usBoundingBox
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    HStack(spacing: Theme.sectionSpacing) {
+                        Button("Reset View") {
+                            visibleRect = radarBoundingBox ?? Self.usBoundingBox
+                        }
+                        .disabled(map.image == nil)
+                        Text(updated)
+                            .font(Theme.Fonts.bodySecondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                }
             } else {
                 ContentUnavailableView(
                     "No Weather Radar",
                     systemImage: "sun.rain",
                     description: Text("Weather radar will appear here when received from the station."))
-            }
-
-            HStack(spacing: Theme.sectionSpacing) {
-                Button("Reset Radar View") {
-                    visibleRect = radarBoundingBox ?? Self.usBoundingBox
-                }
-                .disabled(map.image == nil)
-                Text(updated)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
             }
         }
         .onChange(of: map.coordinates) { _, _ in
@@ -192,8 +195,8 @@ struct WeatherView: View {
     }
 
     var updated: String {
-        guard let ts = map.timestamp else { return "No Weather Radar Data" }
+        guard let ts = map.timestamp else { return "No Radar Data" }
         let formattedTs = ts.formatted(date: .numeric, time: .shortened)
-        return "Weather Last Updated: \(formattedTs)"
+        return "Last Updated: \(formattedTs)"
     }
 }
