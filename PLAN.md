@@ -32,7 +32,6 @@ See the [`Makefile`](Makefile) for the full target list (`make help`).
 - [`Makefile`](Makefile) — front door for builds, tests, and releases.
 - [`build.sh`](build.sh) — `swift build` → `.app` bundle + codesign.
 - [`scripts/build-nrsc5.sh`](scripts/build-nrsc5.sh) — CMake build of the vendored `libnrsc5`.
-- [`scripts/prepare-sample.sh`](scripts/prepare-sample.sh) — extract the bundled sample I/Q file.
 - [`scripts/smoke-test.sh`](scripts/smoke-test.sh) — end-to-end smoke test of the app.
 
 ## Status

@@ -77,8 +77,8 @@ help:
 	@echo "  coverage-text     Run tests with coverage and print a text summary"
 	@echo ""
 	@echo "Local install:"
-	@echo "  install           Copy $(APP_NAME).app to /Applications/ and register it"
-	@echo "  uninstall         Remove /Applications/$(APP_NAME).app"
+	@echo "  install           Copy $(APP_NAME).app to ~/Applications/ and register it"
+	@echo "  uninstall         Remove ~/Applications/$(APP_NAME).app"
 	@echo "  register          Refresh LaunchServices for ./$(APP)"
 	@echo ""
 	@echo "Release pipeline (require an exact 'vX.Y.Z' git tag + signing identity):"
@@ -134,6 +134,8 @@ $(NRSC5_DYLIB): scripts/build-nrsc5.sh $(NRSC5_SOURCES)
 
 ICON_SCRIPT := scripts/make-icon.swift
 APP_ICON    := build/AppIcon.icns
+SAMPLE_XZ   := Vendor/nrsc5/support/sample.xz
+SAMPLE_BIN  := Resources/sample.bin
 
 $(APP_ICON): $(ICON_SCRIPT)
 	@mkdir -p build
@@ -141,10 +143,15 @@ $(APP_ICON): $(ICON_SCRIPT)
 	@iconutil -c icns build/AppIcon.iconset -o $(APP_ICON)
 	@echo "✓ $(APP_ICON)"
 
-build: deps $(NRSC5_DYLIB) $(APP_ICON)
+$(SAMPLE_BIN): $(SAMPLE_XZ)
+	@echo "→ Extracting $(SAMPLE_XZ) -> $(SAMPLE_BIN)..."
+	@xz -d -c $< > $@
+	@echo "✓ $(SAMPLE_BIN)"
+
+build: deps $(NRSC5_DYLIB) $(APP_ICON) $(SAMPLE_BIN)
 	SIGN_IDENTITY="$(DEV_IDENTITY)" PROVISION_PROFILE="$(PROVISION_PROFILE)" VERSION="$(VERSION)" ./build.sh $(CONFIG)
 
-release: deps $(NRSC5_DYLIB) $(APP_ICON)
+release: deps $(NRSC5_DYLIB) $(APP_ICON) $(SAMPLE_BIN)
 	SIGN_IDENTITY="$(DEV_IDENTITY)" PROVISION_PROFILE="$(PROVISION_PROFILE)" VERSION="$(VERSION)" ./build.sh release
 
 # Compile-only gate — no .app, no signing. CI / agent verification.
@@ -213,18 +220,18 @@ run: build
 
 install: build
 	@if [ ! -d "$(APP)" ]; then echo "✗ $(APP) missing — build failed?"; exit 1; fi
-	rm -rf /Applications/$(APP_NAME).app
-	cp -R "$(APP)" /Applications/
-	@echo "✓ copied to /Applications/$(APP_NAME).app"
-	$(LSREGISTER) -f /Applications/$(APP_NAME).app
-	@echo "✓ registered /Applications/$(APP_NAME).app with LaunchServices"
+	rm -rf $(HOME)/Applications/$(APP_NAME).app
+	cp -R "$(APP)" $(HOME)/Applications/
+	@echo "✓ copied to ~/Applications/$(APP_NAME).app"
+	$(LSREGISTER) -f $(HOME)/Applications/$(APP_NAME).app
+	@echo "✓ registered ~/Applications/$(APP_NAME).app with LaunchServices"
 
 uninstall:
-	@if [ -d /Applications/$(APP_NAME).app ]; then \
-	  rm -rf /Applications/$(APP_NAME).app 2>/dev/null || sudo rm -rf /Applications/$(APP_NAME).app; \
-	  echo "✓ removed /Applications/$(APP_NAME).app"; \
+	@if [ -d $(HOME)/Applications/$(APP_NAME).app ]; then \
+	  rm -rf $(HOME)/Applications/$(APP_NAME).app; \
+	  echo "✓ removed ~/Applications/$(APP_NAME).app"; \
 	else \
-	  echo "  (no /Applications/$(APP_NAME).app to remove)"; \
+	  echo "  (no ~/Applications/$(APP_NAME).app to remove)"; \
 	fi
 
 register: build
@@ -237,7 +244,8 @@ register: build
 
 clean:
 	rm -rf build .build $(DIST_DIR)
-	@echo "✓ removed build/, .build/, and $(DIST_DIR)/"
+	rm -f $(SAMPLE_BIN)
+	@echo "✓ removed build/, .build/, $(DIST_DIR)/, and $(SAMPLE_BIN)"
 
 # ---------------------------------------------------------------------------
 # Release pipeline: sign → zip-notary → notarize → staple → zip-release →

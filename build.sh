@@ -66,11 +66,6 @@ if [ ! -f "$NRSC5_DYLIB_SRC" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Prepare the sample file for bundling.
-# ---------------------------------------------------------------------------
-scripts/prepare-sample.sh
-
-# ---------------------------------------------------------------------------
 # Assemble the app bundle
 # ---------------------------------------------------------------------------
 echo "→ assembling $APP"
@@ -107,7 +102,7 @@ fi
 if [ -f "Resources/sample.bin" ]; then
 	cp "Resources/sample.bin" "$APP/Contents/Resources/sample.bin"
 else
-	echo "✗ Resources/sample.bin missing — prepare-sample.sh failed?" >&2
+	echo "✗ Resources/sample.bin missing" >&2
 	exit 1
 fi
 

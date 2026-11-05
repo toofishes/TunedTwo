@@ -63,7 +63,7 @@ MainActor TunerState / CLI sink
 
 ## Sample I/Q file
 
-`Vendor/nrsc5/support/sample.xz` is extracted by `scripts/prepare-sample.sh` into `Resources/sample.bin`. `build.sh` copies it into the app bundle so the app can play it without an RTL-SDR.
+`Vendor/nrsc5/support/sample.xz` is extracted by the Makefile into `Resources/sample.bin`. `build.sh` copies it into the app bundle so the app can play it without an RTL-SDR.
 
 ## Traffic / weather samples
 
