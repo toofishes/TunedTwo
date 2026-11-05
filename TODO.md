@@ -1,21 +1,5 @@
 # TunedTwo TODO / loose ends
 
-## Now (MVP – audio + simple UI)
-
-- [x] Vendor `nrsc5` as a Git submodule and build it as a dynamic library.
-- [x] Clean up duplicate reference checkouts.
-- [x] Create XcodeGen-based native macOS app project.
-- [x] Create SwiftUI views: frequency, program/subchannel, play/stop, status.
-- [x] Implement `TunerSession` wrapper around `libnrsc5`:
-  - [x] C callback trampoline.
-  - [x] File playback (`nrsc5_open_file`).
-  - [x] RTL-SDR playback (`nrsc5_open` + `set_frequency`).
-  - [x] Program switching (client-side filter of audio/ID3 events).
-- [x] Implement `AudioPlayer` using `AVAudioEngine` + `AVAudioPlayerNode`.
-- [x] Basic metadata model: station name, slogan, title/artist, MER/BER.
-- [x] Sample-file extraction build phase / runtime helper.
-- [x] Compile and run smoke test from sample file.
-
 ## Next (metadata & UX polish)
 
 - [ ] Display SIG service list and active data services.
@@ -27,8 +11,6 @@
 
 ## Later (advanced features from nrsc5-studio)
 
-- [x] Album art / station logo (LOT image decode).
-- [x] Traffic map / weather radar (HERE images).
 - [ ] 24-hour song log + CSV export.
 - [ ] Spectrum / waterfall visualization.
 - [ ] QPSK constellation plot.
@@ -39,9 +21,6 @@
 
 - [ ] Evaluate linking statically vs. dynamically. Currently dynamic per request; the dylib is copied into the app bundle.
 - [ ] Bundle or document runtime dependencies (`libfftw3f`, `librtlsdr`) for distribution.
-- [x] Headless unit tests: test bundle links only `TunedTwoCore` (no `TEST_HOST`), so running tests never launches the app. Core logic lives in the `TunedTwoCore` framework; nrsc5 is exposed to it via `Modules/module.modulemap` instead of a bridging header.
-- [x] `tunedtwo-cli traffic-map` smoke tool: stitches a directory of TMT tiles into a composite PNG (stdout or `--output`), reporting provider/stale/skipped counts. Shares the exact ingest path the app uses.
 - [ ] Add a headless decoder test to the test bundle (libnrsc5 loads and decodes the sample to PCM) — now possible since `TunerSession` lives in `TunedTwoCore`.
-- [x] Swap the hand-rolled CLI argument parser for swift-argument-parser if the CLI grows more subcommands.
 - [x] Swift 6 strict concurrency: `TunerSession`/`AudioPlayer` are actors, C callback events flow through an `AsyncStream`, UI state is `@MainActor` and only reached via an awaited event sink. No `@unchecked Sendable` anywhere.
 - [ ] Decide on a persistence strategy (`@AppStorage`, `UserDefaults`, or a small JSON file).
