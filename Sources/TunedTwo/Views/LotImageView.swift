@@ -70,7 +70,11 @@ struct LotImageView: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: Theme.imageCornerRadius))
             Text(lot?.lotID.formatted(.number.grouping(.never)) ?? "No ID")
+                .lineLimit(1)
+                .truncationMode(.tail)
             Text(lot?.expiry?.formatted(date: .numeric, time: .shortened) ?? "No Expiry")
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
     }
 

@@ -151,9 +151,13 @@ private struct ContentHeader: View {
             VStack(alignment: .leading) {
                 Text("TunedTwo")
                     .font(Theme.Fonts.appTitle)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                 Text("Native macOS HD Radio")
                     .font(Theme.Fonts.meta)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
             Spacer()
         }
@@ -182,6 +186,7 @@ private struct Controls: View {
                         Text(state.sampleFilePath ?? "")
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
+                            .truncationMode(.tail)
                     }
                 } else {
                     HStack {
@@ -244,11 +249,16 @@ private struct StatusBar: View {
             Text(state.status)
                 .font(Theme.Fonts.meta)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .textSelection(.enabled)
             Spacer()
             Text(String(format: "%.1f kbps", Double(programState.bitsPerSecond) / 1000.0))
                 .font(Theme.Fonts.meta)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
+                .lineLimit(1)
+                .truncationMode(.tail)
             Text(
                 String(
                     format: "MER %.1f / %.1f dB · BER %.6f",
@@ -257,6 +267,8 @@ private struct StatusBar: View {
             .font(Theme.Fonts.meta)
             .foregroundStyle(.secondary)
             .monospacedDigit()
+            .lineLimit(1)
+            .truncationMode(.tail)
             .help("\(programState.crcErrors) CRC Errors")
         }
     }

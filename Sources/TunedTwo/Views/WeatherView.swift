@@ -182,6 +182,8 @@ struct WeatherView: View {
                 }
                 .disabled(map.image == nil)
                 Text(updated)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
         }
         .onChange(of: map.coordinates) { _, _ in

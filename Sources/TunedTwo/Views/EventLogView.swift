@@ -27,16 +27,21 @@ private struct LogEventRow: View, @MainActor Equatable {
                     Text(event.title)
                         .font(Theme.Fonts.sectionTitle)
                         .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                     Spacer()
                     Text(event.timestamp, format: .dateTime.hour().minute().second())
                         .font(Theme.Fonts.meta)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
 
                 Text(event.description)
                     .font(Theme.Fonts.bodySecondary)
                     .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1...4)
+                    .truncationMode(.tail)
             }
         }
     }
@@ -55,10 +60,13 @@ private struct EventCountRow: View, @MainActor Equatable {
             Text(entry.key)
                 .font(Theme.Fonts.meta)
                 .lineLimit(1)
+                .truncationMode(.tail)
             Spacer()
             Text("\(entry.value)")
                 .font(Theme.Fonts.metaBold)
                 .monospacedDigit()
+                .lineLimit(1)
+                .truncationMode(.tail)
                 .padding(.horizontal, Theme.chipPaddingHorizontal)
                 .padding(.vertical, Theme.chipPaddingVertical)
                 .background(Color.accentColor.opacity(0.15))

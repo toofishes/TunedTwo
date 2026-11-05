@@ -81,8 +81,12 @@ private struct MetadataRow: View {
                 .font(Theme.Fonts.meta)
                 .foregroundStyle(.secondary)
                 .frame(width: Theme.metadataLabelWidth, alignment: .leading)
+                .lineLimit(1)
+                .truncationMode(.tail)
             Text(trimmedValue.isEmpty ? "—" : trimmedValue)
                 .textSelection(.enabled)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
     }
 }

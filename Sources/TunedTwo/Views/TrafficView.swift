@@ -21,6 +21,8 @@ struct TrafficView: View {
                     description: Text("Traffic maps will appear here when received from the station."))
             }
             Text(updated)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
     }
 
