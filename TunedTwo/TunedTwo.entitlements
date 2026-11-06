@@ -2,16 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!--
-	  Hardened runtime exceptions needed to load the locally-built libnrsc5
-	  dynamic library. If the app is later sandboxed, add the appropriate
-	  com.apple.security.* entitlements (e.g. device.usb for RTL-SDR).
-	-->
-	<key>com.apple.security.cs.allow-jit</key>
+	<!-- Sandbox the app. -->
+	<key>com.apple.security.app-sandbox</key>
 	<true/>
-	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
-	<true/>
-	<key>com.apple.security.cs.disable-library-validation</key>
+
+	<!-- USB access for RTL-SDR hardware. -->
+	<key>com.apple.security.device.usb</key>
 	<true/>
 </dict>
 </plist>
