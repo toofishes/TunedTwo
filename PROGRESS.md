@@ -4,6 +4,10 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-05 — Cleaned up `CNrsc5` SwiftPM wrapper
+
+Removed the `Sources/CNrsc5/shim.h` indirection and pointed `module.modulemap` directly at `Vendor/nrsc5/include/nrsc5.h`. Dropped the redundant `.linkedLibrary("nrsc5")` from `Package.swift` since the module map already carries `link "nrsc5"`. Kept `CNrsc5` as a separate `systemLibrary` target and kept the per-target `-L`/rpath `unsafeFlags`. This is the first baby step toward [`plans/nrsc5-native-build.md`](plans/nrsc5-native-build.md); a build-tool plugin was explicitly deferred.
+
 ## 2026-11-05 — Fixed `make release` for SwiftPM 6.4
 
 `build.sh` no longer passes multiple `--product` flags to `swift build`; Swift 6.4 only honors the last one, so release builds were emitting only `tunedtwo-cli` and missing `TunedTwo`. Changed to separate `swift build --product TunedTwo` and `swift build --product tunedtwo-cli` invocations so both products are produced reliably across Swift 6.2+ and both native/swiftbuild build systems.

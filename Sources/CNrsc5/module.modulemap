@@ -1,5 +1,5 @@
 module CNrsc5 [system] {
-    header "shim.h"
+    header "../../Vendor/nrsc5/include/nrsc5.h"
     link "nrsc5"
     export *
 }
