@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 NRSC5_DIR="${ROOT_DIR}/Vendor/nrsc5"
 BUILD_DIR="${NRSC5_DIR}/build"
+STATIC_DIR="${BUILD_DIR}/static"
 
 echo "[build-nrsc5] Building libnrsc5 in ${BUILD_DIR}..."
 
@@ -14,11 +15,16 @@ cd "${BUILD_DIR}"
 cmake -DUSE_SSE=ON -DUSE_NEON=ON -DUSE_SYSTEM_FFTW=OFF -DUSE_SYSTEM_RTLSDR=OFF -DUSE_SYSTEM_LIBUSB=OFF -DBUILD_CLI=OFF -DCMAKE_BUILD_TYPE=Release "${NRSC5_DIR}"
 make -j"$(sysctl -n hw.ncpu)"
 
-# Ensure the dynamic library has an @rpath-based install name so it can be
-# embedded in the app bundle without absolute paths.
-DYLIB="${BUILD_DIR}/src/libnrsc5.dylib"
-if [[ -f "${DYLIB}" ]]; then
-    install_name_tool -id "@rpath/libnrsc5.dylib" "${DYLIB}" || true
-fi
+# Build a single self-contained static archive that includes nrsc5 and all
+# of its built-in dependencies (faad2, fftw, rtlsdr, libusb). This lets the
+# Swift targets link one library and avoid dylib/rpath complexity.
+mkdir -p "${STATIC_DIR}"
+STATIC_LIB="${STATIC_DIR}/libnrsc5.a"
+libtool -static -o "${STATIC_LIB}" \
+    "${BUILD_DIR}/src/libnrsc5_static.a" \
+    "${BUILD_DIR}/faad2-prefix/lib/libfaad_hdc.a" \
+    "${BUILD_DIR}/fftw-prefix/lib/libfftw3f.a" \
+    "${BUILD_DIR}/rtlsdr-prefix/lib/librtlsdr.a" \
+    "${BUILD_DIR}/libusb-prefix/lib/libusb-1.0.a"
 
-echo "[build-nrsc5] Done. Built: ${DYLIB}"
+echo "[build-nrsc5] Done. Built: ${STATIC_LIB}"

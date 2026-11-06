@@ -1,12 +1,8 @@
 // swift-tools-version: 6.2
 import PackageDescription
 
-let nrsc5BuildTreePath = "\(Context.packageDirectory)/Vendor/nrsc5/build/src"
 let nrsc5LibrarySearchPath: [LinkerSetting] = [
-    .unsafeFlags(["-L", "Vendor/nrsc5/build/src"]),
-]
-let nrsc5BuildTreeRpath: [LinkerSetting] = [
-    .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", nrsc5BuildTreePath]),
+    .unsafeFlags(["-L", "Vendor/nrsc5/build/static"]),
 ]
 
 let package = Package(
@@ -39,9 +35,7 @@ let package = Package(
             dependencies: ["TunedTwoCore"],
             path: "Sources/TunedTwo",
             swiftSettings: [.swiftLanguageMode(.v6)],
-            linkerSettings: nrsc5LibrarySearchPath + nrsc5BuildTreeRpath + [
-                .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"]),
-            ]
+            linkerSettings: nrsc5LibrarySearchPath
         ),
 
         .executableTarget(
@@ -53,9 +47,7 @@ let package = Package(
             ],
             path: "Sources/TunedTwoCLI",
             swiftSettings: [.swiftLanguageMode(.v6)],
-            linkerSettings: nrsc5LibrarySearchPath + nrsc5BuildTreeRpath + [
-                .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path"]),
-            ]
+            linkerSettings: nrsc5LibrarySearchPath
         ),
 
         .testTarget(
@@ -63,7 +55,7 @@ let package = Package(
             dependencies: ["TunedTwoCore"],
             path: "Tests/TunedTwoTests",
             swiftSettings: [.swiftLanguageMode(.v6)],
-            linkerSettings: nrsc5LibrarySearchPath + nrsc5BuildTreeRpath
+            linkerSettings: nrsc5LibrarySearchPath
         ),
     ]
 )

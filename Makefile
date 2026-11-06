@@ -121,10 +121,10 @@ deps:
 # libnrsc5 build
 # ---------------------------------------------------------------------------
 
-NRSC5_DYLIB := Vendor/nrsc5/build/src/libnrsc5.dylib
+NRSC5_STATIC_LIB := Vendor/nrsc5/build/static/libnrsc5.a
 NRSC5_SOURCES := $(shell find Vendor/nrsc5/src -type f \( -name '*.c' -o -name '*.h' \) 2>/dev/null)
 
-$(NRSC5_DYLIB): scripts/build-nrsc5.sh $(NRSC5_SOURCES)
+$(NRSC5_STATIC_LIB): scripts/build-nrsc5.sh $(NRSC5_SOURCES)
 	@echo "→ Building libnrsc5..."
 	scripts/build-nrsc5.sh
 
@@ -148,24 +148,24 @@ $(SAMPLE_BIN): $(SAMPLE_XZ)
 	@xz -d -c $< > $@
 	@echo "✓ $(SAMPLE_BIN)"
 
-build: deps $(NRSC5_DYLIB) $(APP_ICON)
+build: deps $(NRSC5_STATIC_LIB) $(APP_ICON)
 	SIGN_IDENTITY="$(DEV_IDENTITY)" PROVISION_PROFILE="$(PROVISION_PROFILE)" VERSION="$(VERSION)" ./build.sh $(CONFIG)
 
-release: deps $(NRSC5_DYLIB) $(APP_ICON)
+release: deps $(NRSC5_STATIC_LIB) $(APP_ICON)
 	SIGN_IDENTITY="$(DEV_IDENTITY)" PROVISION_PROFILE="$(PROVISION_PROFILE)" VERSION="$(VERSION)" ./build.sh release
 
 # Compile-only gate — no .app, no signing. CI / agent verification.
-check: deps $(NRSC5_DYLIB)
+check: deps $(NRSC5_STATIC_LIB)
 	swift build -c $(CONFIG)
 	@echo "✓ compiles ($(CONFIG))"
 
 # Run the test suite.
-test: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
+test: deps $(NRSC5_STATIC_LIB) $(SAMPLE_BIN)
 	swift test
 	@echo "✓ tests pass"
 
 # Run tests with coverage and generate an HTML report under build/coverage.
-coverage: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
+coverage: deps $(NRSC5_STATIC_LIB) $(SAMPLE_BIN)
 	@rm -rf build/coverage
 	@swift test --enable-code-coverage
 	@mkdir -p build/coverage
@@ -182,7 +182,7 @@ coverage: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
 	@echo "✓ coverage report: build/coverage/index.html"
 
 # Run tests with coverage and print a text summary.
-coverage-text: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
+coverage-text: deps $(NRSC5_STATIC_LIB) $(SAMPLE_BIN)
 	@swift test --enable-code-coverage
 	@BIN=$$(find .build -name TunedTwoTests -path '*TunedTwoTests.xctest/*' | head -1); \
 	 PROF=$$(find .build -name default.profdata -path '*/codecov/*' | head -1); \
@@ -194,11 +194,10 @@ coverage-text: deps $(NRSC5_DYLIB) $(SAMPLE_BIN)
 	   -ignore-filename-regex='(\.build|Tests|Vendor)/'
 
 # Build the CLI tool without assembling the full app bundle.
-cli: deps $(NRSC5_DYLIB)
+cli: deps $(NRSC5_STATIC_LIB)
 	swift build -c $(CONFIG) --product tunedtwo-cli
 	@mkdir -p build
 	@cp "$$(swift build -c $(CONFIG) --show-bin-path)/$(CLI_NAME)" "$(CLI)"
-	@cp "$(NRSC5_DYLIB)" "build/libnrsc5.dylib"
 	@codesign --force --sign "$(DEV_IDENTITY)" "$(CLI)" 2>/dev/null || codesign --force --sign - "$(CLI)"
 	@echo "✓ built $(CLI)"
 

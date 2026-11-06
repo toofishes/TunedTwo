@@ -44,7 +44,7 @@ Build-system details live in [`plans/build-system.md`](plans/build-system.md). T
 
 - `Sources/CNrsc5/` is a SwiftPM `systemLibrary` target exposing `Vendor/nrsc5/include/nrsc5.h`.
 - Import it as `import CNrsc5` in `TunedTwoCore`.
-- See [`plans/build-system.md`](plans/build-system.md) for how `libnrsc5.dylib` is built and linked.
+- See [`plans/build-system.md`](plans/build-system.md) for how `libnrsc5.a` is built and linked.
 
 ## Git / submodules
 

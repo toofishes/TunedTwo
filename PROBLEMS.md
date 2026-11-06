@@ -16,7 +16,7 @@ Using `-Wl,…` produces `error: unknown argument` from the Swift compiler.
 
 ## `unsafeFlags` are not propagated across SwiftPM target boundaries
 
-Every target that ultimately links `libnrsc5` needs its own `-L` search path and rpath flags, even if it depends on `TunedTwoCore` which already specifies them. The current `Package.swift` defines a shared `nrsc5LinkerSettings` array and applies it to `TunedTwoCore`, `TunedTwo`, `TunedTwoCLI`, and `TunedTwoTests`.
+Every target that ultimately links `libnrsc5` needs its own `-L` search path, even if it depends on `TunedTwoCore` which already specifies it. The current `Package.swift` defines a shared `nrsc5LibrarySearchPath` array and applies it to `TunedTwoCore`, `TunedTwo`, `TunedTwoCLI`, and `TunedTwoTests`. (The old dylib-based build also needed per-target rpath flags; those are gone now that the library is statically linked.)
 
 ## Multiple `--product` flags are not additive
 
@@ -26,9 +26,9 @@ Every target that ultimately links `libnrsc5` needs its own `-L` search path and
 
 The SwiftPM target is `TunedTwoCLI`, but the produced executable is `tunedtwo-cli` (matching the product name). `build.sh` and the `Makefile` look for `tunedtwo-cli` in the build products directory, not `TunedTwoCLI`.
 
-## Hardened runtime needs library-validation exception for ad-hoc-signed dylibs
+## Hardened runtime and locally-built libraries
 
-`TunedTwo/TunedTwo.entitlements` includes `com.apple.security.cs.disable-library-validation` so the locally-built, ad-hoc-signed `libnrsc5.dylib` can be loaded. For a real Developer ID signed release, sign the dylib with the same identity and re-evaluate whether this exception is still required.
+`libnrsc5` is now statically linked, so there is no locally-built `libnrsc5.dylib` to load at runtime and no `com.apple.security.cs.disable-library-validation` exception is required for it. The remaining hardened-runtime entitlements in `TunedTwo/TunedTwo.entitlements` are for app sandboxing and USB device access.
 
 ## Resources live at the repo root, not in a SwiftPM target bundle
 

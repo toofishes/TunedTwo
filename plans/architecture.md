@@ -4,7 +4,7 @@
 
 ```
 TunedTwo (executable) ─┐
-                       ├──► TunedTwoCore (library) ──► CNrsc5 (systemLibrary) ──► libnrsc5.dylib
+                       ├──► TunedTwoCore (library) ──► CNrsc5 (systemLibrary) ──► libnrsc5.a
 TunedTwoCLI (executable) ┘                            ↑
                                                       │
                                                swift-collections

@@ -24,7 +24,7 @@ SIGN_IDENTITY="${SIGN_IDENTITY:--}"
 VERSION="${VERSION:-0.0.0}"
 ENTITLEMENTS="$APP_NAME/$APP_NAME.entitlements"
 INFO_PLIST_SRC="Resources/Info.plist"
-NRSC5_DYLIB_SRC="Vendor/nrsc5/build/src/libnrsc5.dylib"
+NRSC5_STATIC_LIB="Vendor/nrsc5/build/static/libnrsc5.a"
 
 # Build number: monotonic-ish from the date so re-signs differ. Falls back to 1.
 BUILD_NUMBER="$(date +%Y%m%d%H%M 2>/dev/null || echo 1)"
@@ -51,7 +51,7 @@ fi
 # ---------------------------------------------------------------------------
 # Ensure libnrsc5 is built and ready.
 # ---------------------------------------------------------------------------
-if [ ! -f "$NRSC5_DYLIB_SRC" ]; then
+if [ ! -f "$NRSC5_STATIC_LIB" ]; then
 	echo "→ libnrsc5 not found; building it now"
 	scripts/build-nrsc5.sh
 fi
@@ -61,7 +61,7 @@ fi
 # ---------------------------------------------------------------------------
 echo "→ assembling $APP"
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
 cp "$EXECUTABLE" "$APP/Contents/MacOS/$APP_NAME"
 
@@ -89,9 +89,6 @@ else
 	echo "  (no $BUILD_DIR/AppIcon.icns — run 'make icon'; bundling without one)"
 fi
 
-# libnrsc5 dynamic library.
-cp "$NRSC5_DYLIB_SRC" "$APP/Contents/Frameworks/libnrsc5.dylib"
-
 # ---------------------------------------------------------------------------
 # Assemble the CLI tool
 # ---------------------------------------------------------------------------
@@ -99,7 +96,6 @@ echo "→ assembling $BUILD_DIR/$CLI_NAME"
 rm -f "$BUILD_DIR/$CLI_NAME"
 mkdir -p "$BUILD_DIR"
 cp "$CLI_EXECUTABLE" "$BUILD_DIR/$CLI_NAME"
-cp "$NRSC5_DYLIB_SRC" "$BUILD_DIR/libnrsc5.dylib"
 
 # ---------------------------------------------------------------------------
 # Codesign — try the named identity, fall back to ad-hoc so `make run`
