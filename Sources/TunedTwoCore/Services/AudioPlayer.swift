@@ -45,6 +45,8 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     private struct State: Sendable {
         var currentProgram: Int = 0
         var wasPlayingBeforeSleep: Bool = false
+        var playbackGeneration: UInt64 = 0
+        var pendingBufferCount = 0
     }
 
     /// Mutable player state is kept inside the lock so the class can be
@@ -74,6 +76,8 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
 
     func start(_ program: Int) throws {
         try lock.withLock { state in
+            state.playbackGeneration &+= 1
+            state.pendingBufferCount = 0
             try engine.start()
             state.currentProgram = program
             player.play()
@@ -82,8 +86,21 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
 
     func stop() {
         lock.withLock { state in
+            state.playbackGeneration &+= 1
+            state.pendingBufferCount = 0
             player.stop()
             engine.stop()
+        }
+    }
+
+    /// Wait until all scheduled audio has actually played through the output.
+    /// Used at EOF for paced sample playback so the CLI does not exit early.
+    func waitUntilDrained() async {
+        while !Task.isCancelled {
+            if lock.withLock({ $0.pendingBufferCount == 0 }) {
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(20))
         }
     }
 
@@ -91,6 +108,8 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
         lock.withLock { state in
             let isPlaying = player.isPlaying
             if isPlaying {
+                state.playbackGeneration &+= 1
+                state.pendingBufferCount = 0
                 player.stop()
             }
             state.currentProgram = program
@@ -105,6 +124,8 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     func flush() {
         lock.withLock { state in
             guard player.isPlaying else { return }
+            state.playbackGeneration &+= 1
+            state.pendingBufferCount = 0
             player.stop()
             player.play()
         }
@@ -147,7 +168,24 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
             return
         }
 
-        player.scheduleBuffer(destBuffer)
+        guard
+            let generation = lock.withLock({ state -> UInt64? in
+                guard player.isPlaying, state.currentProgram == program else { return nil }
+                state.pendingBufferCount += 1
+                return state.playbackGeneration
+            })
+        else { return }
+
+        player.scheduleBuffer(destBuffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+            self?.didPlayBuffer(generation: generation)
+        }
+    }
+
+    private func didPlayBuffer(generation: UInt64) {
+        lock.withLock { state in
+            guard state.playbackGeneration == generation else { return }
+            state.pendingBufferCount = max(0, state.pendingBufferCount - 1)
+        }
     }
 
     enum AudioError: Error {

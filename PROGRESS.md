@@ -4,6 +4,10 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-06 — Exit CLI after paced audio drains
+
+`listen-file` now waits for AVAudioPlayerNode playback-completion callbacks after input EOF before stopping and exiting.
+
 ## 2026-11-06 — Removed the file-backed NRSC5 input path
 
 Both GUI and CLI sample playback now use the paced `nrsc5_open_pipe` path; removed the unused `.sampleFile` / `nrsc5_open_file` bridge.

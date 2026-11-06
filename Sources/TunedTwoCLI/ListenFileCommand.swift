@@ -63,12 +63,15 @@ struct ListenFileCommand: AsyncParsableCommand {
             timestamped(
                 "Playing '\(URL(fileURLWithPath: file).lastPathComponent)' (HD\(subprogram + 1)). Press Ctrl+C to stop."
             ))
-        while true {
-            try await Task.sleep(for: .milliseconds(250))
-            if let message = await sink.failureMessage() {
-                await session.stop()
-                throw RuntimeError("file playback failed: \(message)")
-            }
+        await session.waitUntilSamplePlaybackFinishes()
+        signalSource.cancel()
+
+        if let message = await sink.failureMessage() {
+            await session.stop()
+            throw RuntimeError("file playback failed: \(message)")
         }
+
+        await session.stop()
+        print(timestamped("Playback complete."))
     }
 }

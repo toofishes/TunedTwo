@@ -115,6 +115,11 @@ public actor TunerSession {
         }
     }
 
+    /// Wait until a paced sample source reaches EOF and its queued audio drains.
+    public func waitUntilSamplePlaybackFinishes() async {
+        await sampleFeederTask?.value
+    }
+
     public func stop() async {
         await cancelSampleFeeder()
         isRunning = false
@@ -154,6 +159,7 @@ public actor TunerSession {
                 if ferror(file) != 0 {
                     await sink?.tunerSessionDidEmit(.failed(message: "Error reading sample file."))
                 }
+                await audioPlayer.waitUntilDrained()
                 return
             }
 
