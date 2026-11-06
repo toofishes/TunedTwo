@@ -8,6 +8,10 @@ Running log of meaningful changes. Newest first.
 
 `scripts/build-nrsc5.sh` now merges `libnrsc5_static.a` with the static archives for `faad2`, `fftw`, `rtlsdr`, and `libusb` into `Vendor/nrsc5/build/static/libnrsc5.a`. `Package.swift` links the static archive via `-L Vendor/nrsc5/build/static` and the build-tree rpath was removed. `build.sh` and the `Makefile` no longer copy `libnrsc5.dylib` into the app bundle or CLI output. CMake/Homebrew tools are still required at build time, but the dylib/rpath complexity is gone.
 
+## 2026-11-05 — Fixed static-link runtime crash in libusb
+
+`scripts/build-nrsc5.sh` now exports `MACOSX_DEPLOYMENT_TARGET=26.0` and `ac_cv_func_pipe2=no`. The latter prevents libusb's `configure` from detecting the macOS SDK's weak `pipe2` stub, which resolves to `NULL` at runtime on macOS 26 and caused `tunedtwo-cli listen` / GUI Play to segfault. With `pipe2` disabled, libusb falls back to `pipe()` + `fcntl(FD_CLOEXEC)`. Verified that `tunedtwo-cli listen` now initializes the RTL-SDR tuner without crashing.
+
 ## 2026-11-05 — Cleaned up `CNrsc5` SwiftPM wrapper
 
 Removed the `Sources/CNrsc5/shim.h` indirection and pointed `module.modulemap` directly at `Vendor/nrsc5/include/nrsc5.h`. Dropped the redundant `.linkedLibrary("nrsc5")` from `Package.swift` since the module map already carries `link "nrsc5"`. Kept `CNrsc5` as a separate `systemLibrary` target and kept the per-target `-L` `unsafeFlags` (the rpath flags were removed shortly after when the build switched to a static library). This is the first baby step toward [`plans/nrsc5-native-build.md`](plans/nrsc5-native-build.md); a build-tool plugin was explicitly deferred.

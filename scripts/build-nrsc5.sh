@@ -12,6 +12,16 @@ echo "[build-nrsc5] Building libnrsc5 in ${BUILD_DIR}..."
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
+# Match the Swift package's macOS deployment target so the C libraries don't
+# pick up symbols (like pipe2) that are declared in the SDK but only weakly
+# available (i.e. resolve to NULL at runtime) on the OS versions we target.
+export MACOSX_DEPLOYMENT_TARGET=26.0
+
+# libusb's configure detects pipe2 via AC_CHECK_FUNCS, but on macOS < 27 the
+# symbol is a weak stub that segfaults when called. Force the cache variable
+# off so libusb falls back to pipe() + fcntl(FD_CLOEXEC).
+export ac_cv_func_pipe2=no
+
 cmake -DUSE_SSE=ON -DUSE_NEON=ON -DUSE_SYSTEM_FFTW=OFF -DUSE_SYSTEM_RTLSDR=OFF -DUSE_SYSTEM_LIBUSB=OFF -DBUILD_CLI=OFF -DCMAKE_BUILD_TYPE=Release "${NRSC5_DIR}"
 make -j"$(sysctl -n hw.ncpu)"
 

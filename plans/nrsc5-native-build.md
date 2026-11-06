@@ -67,6 +67,17 @@ After prototyping, we moved the build from a dynamic `libnrsc5.dylib` to a merge
 
 This does not yet make `swift build` self-contained — CMake and the Homebrew tools are still required — but it removes the dylib/rpath complexity and creates a single artifact that is much easier to check in or ship as a binary target later.
 
+### 2026-11-05 — Fixed runtime crash by pinning the C-library deployment target and disabling `pipe2`
+
+After switching to the static archive, `tunedtwo-cli listen` and the GUI "Play" button crashed with `EXC_BAD_ACCESS` at address `0x0` inside `libusb_init_context` → `usbi_io_init` → `usbi_create_event`. The backtrace showed a NULL function pointer call.
+
+Root cause: libusb's `configure` detected `pipe2` as available because the macOS 27 SDK declares it in `<unistd.h>`, but on macOS 26 (our deployment target) `pipe2` is only a weak stub that resolves to `NULL` at runtime. When statically linked, the stub is called directly and segfaults. With the dynamic library, the same weak stub would also be `NULL`, but in practice the previous dylib build either used a different SDK/deployment target or the failure mode was masked.
+
+Fix in `scripts/build-nrsc5.sh`:
+
+- Export `MACOSX_DEPLOYMENT_TARGET=26.0` so the C libraries target the same OS version as the Swift package.
+- Export `ac_cv_func_pipe2=no` so libusb's `configure` does not detect the weak `pipe2` stub and falls back to `pipe()` + `fcntl(FD_CLOEXEC)`.
+
 ### Future options
 
 1. **Prebuilt binary target** — build `libnrsc5.a` in CI (or manually), check it into the repo or host it, and consume it via `.binaryTarget` or the existing `CNrsc5` wrapper. This is the most likely next step if we want `swift build` to work without CMake.
