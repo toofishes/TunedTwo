@@ -4,6 +4,10 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-06 — Added CLI playback for NRSC5 sample files
+
+Added `tunedtwo-cli listen-file <file>`, using the same `TunerSession`/`nrsc5_open_file` path as GUI sample playback. Live and file listening share metadata/failure handling and accept an optional zero-indexed `--subprogram` (default 0).
+
 ## 2026-11-05 — Switched `libnrsc5` from dylib to static `libnrsc5.a`
 
 `scripts/build-nrsc5.sh` now merges `libnrsc5_static.a` with the static archives for `faad2`, `fftw`, `rtlsdr`, and `libusb` into `Vendor/nrsc5/build/static/libnrsc5.a`. `Package.swift` links the static archive via `-L Vendor/nrsc5/build/static` and the build-tree rpath was removed. `build.sh` and the `Makefile` no longer copy `libnrsc5.dylib` into the app bundle or CLI output. CMake/Homebrew tools are still required at build time, but the dylib/rpath complexity is gone.

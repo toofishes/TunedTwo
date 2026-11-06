@@ -72,9 +72,19 @@ The `tunedtwo-cli` command-line tool exercises the same `TunedTwoCore` code path
 make cli
 ```
 
-Example subcommand:
+Examples:
 
 ```sh
+# Extract the bundled sample and listen to it (HD1 by default):
+make Resources/sample.bin
+build/tunedtwo-cli listen-file Resources/sample.bin
+
+# Or select another zero-indexed subprogram:
+build/tunedtwo-cli listen-file /path/to/capture.cu8 --subprogram 1
+
+# For a live RTL-SDR station (HD1 by default; --subprogram is optional):
+build/tunedtwo-cli listen 93.1 --subprogram 1
+
 # Stitch the sample TTM traffic tiles to stdout (pipe it somewhere):
 build/tunedtwo-cli traffic-map Resources/ttm_traffic | open -f -a Preview
 

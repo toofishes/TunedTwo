@@ -7,33 +7,23 @@ import ArgumentParser
 import Foundation
 import TunedTwoCore
 
-private actor ListenSink: TunerEventSink {
-    private var failed = false
-    private var eventCount: Int = 0
-
-    func tunerSessionDidEmit(_ event: TunerEvent) async {
-        if case .failed = event {
-            failed = true
-        }
-        eventCount += 1
-    }
-
-    func totalEventCount() -> Int {
-        return eventCount
-    }
-}
-
 struct ListenCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "listen",
-        abstract: "Listen to a given frequency and program"
+        abstract: "Listen to a live FM frequency using an RTL-SDR"
     )
 
-    @Argument(help: "The frequency to listen on.")
+    @Argument(help: "The FM frequency to listen on, in MHz.")
     var frequency: Double
 
-    @Argument(help: "The subprogram to listen to (zero-indexed).")
-    var program: Int
+    @Option(help: "Zero-indexed subprogram to listen to.")
+    var subprogram = 0
+
+    func validate() throws {
+        guard (0..<8).contains(subprogram) else {
+            throw ValidationError("subprogram must be between 0 and 7")
+        }
+    }
 
     mutating func run() async throws {
         let sink = ListenSink()
@@ -43,8 +33,13 @@ struct ListenCommand: AsyncParsableCommand {
             TunerConfiguration(
                 source: .rtlSDR(deviceIndex: 0),
                 frequencyHz: Float(frequency) * 1_000_000,
-                program: program,
+                program: subprogram,
             ))
+
+        if let message = await sink.failureMessage() {
+            await session.stop()
+            throw RuntimeError("could not start live listening: \(message)")
+        }
 
         signal(SIGINT, SIG_IGN)
         let signalSource = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
@@ -57,7 +52,7 @@ struct ListenCommand: AsyncParsableCommand {
         }
         signalSource.resume()
 
-        print("Running... Press Ctrl+C to interrupt.")
+        print("Listening on \(frequency) MHz (HD\(subprogram + 1)). Press Ctrl+C to stop.")
         while true {
             try await Task.sleep(for: .seconds(10))
         }

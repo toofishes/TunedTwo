@@ -16,13 +16,15 @@ struct TunedTwoCLI: AsyncParsableCommand {
         subcommands: [
             DBTestCommand.self,
             ListenCommand.self,
+            ListenFileCommand.self,
             ScanCommand.self,
             TrafficMapCommand.self,
         ]
     )
+
 }
 
-/// A processing failure that is not the user's fault; exits with code 2.
+/// A processing failure that is not the user's fault.
 struct RuntimeError: Error, CustomStringConvertible {
     let description: String
 

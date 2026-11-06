@@ -36,7 +36,6 @@ Build-system details live in [`plans/build-system.md`](plans/build-system.md). T
 ## CLI (`Sources/TunedTwoCLI`)
 
 - The CLI uses Apple's `swift-argument-parser`.
-- A small custom `@main` entry point is kept so runtime failures exit with code `2`, while argument-parser usage errors exit with the standard `64` (`EX_USAGE`).
 - The command struct is named `TrafficMapCommand`, not `TrafficMap`, to avoid shadowing the `TrafficMap` model type from `TunedTwoCore`.
 - `ParsableCommand` conformers must use `static let configuration` under Swift 6 strict concurrency; `static var` produces a concurrency-safety error.
 
