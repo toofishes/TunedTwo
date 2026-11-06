@@ -20,7 +20,7 @@ make -j"$(sysctl -n hw.ncpu)"
 # Swift targets link one library and avoid dylib/rpath complexity.
 mkdir -p "${STATIC_DIR}"
 STATIC_LIB="${STATIC_DIR}/libnrsc5.a"
-libtool -static -o "${STATIC_LIB}" \
+libtool -static -no_warning_for_no_symbols -o "${STATIC_LIB}" \
     "${BUILD_DIR}/src/libnrsc5_static.a" \
     "${BUILD_DIR}/faad2-prefix/lib/libfaad_hdc.a" \
     "${BUILD_DIR}/fftw-prefix/lib/libfftw3f.a" \
