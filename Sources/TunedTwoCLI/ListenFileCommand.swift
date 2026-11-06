@@ -33,12 +33,12 @@ struct ListenFileCommand: AsyncParsableCommand {
     }
 
     mutating func run() async throws {
-        let sink = ListenSink()
+        let sink = ListenSink(subprogram: subprogram)
         let session = TunerSession(sink: sink)
 
         await session.start(
             TunerConfiguration(
-                source: .sampleFile(path: file),
+                source: .samplePipe(path: file),
                 frequencyHz: nil,
                 program: subprogram,
             ))
@@ -52,16 +52,23 @@ struct ListenFileCommand: AsyncParsableCommand {
         let signalSource = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
         signalSource.setEventHandler {
             Task {
-                print("\nInterrupt signal (SIGINT) received. Shutting down...")
+                print(timestamped("Interrupt signal (SIGINT) received. Shutting down..."))
                 await session.stop()
                 Self.exit()
             }
         }
         signalSource.resume()
 
-        print("Playing '\(URL(fileURLWithPath: file).lastPathComponent)' (HD\(subprogram + 1)). Press Ctrl+C to stop.")
+        print(
+            timestamped(
+                "Playing '\(URL(fileURLWithPath: file).lastPathComponent)' (HD\(subprogram + 1)). Press Ctrl+C to stop."
+            ))
         while true {
-            try await Task.sleep(for: .seconds(10))
+            try await Task.sleep(for: .milliseconds(250))
+            if let message = await sink.failureMessage() {
+                await session.stop()
+                throw RuntimeError("file playback failed: \(message)")
+            }
         }
     }
 }

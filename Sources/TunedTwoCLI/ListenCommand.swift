@@ -26,7 +26,7 @@ struct ListenCommand: AsyncParsableCommand {
     }
 
     mutating func run() async throws {
-        let sink = ListenSink()
+        let sink = ListenSink(subprogram: subprogram)
         let session = TunerSession(sink: sink)
 
         await session.start(
@@ -45,14 +45,14 @@ struct ListenCommand: AsyncParsableCommand {
         let signalSource = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
         signalSource.setEventHandler {
             Task {
-                print("\nInterrupt signal (SIGINT) received. Shutting down...")
+                print(timestamped("Interrupt signal (SIGINT) received. Shutting down..."))
                 await session.stop()
                 Self.exit()
             }
         }
         signalSource.resume()
 
-        print("Listening on \(frequency) MHz (HD\(subprogram + 1)). Press Ctrl+C to stop.")
+        print(timestamped("Listening on \(frequency) MHz (HD\(subprogram + 1)). Press Ctrl+C to stop."))
         while true {
             try await Task.sleep(for: .seconds(10))
         }

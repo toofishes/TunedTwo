@@ -84,7 +84,11 @@ build/tunedtwo-cli listen-file /path/to/capture.cu8 --subprogram 1
 
 # For a live RTL-SDR station (HD1 by default; --subprogram is optional):
 build/tunedtwo-cli listen 93.1 --subprogram 1
+```
 
+`listen-file` feeds uncompressed CU8 samples through `nrsc5_open_pipe` at the capture's sample rate, keeping metadata aligned with playback. Station and track messages include ISO-8601 timestamps.
+
+```sh
 # Stitch the sample TTM traffic tiles to stdout (pipe it somewhere):
 build/tunedtwo-cli traffic-map Resources/ttm_traffic | open -f -a Preview
 

@@ -42,6 +42,10 @@ private actor Nrsc5ContextHolder {
         try context?.activate(configuration)
     }
 
+    func pushPipeSamples(_ samples: Data) -> Bool {
+        context?.pushPipeSamples(samples) ?? false
+    }
+
     func release() {
         context = nil
     }
@@ -51,7 +55,7 @@ private actor Nrsc5ContextHolder {
     }
 }
 
-@Suite("Nrsc5Context sample-file decoding")
+@Suite("Nrsc5Context sample decoding")
 struct Nrsc5ContextTests {
     /// Runs the bundled `sample.bin` through a real libnrsc5 session and
     /// verifies that the bridge converts C callbacks into `TunerEvent`
@@ -112,5 +116,40 @@ struct Nrsc5ContextTests {
 
         #expect(foundSync, "Expected the sample file to achieve sync within the deadline")
         #expect(sink.feedCount > 0, "Expected audio samples to be routed to the sink")
+    }
+
+    @Test("decodes events and audio through an nrsc5 pipe")
+    func decodesPipeSampleFileEvents() async throws {
+        let sink = CountingAudioSink()
+        let holder = Nrsc5ContextHolder(Nrsc5Context(audioEventSink: sink))
+        let samplePath = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Resources/sample.bin")
+            .path
+
+        try await holder.activate(
+            TunerConfiguration(
+                source: .samplePipe(path: samplePath), frequencyHz: nil, program: 0))
+
+        guard let events = await holder.events else {
+            Issue.record("Context was released before events could be read")
+            return
+        }
+
+        let samples = try Data(contentsOf: URL(fileURLWithPath: samplePath))
+        #expect(await holder.pushPipeSamples(samples), "Expected nrsc5 to accept pipe samples")
+        await holder.release()
+
+        var foundSync = false
+        for await event in events {
+            if case .syncAchieved = event {
+                foundSync = true
+            }
+        }
+
+        #expect(foundSync, "Expected the pipe input to achieve sync")
+        #expect(sink.feedCount > 0, "Expected pipe audio to be routed to the sink")
     }
 }

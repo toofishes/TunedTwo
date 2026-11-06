@@ -87,7 +87,7 @@ struct ContentView: View {
         let configuration: TunerConfiguration
         if let samplePath = ProcessInfo.processInfo.environment["TUNEDTWO_SAMPLE_FILE"] {
             configuration = TunerConfiguration(
-                source: .sampleFile(path: samplePath),
+                source: .samplePipe(path: samplePath),
                 frequencyHz: nil,
                 program: state.currentProgram)
             state.isSampleFile = true
@@ -134,7 +134,10 @@ struct ContentView: View {
         if !state.stationName.isEmpty || !ps.title.isEmpty {
             fputs("SMOKE_OK: station='\(state.stationName)' title='\(ps.title)'\n", stderr)
         } else {
-            fputs("SMOKE_FAIL: no metadata received\n", stderr)
+            fputs(
+                "SMOKE_FAIL: no metadata received (status='\(state.status)', events=\(state.eventCounts))\n",
+                stderr
+            )
         }
         NSApp.terminate(nil)
     }

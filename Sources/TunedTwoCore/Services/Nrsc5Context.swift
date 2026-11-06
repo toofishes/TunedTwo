@@ -249,8 +249,18 @@ final class Nrsc5Context {
         return tuned
     }
 
+    /// Pushes one chunk into a session opened with `nrsc5_open_pipe`.
+    /// libnrsc5 consumes the supplied bytes synchronously.
+    func pushPipeSamples(_ samples: Data) -> Bool {
+        guard let st else { return false }
+        return samples.withUnsafeBytes { bytes in
+            guard let baseAddress = bytes.bindMemory(to: UInt8.self).baseAddress else { return true }
+            return nrsc5_pipe_samples_cu8(st, baseAddress, UInt32(bytes.count)) == 0
+        }
+    }
+
     /// Idempotent C teardown: unregisters the callback, joins the worker
-    /// thread, and releases the C session (nrsc5_close fcloses the IQ file).
+    /// thread, and releases the C session (nrsc5_close fcloses an open IQ file).
     /// Does *not* finish the event stream — that happens once, in `deinit`,
     /// so a session may stop and start again on the same stream.
     func close() {
@@ -273,6 +283,11 @@ final class Nrsc5Context {
             // On success the file is owned by libnrsc5 (nrsc5_close fcloses it).
             guard nrsc5_open_file(&st, fp) == 0 else {
                 fclose(fp)
+                throw TunerError.nrsc5OpenFailed
+            }
+
+        case .samplePipe:
+            guard nrsc5_open_pipe(&st) == 0 else {
                 throw TunerError.nrsc5OpenFailed
             }
 

@@ -9,5 +9,12 @@
 	<!-- USB access for RTL-SDR hardware. -->
 	<key>com.apple.security.device.usb</key>
 	<true/>
+
+	<!-- Temporary development access to the project sample and test captures. -->
+	<key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
+	<array>
+		<string>/projects/tunedtwo/Resources/</string>
+		<string>/projects/nrsc5/</string>
+	</array>
 </dict>
 </plist>

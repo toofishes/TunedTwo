@@ -34,6 +34,7 @@ public struct TunerConfiguration: Sendable {
     public enum Source: Sendable {
         case rtlSDR(deviceIndex: Int)
         case sampleFile(path: String)
+        case samplePipe(path: String)
     }
 
     public let source: Source
@@ -55,6 +56,7 @@ public actor TunerSession {
     private let context: Nrsc5Context
 
     private var isRunning = false
+    private var sampleFeederTask: Task<Void, Never>?
 
     public init(sink: TunerEventSink) {
         self.sink = sink
@@ -93,6 +95,7 @@ public actor TunerSession {
     // MARK: - Public control
 
     public func start(_ configuration: TunerConfiguration) async {
+        await cancelSampleFeeder()
         context.close()  // idempotent; every start gets a fresh C session
 
         do {
@@ -100,6 +103,12 @@ public actor TunerSession {
             try audioPlayer.start(configuration.program)
             isRunning = true
             await sink?.tunerSessionDidEmit(.started)
+
+            if case .samplePipe(let path) = configuration.source {
+                sampleFeederTask = Task { [weak self] in
+                    await self?.feedSampleFile(path: path)
+                }
+            }
         } catch {
             context.close()
             audioPlayer.stop()
@@ -108,10 +117,65 @@ public actor TunerSession {
     }
 
     public func stop() async {
+        await cancelSampleFeeder()
         isRunning = false
         context.close()
         audioPlayer.stop()
         await sink?.tunerSessionDidEmit(.stopped)
+    }
+
+    private func cancelSampleFeeder() async {
+        guard let sampleFeederTask else { return }
+        sampleFeederTask.cancel()
+        await sampleFeederTask.value
+        self.sampleFeederTask = nil
+    }
+
+    /// Feed uncompressed CU8 I/Q into libnrsc5 at the capture's sample rate.
+    /// Pacing this stream keeps ID3 and other metadata aligned with playback.
+    private func feedSampleFile(path: String) async {
+        guard let file = fopen(path, "rb") else {
+            let message = String(cString: strerror(errno))
+            await sink?.tunerSessionDidEmit(.failed(message: "Could not open sample file: \(message)"))
+            return
+        }
+        defer { fclose(file) }
+
+        let chunkSize = 64 * 1024
+        var buffer = [UInt8](repeating: 0, count: chunkSize)
+        let clock = ContinuousClock()
+        var nextDeadline = clock.now
+        let byteRate = Double(NRSC5_SAMPLE_RATE_CU8) * 2
+
+        while !Task.isCancelled {
+            let bytesRead = buffer.withUnsafeMutableBytes { bytes in
+                fread(bytes.baseAddress, 1, bytes.count, file)
+            }
+            if bytesRead == 0 {
+                if ferror(file) != 0 {
+                    await sink?.tunerSessionDidEmit(.failed(message: "Error reading sample file."))
+                }
+                return
+            }
+
+            let data = Data(buffer.prefix(bytesRead))
+            guard context.pushPipeSamples(data) else {
+                await sink?.tunerSessionDidEmit(.failed(message: "nrsc5 rejected sample input."))
+                return
+            }
+
+            let chunkDuration = Duration.seconds(Double(bytesRead) / byteRate)
+            nextDeadline = nextDeadline.advanced(by: chunkDuration)
+            do {
+                try await clock.sleep(until: nextDeadline, tolerance: .milliseconds(2))
+            } catch is CancellationError {
+                return
+            } catch {
+                await sink?.tunerSessionDidEmit(
+                    .failed(message: "Could not pace sample input: \(error.localizedDescription)"))
+                return
+            }
+        }
     }
 
     /// Switches the decoded program (HD1–HD8) and flushes queued audio so the

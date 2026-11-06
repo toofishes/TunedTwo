@@ -6,10 +6,8 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 APP="${ROOT_DIR}/build/TunedTwo.app"
 BINARY="${APP}/Contents/MacOS/TunedTwo"
 
-if [[ ! -d "${APP}" ]]; then
-    echo "[smoke-test] App not built. Building now..."
-    make -C "${ROOT_DIR}" build
-fi
+echo "[smoke-test] Building TunedTwo..."
+make -C "${ROOT_DIR}" build
 
 SAMPLE_FILE="${ROOT_DIR}/Resources/sample.bin"
 make -C "${ROOT_DIR}" Resources/sample.bin
