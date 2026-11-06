@@ -282,7 +282,7 @@ final class Nrsc5Context {
 
         case .rtlSDR(let deviceIndex):
             guard nrsc5_open(&st, Int32(deviceIndex)) == 0 else {
-                throw TunerError.noSDR
+                throw TunerError.noSDR(deviceIndex)
             }
             guard nrsc5_set_mode(st, Int32(NRSC5_MODE_FM)) == 0 else {
                 nrsc5_close(st)
@@ -305,7 +305,7 @@ final class Nrsc5Context {
 
     public enum TunerError: LocalizedError {
         case nrsc5OpenFailed
-        case noSDR
+        case noSDR(_ index: Int)
         case modeSetFailed
         case invalidFrequency
         case tuneFailed
@@ -313,7 +313,7 @@ final class Nrsc5Context {
         public var errorDescription: String? {
             switch self {
             case .nrsc5OpenFailed: return "nrsc5 could not initialize the input."
-            case .noSDR: return "No RTL-SDR found at index 0."
+            case .noSDR(let index): return "No RTL-SDR found at index \(index)."
             case .modeSetFailed: return "Could not set FM/AM mode."
             case .invalidFrequency: return "The frequency is invalid."
             case .tuneFailed: return "Could not tune the SDR."
