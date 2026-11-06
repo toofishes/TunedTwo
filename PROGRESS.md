@@ -4,6 +4,10 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-06 — Removed the file-backed NRSC5 input path
+
+Both GUI and CLI sample playback now use the paced `nrsc5_open_pipe` path; removed the unused `.sampleFile` / `nrsc5_open_file` bridge.
+
 ## 2026-11-06 — Added CLI playback for NRSC5 sample files
 
 Added `tunedtwo-cli listen-file <file>` with `nrsc5_open_pipe`, feeding uncompressed CU8 samples at the capture rate so metadata tracks playback. Both listen commands share metadata/failure handling and accept optional `--subprogram` (default 0); metadata output is ISO-8601 timestamped.

@@ -33,7 +33,6 @@ import os
 public struct TunerConfiguration: Sendable {
     public enum Source: Sendable {
         case rtlSDR(deviceIndex: Int)
-        case sampleFile(path: String)
         case samplePipe(path: String)
     }
 

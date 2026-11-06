@@ -21,8 +21,7 @@ public protocol AudioSampleSink: AnyObject, Sendable {
 /// thread only calls `emit`, which reads the immutable stream continuation.
 /// This removes the need for locks or `@unchecked Sendable` entirely.
 final class Nrsc5Context {
-    /// The raw C session. The IQ file (if any) is owned by libnrsc5 once
-    /// passed to `nrsc5_open_file` — `nrsc5_close` fcloses it.
+    /// The raw C session owned by this context.
     private var st: OpaquePointer?
 
     private let continuation: AsyncStream<TunerEvent>.Continuation
@@ -260,7 +259,7 @@ final class Nrsc5Context {
     }
 
     /// Idempotent C teardown: unregisters the callback, joins the worker
-    /// thread, and releases the C session (nrsc5_close fcloses an open IQ file).
+    /// thread if present, and releases the C session.
     /// Does *not* finish the event stream — that happens once, in `deinit`,
     /// so a session may stop and start again on the same stream.
     func close() {
@@ -276,16 +275,6 @@ final class Nrsc5Context {
     /// starts demodulation. Context can outlive the C session.
     func activate(_ configuration: TunerConfiguration) throws {
         switch configuration.source {
-        case .sampleFile(let path):
-            guard let fp = fopen(path, "rb") else {
-                throw TunerError.cannotOpenSample
-            }
-            // On success the file is owned by libnrsc5 (nrsc5_close fcloses it).
-            guard nrsc5_open_file(&st, fp) == 0 else {
-                fclose(fp)
-                throw TunerError.nrsc5OpenFailed
-            }
-
         case .samplePipe:
             guard nrsc5_open_pipe(&st) == 0 else {
                 throw TunerError.nrsc5OpenFailed
@@ -315,7 +304,6 @@ final class Nrsc5Context {
     }
 
     public enum TunerError: LocalizedError {
-        case cannotOpenSample
         case nrsc5OpenFailed
         case noSDR
         case modeSetFailed
@@ -324,7 +312,6 @@ final class Nrsc5Context {
 
         public var errorDescription: String? {
             switch self {
-            case .cannotOpenSample: return "Could not open the sample file."
             case .nrsc5OpenFailed: return "nrsc5 could not initialize the input."
             case .noSDR: return "No RTL-SDR found at index 0."
             case .modeSetFailed: return "Could not set FM/AM mode."
