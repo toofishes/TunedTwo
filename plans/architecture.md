@@ -67,7 +67,7 @@ MainActor TunerState / CLI sink
 
 ## Traffic / weather samples
 
-`Resources/traffic_sample/` and `Resources/weather_sample/` are test/CLI data. The CLI takes a directory path and stitches traffic-map tiles; tests parse the sample config files. They are intentionally **not** bundled into the app.
+`Resources/ttm_traffic/` and `Resources/ttm_weather/` (TTM) and `Resources/here_traffic/` and `Resources/here_weather/` (HERE) are test/CLI data. The CLI takes a directory path and stitches traffic-map tiles; tests parse the sample config files. They are intentionally **not** bundled into the app.
 
 ## Known limitations / next steps
 

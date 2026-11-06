@@ -260,18 +260,18 @@ struct TTNSTMTrafficConfigParserTests {
 @Suite("TTN/STM sample files")
 struct TTNSTMSampleFileTests {
 
-    @Test("loads and parses the bundled weather sample")
+    @Test("loads and parses the bundled TTM weather sample")
     func parseBundledWeatherSample() throws {
-        let url = try sampleURL(named: "1635_DWRI_035apk_rev02_0663", directory: "weather_sample")
+        let url = try sampleURL(named: "1635_DWRI_035apk_rev02_0663", directory: "ttm_weather")
         let text = try String(contentsOf: url, encoding: .utf8)
         let config = try TTNSTMWeatherConfigParser.parse(text)
         #expect(config.areaID == "035apk")
         #expect(config.protocolVersionID == "1.0")
     }
 
-    @Test("loads and parses the bundled traffic sample")
+    @Test("loads and parses the bundled TTM traffic sample")
     func parseBundledTrafficSample() throws {
-        let url = try sampleURL(named: "330_TMI_035apk_rev5_014a", directory: "traffic_sample")
+        let url = try sampleURL(named: "330_TMI_035apk_rev5_014a", directory: "ttm_traffic")
         let text = try String(contentsOf: url, encoding: .utf8)
         let config = try TTNSTMTrafficConfigParser.parse(text)
         #expect(config.trafficMapID == "035apk")

@@ -75,11 +75,11 @@ make cli
 Example subcommand:
 
 ```sh
-# Stitch the sample traffic tiles to stdout (pipe it somewhere):
-build/tunedtwo-cli traffic-map Resources/traffic_sample | open -f -a Preview
+# Stitch the sample TTM traffic tiles to stdout (pipe it somewhere):
+build/tunedtwo-cli traffic-map Resources/ttm_traffic | open -f -a Preview
 
 # Or write a file, with per-tile reporting:
-build/tunedtwo-cli traffic-map Resources/traffic_sample -o out.png -v
+build/tunedtwo-cli traffic-map Resources/ttm_traffic -o out.png -v
 ```
 
 Run `build/tunedtwo-cli --help` or `build/tunedtwo-cli traffic-map --help` for details.
@@ -95,7 +95,7 @@ Run `build/tunedtwo-cli --help` or `build/tunedtwo-cli traffic-map --help` for d
 - `Sources/TunedTwoCLI/` — `tunedtwo-cli` command-line tool.
 - `Sources/CNrsc5/` — SwiftPM system-library wrapper bridging the vendored C API.
 - `Tests/TunedTwoTests/` — headless unit tests.
-- `Resources/` — `Info.plist`, bundled sample I/Q file, and sample traffic/weather data.
+- `Resources/` — `Info.plist`, bundled sample I/Q file, and sample traffic/weather data (`ttm_traffic/`, `ttm_weather/`, `here_traffic/`, `here_weather/`).
 - `scripts/` — helper build/test scripts.
 - `Vendor/nrsc5/` — Git submodule of the decoder.
 - `plans/` — architecture, build-system, and migration notes.
