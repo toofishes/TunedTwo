@@ -4,6 +4,10 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-07 — Stream sample files with FileHandle
+
+Replaced the leftover `fopen`/`fread`/`fclose` feeder in `TunerSession` with a lazy `FileHandle.read(upToCount:)` chunk stream; pacing at the CU8 byte rate is unchanged. Tests now stream the bundled sample instead of loading it whole.
+
 ## 2026-11-06 — Exit CLI after paced audio drains
 
 `listen-file` now waits for AVAudioPlayerNode playback-completion callbacks after input EOF before stopping and exiting.

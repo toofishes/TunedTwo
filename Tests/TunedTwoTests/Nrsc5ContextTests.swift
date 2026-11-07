@@ -60,24 +60,32 @@ struct Nrsc5ContextTests {
     func decodesSamplePipeEvents() async throws {
         let sink = CountingAudioSink()
         let holder = Nrsc5ContextHolder(Nrsc5Context(audioEventSink: sink))
-        let samplePath = URL(fileURLWithPath: #filePath)
+        let sampleURL = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .appendingPathComponent("Resources/sample.bin")
-            .path
 
         try await holder.activate(
             TunerConfiguration(
-                source: .samplePipe(path: samplePath), frequencyHz: nil, program: 0))
+                source: .samplePipe(path: sampleURL.path), frequencyHz: nil, program: 0))
 
         guard let events = await holder.events else {
             Issue.record("Context was released before events could be read")
             return
         }
 
-        let samples = try Data(contentsOf: URL(fileURLWithPath: samplePath))
-        #expect(await holder.pushPipeSamples(samples), "Expected nrsc5 to accept pipe samples")
+        // Stream the capture in chunks instead of loading all 48 MB at once.
+        let handle = try FileHandle(forReadingFrom: sampleURL)
+        defer { try? handle.close() }
+        var pushSucceeded = true
+        for try await chunk in handle.dataChunks(ofSize: 64 * 1024) {
+            guard await holder.pushPipeSamples(chunk) else {
+                pushSucceeded = false
+                break
+            }
+        }
+        #expect(pushSucceeded, "Expected nrsc5 to accept pipe samples")
         await holder.release()
 
         var foundSync = false
