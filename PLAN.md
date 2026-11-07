@@ -16,7 +16,6 @@ See the [`Makefile`](Makefile) for the full target list (`make help`).
 
 ## Documentation
 
-- [`plans/swiftpm-migration-plan.md`](plans/swiftpm-migration-plan.md) — how and why we moved from XcodeGen to SwiftPM.
 - [`plans/build-system.md`](plans/build-system.md) — how `Package.swift`, `Makefile`, and `build.sh` work together.
 - [`plans/architecture.md`](plans/architecture.md) — targets, data flow, and how the pieces fit.
 - [`plans/design-system.md`](plans/design-system.md) — the `Theme` type scale + metrics and the macOS idioms applied.

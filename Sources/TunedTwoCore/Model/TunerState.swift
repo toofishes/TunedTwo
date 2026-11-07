@@ -248,11 +248,12 @@ extension TunerState: TunerEventSink {
                     tintColor: .red))
         case .agc(let gainDB, let peakDBFS, let isFinal):
             if isFinal {
+                let oneDecimalFormat = FloatingPointFormatStyle<Float>.number.precision(.fractionLength(1))
                 appendLog(
                     LogEvent(
                         title: "AGC",
                         description:
-                            "Gain \(String(format: "%.1f", gainDB)) dB, Peak \(String(format: "%.1f", peakDBFS)) dBFS",
+                            "Gain \(gainDB.formatted(oneDecimalFormat)) dB, Peak \(peakDBFS.formatted(oneDecimalFormat)) dBFS",
                         systemImage: "chart.line.uptrend.xyaxis", tintColor: .orange))
             }
         case .syncAchieved(let freqOffset, let psmi, let pli, let hppi, let aabi, let rdbi):
@@ -407,10 +408,14 @@ extension TunerState: TunerEventSink {
                 case .unknown:
                     "Unknown"
                 }
-            let bounds = String(
-                format: "(%.4f, %.4f) to (%.4f, %.4f)",
-                image.boundingBox.0.latitude, image.boundingBox.0.longitude,
-                image.boundingBox.1.latitude, image.boundingBox.1.longitude)
+            let coordinateFormat = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(4))
+            let first = image.boundingBox.0
+            let second = image.boundingBox.1
+            let latitude1 = first.latitude.formatted(coordinateFormat)
+            let longitude1 = first.longitude.formatted(coordinateFormat)
+            let latitude2 = second.latitude.formatted(coordinateFormat)
+            let longitude2 = second.longitude.formatted(coordinateFormat)
+            let bounds = "(\(latitude1), \(longitude1)) to (\(latitude2), \(longitude2))"
             appendLog(
                 LogEvent(
                     title: "HERE Image - \(typeStr)",

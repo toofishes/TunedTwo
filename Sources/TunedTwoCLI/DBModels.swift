@@ -33,7 +33,7 @@ struct Program: Codable, Identifiable, FetchableRecord, PersistableRecord {
     var name: String?
     var lotID: Int?
 
-    var id: String { String(format: "%s:%d", stationID.uuidString, programID) }
+    var id: String { "\(stationID.uuidString):\(programID)" }
 }
 
 /// Represents the actual file data received. This is split from the file because it is not uncommon to receive

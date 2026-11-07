@@ -256,16 +256,14 @@ private struct StatusBar: View {
                 .truncationMode(.tail)
                 .textSelection(.enabled)
             Spacer()
-            Text(String(format: "%.1f kbps", Double(programState.bitsPerSecond) / 1000.0))
+            Text("\(Double(programState.bitsPerSecond) / 1000.0, format: .number.precision(.fractionLength(1))) kbps")
                 .font(Theme.Fonts.meta)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
                 .lineLimit(1)
                 .truncationMode(.tail)
             Text(
-                String(
-                    format: "MER %.1f / %.1f dB · BER %.6f",
-                    state.merLower, state.merUpper, state.ber)
+                "MER \(state.merLower, format: .number.precision(.fractionLength(1))) / \(state.merUpper, format: .number.precision(.fractionLength(1))) dB · BER \(state.ber, format: .number.precision(.fractionLength(6)))"
             )
             .font(Theme.Fonts.meta)
             .foregroundStyle(.secondary)

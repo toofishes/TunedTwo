@@ -93,10 +93,11 @@ struct ScanCommand: AsyncParsableCommand {
             }
 
             let mhz = Double(hz) / 1_000_000
+            let formattedMHz = mhz.formatted(.number.precision(.fractionLength(1)))
             if psmi < 0 {
-                print(String(format: "%.1f MHz: no HD Radio", mhz))
+                print("\(formattedMHz) MHz: no HD Radio")
             } else {
-                var parts: [String] = [String(format: "%.1f MHz, HD Radio (PMSI %d)", mhz, psmi)]
+                var parts: [String] = ["\(formattedMHz) MHz, HD Radio (PMSI \(psmi))"]
                 var nameParts: [String] = []
                 if let stationID {
                     nameParts.append("[\(stationID.countryCode) \(stationID.fccFacilityID)]")
