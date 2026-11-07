@@ -41,20 +41,11 @@ struct ListenCommand: AsyncParsableCommand {
             throw RuntimeError("could not start live listening: \(message)")
         }
 
-        signal(SIGINT, SIG_IGN)
-        let signalSource = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
-        signalSource.setEventHandler {
-            Task {
-                print(timestamped("Interrupt signal (SIGINT) received. Shutting down..."))
-                await session.stop()
-                Self.exit()
-            }
-        }
-        signalSource.resume()
-
         print(timestamped("Listening on \(frequency) MHz (HD\(subprogram + 1)). Press Ctrl+C to stop."))
-        while true {
-            try await Task.sleep(for: .seconds(10), tolerance: .milliseconds(500))
+        for await _ in interruptSignalStream() {
+            print(timestamped("Interrupt signal (SIGINT) received. Shutting down..."))
+            await session.stop()
+            Self.exit()
         }
     }
 }

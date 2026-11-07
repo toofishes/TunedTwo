@@ -54,14 +54,15 @@ struct ScanCommand: AsyncParsableCommand {
             await session.retune(frequencyHz: Float(hz))
 
             // initial deadline is 800ms; we slightly extend it if a station was found
-            var deadline = Date().addingTimeInterval(0.8)
+            let clock = ContinuousClock()
+            var deadline = clock.now + .milliseconds(800)
             var psmi: Int = -1
             var stationID: (countryCode: String, fccFacilityID: Int)?
             var stationName: String?
             var audioPrograms = Set<Int>()
             var dsdMimes = Set<UInt32>()
 
-            scanLoop: while Date() < deadline {
+            scanLoop: while clock.now < deadline {
                 for event in await sink.dequeueEvents() {
                     switch event {
                     case .agc, .lostSync:
@@ -70,7 +71,7 @@ struct ScanCommand: AsyncParsableCommand {
                         break scanLoop
                     case .syncAchieved(_, let foundPSMI, _, _, _, _):
                         psmi = foundPSMI
-                        deadline = deadline.addingTimeInterval(0.4)
+                        deadline = deadline + .milliseconds(400)
                     case .stationID(let countryCode, let fccFacilityID):
                         if stationID == nil {
                             stationID = (countryCode, fccFacilityID)

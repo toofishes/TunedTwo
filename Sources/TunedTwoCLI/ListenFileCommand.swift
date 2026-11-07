@@ -52,23 +52,20 @@ struct ListenFileCommand: AsyncParsableCommand {
             throw RuntimeError("could not start file playback: \(message)")
         }
 
-        signal(SIGINT, SIG_IGN)
-        let signalSource = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
-        signalSource.setEventHandler {
-            Task {
+        let signalTask = Task {
+            for await _ in interruptSignalStream() {
                 print(timestamped("Interrupt signal (SIGINT) received. Shutting down..."))
                 await session.stop()
                 Self.exit()
             }
         }
-        signalSource.resume()
 
         print(
             timestamped(
                 "Playing '\(file.lastPathComponent)' (HD\(subprogram + 1)). Press Ctrl+C to stop."
             ))
         await session.waitUntilSamplePlaybackFinishes()
-        signalSource.cancel()
+        signalTask.cancel()
 
         if let message = await sink.failureMessage() {
             await session.stop()

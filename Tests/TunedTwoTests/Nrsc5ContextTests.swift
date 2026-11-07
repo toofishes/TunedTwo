@@ -68,7 +68,7 @@ struct Nrsc5ContextTests {
 
         try await holder.activate(
             TunerConfiguration(
-                source: .samplePipe(path: sampleURL.path), frequencyHz: nil, program: 0))
+                source: .samplePipe(path: sampleURL), frequencyHz: nil, program: 0))
 
         guard let events = await holder.events else {
             Issue.record("Context was released before events could be read")
