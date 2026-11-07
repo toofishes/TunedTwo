@@ -8,6 +8,7 @@
 import CoreGraphics
 import Foundation
 import ImageIO
+import UniformTypeIdentifiers
 
 /// Where a produced file goes: stdout (the default, for piping) or a path.
 enum OutputDestination: CustomStringConvertible {
@@ -50,7 +51,7 @@ enum PNGEncoder {
         let mutableData = NSMutableData()
         guard
             let destination = CGImageDestinationCreateWithData(
-                mutableData, "public.png" as CFString, 1, nil)
+                mutableData, UTType.png.identifier as CFString, 1, nil)
         else {
             throw EncodeError.destinationCreationFailed
         }
