@@ -20,8 +20,7 @@ enum OutputDestination: CustomStringConvertible {
         if path == "-" {
             self = .stdout
         } else {
-            let expanded = NSString(string: path).expandingTildeInPath
-            self = .file(URL(fileURLWithPath: expanded))
+            self = .file(URL(fileURLWithPath: path))
         }
     }
 
