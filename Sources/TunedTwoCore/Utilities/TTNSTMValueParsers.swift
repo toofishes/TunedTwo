@@ -14,7 +14,7 @@ public struct RGB: Equatable, Hashable, Sendable {
     public let green: UInt8
     public let blue: UInt8
 
-    public init(red: UInt8, green: UInt8, blue: UInt8) {
+    public init(_ red: UInt8, _ green: UInt8, _ blue: UInt8) {
         self.red = red
         self.green = green
         self.blue = blue
@@ -109,7 +109,7 @@ public enum TTNSTMValueParser {
         else {
             return nil
         }
-        return RGB(red: red, green: green, blue: blue)
+        return RGB(red, green, blue)
     }
 
     /// Parse a `(stationID, frequency)` station tuple.

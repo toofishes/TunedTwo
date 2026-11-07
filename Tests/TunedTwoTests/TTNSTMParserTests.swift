@@ -113,7 +113,7 @@ struct TTNSTMValueParserTests {
     @Test("parses an RGB tuple")
     func rgb() {
         let rgb = TTNSTMValueParser.parseRGB("(194, 187, 96)")
-        #expect(rgb == RGB(red: 194, green: 187, blue: 96))
+        #expect(rgb == RGB(194, 187, 96))
     }
 
     @Test("returns nil for an out-of-range RGB")
@@ -159,15 +159,15 @@ struct TTNSTMWeatherConfigParserTests {
         #expect(config.coordinates[1] == Location(latitude: 39.67031, longitude: -85.30001))
 
         #expect(config.legendRain.count == 6)
-        #expect(config.legendRain[0] == TTNSTMLegendEntry(level: 1, color: RGB(red: 0, green: 255, blue: 0)))
-        #expect(config.legendRain[5] == TTNSTMLegendEntry(level: 6, color: RGB(red: 221, green: 0, blue: 0)))
+        #expect(config.legendRain[0] == TTNSTMLegendEntry(level: 1, color: RGB(0, 255, 0)))
+        #expect(config.legendRain[5] == TTNSTMLegendEntry(level: 6, color: RGB(221, 0, 0)))
 
         #expect(config.legendMixIce.count == 2)
         #expect(
-            config.legendMixIce[1] == TTNSTMLegendEntry(level: 2, color: RGB(red: 244, green: 85, blue: 176)))
+            config.legendMixIce[1] == TTNSTMLegendEntry(level: 2, color: RGB(244, 85, 176)))
 
         #expect(config.legendSnow.count == 2)
-        #expect(config.legendSnow[1] == TTNSTMLegendEntry(level: 2, color: RGB(red: 0, green: 0, blue: 255)))
+        #expect(config.legendSnow[1] == TTNSTMLegendEntry(level: 2, color: RGB(0, 0, 255)))
     }
 
     @Test("throws when a required weather key is missing")
@@ -228,7 +228,7 @@ struct TTNSTMTrafficConfigParserTests {
         #expect(config.coordinatesRows[0][0] == Location(latitude: 42.38202, longitude: -88.35461))
         #expect(config.coordinatesRows[2][3] == Location(latitude: 41.31126, longitude: -87.28385))
 
-        #expect(config.backgroundRGBColor == RGB(red: 194, green: 187, blue: 96))
+        #expect(config.backgroundRGBColor == RGB(194, 187, 96))
     }
 
     @Test("throws when a required traffic key is missing")

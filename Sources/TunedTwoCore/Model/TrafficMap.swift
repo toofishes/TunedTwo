@@ -90,9 +90,9 @@ public enum TrafficMapIngestOutcome: Equatable, Sendable {
 ///   with new content and still win.
 public struct TrafficMap: Sendable {
     /// Default background color used when no TTN config file has been received.
-    private static let defaultTTNBackgroundColor = RGB(red: 194, green: 187, blue: 96)
+    private static let defaultTTNBackgroundColor = RGB(194, 187, 96)
     /// Default background color used when the map source is HERE.
-    private static let defaultHereBackgroundColor = RGB(red: 0xE0, green: 0xE0, blue: 0xE8)
+    private static let defaultHereBackgroundColor = RGB(0xE0, 0xE0, 0xE8)
 
     private var backgroundColor: RGB = defaultTTNBackgroundColor
 

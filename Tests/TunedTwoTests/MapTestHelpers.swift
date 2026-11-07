@@ -20,19 +20,17 @@ struct RGBColor: Equatable, Sendable {
     var green: CGFloat
     var blue: CGFloat
 
+    init(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat) {
+        self.red = red
+        self.green = green
+        self.blue = blue
+    }
+
     static func == (lhs: RGBColor, rhs: RGBColor) -> Bool {
         let tolerance: CGFloat = 0.02
         return abs(lhs.red - rhs.red) < tolerance
             && abs(lhs.green - rhs.green) < tolerance
             && abs(lhs.blue - rhs.blue) < tolerance
-    }
-}
-
-extension RGBColor {
-    init(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat) {
-        self.red = red
-        self.green = green
-        self.blue = blue
     }
 }
 
@@ -86,9 +84,9 @@ enum MapTestHelpers {
         let offset = yFromTop * context.bytesPerRow + x * 4
         guard offset >= 0, offset + 2 < buffer.count else { return nil }
         return RGBColor(
-            red: CGFloat(buffer[offset]) / 255,
-            green: CGFloat(buffer[offset + 1]) / 255,
-            blue: CGFloat(buffer[offset + 2]) / 255)
+            CGFloat(buffer[offset]) / 255,
+            CGFloat(buffer[offset + 1]) / 255,
+            CGFloat(buffer[offset + 2]) / 255)
     }
 
     static func makeRGBContext(width: Int, height: Int) -> CGContext? {
