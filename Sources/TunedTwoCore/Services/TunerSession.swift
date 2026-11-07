@@ -33,7 +33,7 @@ import os
 public struct TunerConfiguration: Sendable {
     public enum Source: Sendable {
         case rtlSDR(deviceIndex: Int)
-        case samplePipe(path: String)
+        case samplePipe(path: URL)
     }
 
     public let source: Source
@@ -137,10 +137,10 @@ public actor TunerSession {
 
     /// Feed uncompressed CU8 I/Q into libnrsc5 at the capture's sample rate.
     /// Pacing this stream keeps ID3 and other metadata aligned with playback.
-    private func feedSampleFile(path: String) async {
+    private func feedSampleFile(path: URL) async {
         let handle: FileHandle
         do {
-            handle = try FileHandle(forReadingFrom: URL(fileURLWithPath: path))
+            handle = try FileHandle(forReadingFrom: path)
         } catch {
             await sink?.tunerSessionDidEmit(
                 .failed(message: "Could not open sample file: \(error.localizedDescription)"))

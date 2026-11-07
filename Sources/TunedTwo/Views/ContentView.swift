@@ -86,8 +86,9 @@ struct ContentView: View {
     private func startPlayback() async {
         let configuration: TunerConfiguration
         if let samplePath = ProcessInfo.processInfo.environment["TUNEDTWO_SAMPLE_FILE"] {
+            let sampleURL = URL(fileURLWithPath: samplePath)
             configuration = TunerConfiguration(
-                source: .samplePipe(path: samplePath),
+                source: .samplePipe(path: sampleURL),
                 frequencyHz: nil,
                 program: state.currentProgram)
             state.isSampleFile = true

@@ -22,8 +22,11 @@ struct TrafficMapCommand: ParsableCommand {
         abstract: "Stitch traffic-map tiles (TMT or HERE PNGs) into one composite image."
     )
 
-    @Argument(help: "Directory containing TMT_*.png or *_trafficMap_*.png tiles.")
-    var directory: String
+    @Argument(
+        help: "Directory containing TMT_*.png or *_trafficMap_*.png tiles.",
+        transform: URL.init(fileURLWithPath:)
+    )
+    var directory: URL
 
     @Option(name: [.short, .long], help: "Write the composite PNG to FILE ('-' for stdout).")
     var output: String = "-"
@@ -35,9 +38,9 @@ struct TrafficMapCommand: ParsableCommand {
     var verbose = false
 
     func validate() throws {
-        var isDirectory: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: directory, isDirectory: &isDirectory),
-            isDirectory.boolValue
+        let keys: Set<URLResourceKey> = [.isDirectoryKey]
+        guard let values = try? directory.resourceValues(forKeys: keys),
+            values.isDirectory == true
         else {
             throw ValidationError("'\(directory)' is not a directory")
         }
@@ -45,8 +48,7 @@ struct TrafficMapCommand: ParsableCommand {
 
     mutating func run() throws {
         let outputDestination = OutputDestination(path: output)
-        let directoryURL = URL(fileURLWithPath: directory, isDirectory: true)
-        let files = try listFiles(in: directoryURL)
+        let files = try listFiles(in: directory)
 
         var map = TrafficMap()
 
@@ -59,7 +61,7 @@ struct TrafficMapCommand: ParsableCommand {
             files, providerFilter: provider, verbose: verbose)
 
         guard !tmtCandidates.isEmpty || !hereCandidates.isEmpty else {
-            throw RuntimeError("no traffic-map files found in '\(directoryURL.path)'")
+            throw RuntimeError("no traffic-map files found in '\(directory.path)'")
         }
 
         // Ingest oldest-first so the newer-wins rule applies deterministically
@@ -127,13 +129,17 @@ struct TrafficMapCommand: ParsableCommand {
 
     /// Enumerate regular files in the directory.
     private func listFiles(in directory: URL) throws -> [URL] {
+        let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey]
+        let keySet = Set(keys)
         let contents = try FileManager.default.contentsOfDirectory(
             at: directory,
-            includingPropertiesForKeys: nil)
+            includingPropertiesForKeys: keys)
         return contents.filter { url in
-            var isDirectory = ObjCBool(false)
-            FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
-            return !isDirectory.boolValue
+            let resolvedURL = url.resolvingSymlinksInPath()
+            guard let values = try? resolvedURL.resourceValues(forKeys: keySet) else {
+                return false
+            }
+            return values.isRegularFile == true
         }
     }
 

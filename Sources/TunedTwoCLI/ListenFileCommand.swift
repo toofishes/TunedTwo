@@ -13,8 +13,11 @@ struct ListenFileCommand: AsyncParsableCommand {
         abstract: "Listen to an uncompressed NRSC5 I/Q sample file"
     )
 
-    @Argument(help: "Path to an uncompressed NRSC5 I/Q sample file (for example, sample.bin or a .cu8 capture).")
-    var file: String
+    @Argument(
+        help: "Path to an uncompressed NRSC5 I/Q sample file (for example, sample.bin or a .cu8 capture).",
+        transform: URL.init(fileURLWithPath:)
+    )
+    var file: URL
 
     @Option(help: "Zero-indexed subprogram to listen to.")
     var subprogram = 0
@@ -24,9 +27,10 @@ struct ListenFileCommand: AsyncParsableCommand {
             throw ValidationError("subprogram must be between 0 and 7")
         }
 
-        var isDirectory: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: file, isDirectory: &isDirectory), !isDirectory.boolValue,
-            FileManager.default.isReadableFile(atPath: file)
+        let keys: Set<URLResourceKey> = [.isRegularFileKey, .isReadableKey]
+        guard let values = try? file.resourceValues(forKeys: keys),
+            values.isRegularFile == true,
+            values.isReadable == true
         else {
             throw ValidationError("'\(file)' is not a readable file")
         }
@@ -61,7 +65,7 @@ struct ListenFileCommand: AsyncParsableCommand {
 
         print(
             timestamped(
-                "Playing '\(URL(fileURLWithPath: file).lastPathComponent)' (HD\(subprogram + 1)). Press Ctrl+C to stop."
+                "Playing '\(file.lastPathComponent)' (HD\(subprogram + 1)). Press Ctrl+C to stop."
             ))
         await session.waitUntilSamplePlaybackFinishes()
         signalSource.cancel()
