@@ -341,7 +341,7 @@ struct TrafficMapTests {
     func stitchesHereTrafficTiles() throws {
         var map = TrafficMap()
         // colors[row][column] using the 0-based row/column derived from n1.
-        let colors: [[(CGFloat, CGFloat, CGFloat)]] = [
+        let colors: [[RGBColor]] = [
             [MapTestHelpers.red, MapTestHelpers.green, MapTestHelpers.blue],
             [MapTestHelpers.yellow, MapTestHelpers.cyan, MapTestHelpers.magenta],
             [MapTestHelpers.orange, MapTestHelpers.purple, MapTestHelpers.brown],
@@ -473,7 +473,7 @@ struct TrafficMapTests {
     func stitchesTileGrid() throws {
         var map = TrafficMap()
         // colors[row - 1][column - 1]
-        let colors: [[(CGFloat, CGFloat, CGFloat)]] = [
+        let colors: [[RGBColor]] = [
             [MapTestHelpers.red, MapTestHelpers.green, MapTestHelpers.blue],
             [MapTestHelpers.yellow, MapTestHelpers.cyan, MapTestHelpers.magenta],
             [MapTestHelpers.orange, MapTestHelpers.purple, MapTestHelpers.brown],

@@ -11,19 +11,45 @@ import ImageIO
 
 @testable import TunedTwoCore
 
+/// RGB color used by map-test helpers. Values are in the unit sRGB range.
+///
+/// Equality uses a small tolerance because CoreGraphics quantizes colors to
+/// 8-bit channels, so values like `0.5` round-trip as `128 / 255`.
+struct RGBColor: Equatable, Sendable {
+    var red: CGFloat
+    var green: CGFloat
+    var blue: CGFloat
+
+    static func == (lhs: RGBColor, rhs: RGBColor) -> Bool {
+        let tolerance: CGFloat = 0.02
+        return abs(lhs.red - rhs.red) < tolerance
+            && abs(lhs.green - rhs.green) < tolerance
+            && abs(lhs.blue - rhs.blue) < tolerance
+    }
+}
+
+extension RGBColor {
+    init(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat) {
+        self.red = red
+        self.green = green
+        self.blue = blue
+    }
+}
+
 enum MapTestHelpers {
-    static let red = (CGFloat(1), CGFloat(0), CGFloat(0))
-    static let green = (CGFloat(0), CGFloat(1), CGFloat(0))
-    static let blue = (CGFloat(0), CGFloat(0), CGFloat(1))
-    static let cyan = (CGFloat(0), CGFloat(1), CGFloat(1))
-    static let yellow = (CGFloat(1), CGFloat(1), CGFloat(0))
-    static let magenta = (CGFloat(1), CGFloat(0), CGFloat(1))
-    static let orange = (CGFloat(1), CGFloat(0.5), CGFloat(0))
-    static let purple = (CGFloat(0.5), CGFloat(0), CGFloat(0.5))
-    static let brown = (CGFloat(0.6), CGFloat(0.4), CGFloat(0.2))
+    static let red = RGBColor(1, 0, 0)
+    static let green = RGBColor(0, 1, 0)
+    static let blue = RGBColor(0, 0, 1)
+    static let cyan = RGBColor(0, 1, 1)
+    static let yellow = RGBColor(1, 1, 0)
+    static let magenta = RGBColor(1, 0, 1)
+    static let orange = RGBColor(1, 0.5, 0)
+    static let purple = RGBColor(0.5, 0, 0.5)
+    static let brown = RGBColor(0.6, 0.4, 0.2)
 
     /// Default TTN traffic-map background color used in composites.
-    static let mapBackground = (CGFloat(194) / 255, CGFloat(187) / 255, CGFloat(96) / 255)
+    static let mapBackground = RGBColor(
+        CGFloat(194) / 255, CGFloat(187) / 255, CGFloat(96) / 255)
 
     static func utcDate(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Date {
         var components = DateComponents()
@@ -36,9 +62,9 @@ enum MapTestHelpers {
     }
 
     /// Render a solid color into a PNG, using only CoreGraphics.
-    static func pngData(color: (CGFloat, CGFloat, CGFloat), width: Int, height: Int) -> Data? {
+    static func pngData(color: RGBColor, width: Int, height: Int) -> Data? {
         guard let context = Self.makeRGBContext(width: width, height: height) else { return nil }
-        context.setFillColor(red: color.0, green: color.1, blue: color.2, alpha: 1)
+        context.setFillColor(red: color.red, green: color.green, blue: color.blue, alpha: 1)
         context.fill(CGRect(x: 0, y: 0, width: width, height: height))
         guard let image = context.makeImage() else { return nil }
 
@@ -52,14 +78,17 @@ enum MapTestHelpers {
     }
 
     /// Read a pixel from a CGImage. `yFromTop` measures from the top of the image.
-    static func pixelColor(in image: CGImage, x: Int, yFromTop: Int) -> (CGFloat, CGFloat, CGFloat)? {
+    static func pixelColor(in image: CGImage, x: Int, yFromTop: Int) -> RGBColor? {
         guard let context = Self.makeRGBContext(width: image.width, height: image.height) else { return nil }
         context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
         guard let data = context.data else { return nil }
         let buffer = UnsafeRawBufferPointer(start: data, count: context.height * context.bytesPerRow)
         let offset = yFromTop * context.bytesPerRow + x * 4
         guard offset >= 0, offset + 2 < buffer.count else { return nil }
-        return (CGFloat(buffer[offset]) / 255, CGFloat(buffer[offset + 1]) / 255, CGFloat(buffer[offset + 2]) / 255)
+        return RGBColor(
+            red: CGFloat(buffer[offset]) / 255,
+            green: CGFloat(buffer[offset + 1]) / 255,
+            blue: CGFloat(buffer[offset + 2]) / 255)
     }
 
     static func makeRGBContext(width: Int, height: Int) -> CGContext? {
@@ -72,12 +101,4 @@ enum MapTestHelpers {
             space: CGColorSpace(name: CGColorSpace.sRGB)!,
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
     }
-}
-
-/// Exact RGB tuple equality for test colors (all colors here are opaque and
-/// pass through the same sRGB pipeline, so exact comparison is meaningful).
-func == (lhs: (CGFloat, CGFloat, CGFloat)?, rhs: (CGFloat, CGFloat, CGFloat)) -> Bool {
-    guard let lhs else { return false }
-    let tolerance: CGFloat = 0.02
-    return abs(lhs.0 - rhs.0) < tolerance && abs(lhs.1 - rhs.1) < tolerance && abs(lhs.2 - rhs.2) < tolerance
 }
