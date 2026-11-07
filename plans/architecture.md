@@ -73,5 +73,4 @@ MainActor TunerState / CLI sink
 
 - RTL-SDR support is present but untested (needs a physical device).
 - No window-state persistence yet.
-- The sample-file input decodes as fast as the CPU allows (`libnrsc5` does not throttle file playback), so the whole file is decoded and queued quickly; real-time pacing for file input is TBD.
 - The `libnrsc5` build still uses CMake via `scripts/build-nrsc5.sh`; making it native to SwiftPM is tracked in [`plans/nrsc5-native-build.md`](plans/nrsc5-native-build.md).

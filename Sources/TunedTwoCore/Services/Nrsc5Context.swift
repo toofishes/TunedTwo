@@ -253,7 +253,7 @@ final class Nrsc5Context {
     func pushPipeSamples(_ samples: Data) -> Bool {
         guard let st else { return false }
         return samples.withUnsafeBytes { bytes in
-            guard let baseAddress = bytes.bindMemory(to: UInt8.self).baseAddress else { return true }
+            guard let baseAddress = bytes.bindMemory(to: UInt8.self).baseAddress else { return false }
             return nrsc5_pipe_samples_cu8(st, baseAddress, UInt32(bytes.count)) == 0
         }
     }

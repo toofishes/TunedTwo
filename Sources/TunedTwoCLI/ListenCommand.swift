@@ -54,7 +54,7 @@ struct ListenCommand: AsyncParsableCommand {
 
         print(timestamped("Listening on \(frequency) MHz (HD\(subprogram + 1)). Press Ctrl+C to stop."))
         while true {
-            try await Task.sleep(for: .seconds(10))
+            try await Task.sleep(for: .seconds(10), tolerance: .milliseconds(500))
         }
     }
 }
