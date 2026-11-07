@@ -55,11 +55,11 @@ enum MapTestHelpers {
     static func pixelColor(in image: CGImage, x: Int, yFromTop: Int) -> (CGFloat, CGFloat, CGFloat)? {
         guard let context = Self.makeRGBContext(width: image.width, height: image.height) else { return nil }
         context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
-        guard let base = context.data else { return nil }
-        let bytes = base.assumingMemoryBound(to: UInt8.self)
+        guard let data = context.data else { return nil }
+        let buffer = UnsafeRawBufferPointer(start: data, count: context.height * context.bytesPerRow)
         let offset = yFromTop * context.bytesPerRow + x * 4
-        guard offset >= 0, offset + 2 < image.width * image.height * 4 else { return nil }
-        return (CGFloat(bytes[offset]) / 255, CGFloat(bytes[offset + 1]) / 255, CGFloat(bytes[offset + 2]) / 255)
+        guard offset >= 0, offset + 2 < buffer.count else { return nil }
+        return (CGFloat(buffer[offset]) / 255, CGFloat(buffer[offset + 1]) / 255, CGFloat(buffer[offset + 2]) / 255)
     }
 
     static func makeRGBContext(width: Int, height: Int) -> CGContext? {
