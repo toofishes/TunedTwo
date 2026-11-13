@@ -4,6 +4,10 @@ Running log of meaningful changes. Newest first.
 
 ---
 
+## 2026-11-13 — Tidy CLI scan output
+
+Added `scan --quiet` to omit frequencies without HD Radio. Found stations now use `93.9 MHz (PMSI 1)` and shorter `Audio:` / `Data:` labels; empty station-name lines are no longer printed.
+
 ## 2026-11-07 — Stream sample files with FileHandle
 
 Replaced the leftover `fopen`/`fread`/`fclose` feeder in `TunerSession` with a lazy `FileHandle.read(upToCount:)` chunk stream; pacing at the CU8 byte rate is unchanged. Tests now stream the bundled sample instead of loading it whole.

@@ -27,6 +27,9 @@ struct ScanCommand: AsyncParsableCommand {
         abstract: "Scan the FM band for available stations"
     )
 
+    @Flag(name: .long, help: "Omit frequencies without HD Radio from scan output.")
+    var quiet = false
+
     mutating func run() async throws {
         let sink = ScanSink()
         let session = TunerSession(sink: sink)
@@ -96,27 +99,32 @@ struct ScanCommand: AsyncParsableCommand {
             let mhz = Double(hz) / 1_000_000
             let formattedMHz = mhz.formatted(.number.precision(.fractionLength(1)))
             if psmi < 0 {
-                print("\(formattedMHz) MHz: no HD Radio")
-            } else {
-                var parts: [String] = ["\(formattedMHz) MHz, HD Radio (PMSI \(psmi))"]
-                var nameParts: [String] = []
-                if let stationID {
-                    nameParts.append("[\(stationID.countryCode) \(stationID.fccFacilityID)]")
+                if !quiet {
+                    print("\(formattedMHz) MHz: no HD Radio")
                 }
-                if let name = stationName, !name.isEmpty {
-                    nameParts.append(name)
-                }
-                parts.append(nameParts.joined(separator: " "))
-                if !audioPrograms.isEmpty {
-                    let programs = audioPrograms.sorted().map { "HD\($0 + 1)" }.joined(separator: ", ")
-                    parts.append("Audio programs: \(programs)")
-                }
-                if !dsdMimes.isEmpty {
-                    let services = dsdMimes.sorted().map { nameForDSDMIMEType($0) }.joined(separator: ", ")
-                    parts.append("Data services: \(services)")
-                }
-                print(parts.joined(separator: "\n  "))
+                continue
             }
+
+            var parts: [String] = ["\(formattedMHz) MHz (PMSI \(psmi))"]
+            var nameParts: [String] = []
+            if let stationID {
+                nameParts.append("[\(stationID.countryCode) \(stationID.fccFacilityID)]")
+            }
+            if let name = stationName, !name.isEmpty {
+                nameParts.append(name)
+            }
+            if !nameParts.isEmpty {
+                parts.append(nameParts.joined(separator: " "))
+            }
+            if !audioPrograms.isEmpty {
+                let programs = audioPrograms.sorted().map { "HD\($0 + 1)" }.joined(separator: ", ")
+                parts.append("Audio: \(programs)")
+            }
+            if !dsdMimes.isEmpty {
+                let services = dsdMimes.sorted().map { nameForDSDMIMEType($0) }.joined(separator: ", ")
+                parts.append("Data: \(services)")
+            }
+            print(parts.joined(separator: "\n  "))
         }
         await session.stop()
     }

@@ -84,7 +84,12 @@ build/tunedtwo-cli listen-file /path/to/capture.cu8 --subprogram 1
 
 # For a live RTL-SDR station (HD1 by default; --subprogram is optional):
 build/tunedtwo-cli listen 93.1 --subprogram 1
+
+# Scan the FM band; add --quiet to omit frequencies without HD Radio:
+build/tunedtwo-cli scan --quiet
 ```
+
+Found stations are printed as `93.9 MHz (PMSI 1)`, with indented `Audio:` and `Data:` details when available.
 
 `listen-file` feeds uncompressed CU8 samples through `nrsc5_open_pipe` at the capture's sample rate, keeping metadata aligned with playback. Station and track messages include ISO-8601 timestamps.
 
@@ -96,7 +101,7 @@ build/tunedtwo-cli traffic-map Resources/ttm_traffic | open -f -a Preview
 build/tunedtwo-cli traffic-map Resources/ttm_traffic -o out.png -v
 ```
 
-Run `build/tunedtwo-cli --help` or `build/tunedtwo-cli traffic-map --help` for details.
+Run `build/tunedtwo-cli --help`, `build/tunedtwo-cli scan --help`, or `build/tunedtwo-cli traffic-map --help` for details.
 
 ## Project layout
 
