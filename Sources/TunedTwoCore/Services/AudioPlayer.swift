@@ -26,11 +26,14 @@ public enum AudioPlayerEvent: Sendable {
     case resumeFailed(message: String)
 }
 
-/// The AVFoundation engine/player/format objects are non-`Sendable`, so the
-/// specific stored properties that hold them are marked `nonisolated(unsafe)`.
-/// All access to that state (and to `isRunning`) is serialized by `lock`, and
-/// notification callbacks dispatch recovery work asynchronously to avoid
-/// deadlocks inside `AVAudioEngine`.
+/// `AudioPlayer` is `Sendable` because its mutable state lives in `lock` and
+/// every call into AVAudioEngine/AVAudioPlayerNode is serialized by
+/// `playerLock`. The two locks are never held together
+/// across an AVAudioPlayerNode call: `stop()` can synchronously invoke buffer
+/// completion handlers, and those handlers need `lock`. `playerLock` uses the
+/// unchecked closure form because `AVAudioPCMBuffer` is not Sendable; the lock
+/// only serializes calls within this class, it does not send AVFoundation
+/// objects across isolation boundaries.
 public final class AudioPlayer: AudioSampleSink, Sendable {
     private let engine = AVAudioEngine()
     private let player = AVAudioPlayerNode()
@@ -44,6 +47,7 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
 
     private struct State: Sendable {
         var currentProgram: Int = 0
+        var isPlaying = false
         var wasPlayingBeforeSleep: Bool = false
         var playbackGeneration: UInt64 = 0
         var pendingBufferCount = 0
@@ -52,6 +56,7 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     /// Mutable player state is kept inside the lock so the class can be
     /// `Sendable` without an unchecked conformance.
     private let lock = OSAllocatedUnfairLock(initialState: State())
+    private let playerLock = OSAllocatedUnfairLock<Void>(initialState: ())
 
     init() {
         let sr = Double(NRSC5_SAMPLE_RATE_AUDIO)
@@ -75,12 +80,34 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     }
 
     func start(_ program: Int) throws {
-        try lock.withLock { state in
+        let generation = lock.withLock { state -> UInt64 in
             state.playbackGeneration &+= 1
             state.pendingBufferCount = 0
-            try engine.start()
             state.currentProgram = program
-            player.play()
+            state.isPlaying = false
+            state.wasPlayingBeforeSleep = false
+            return state.playbackGeneration
+        }
+
+        do {
+            try playerLock.withLockUnchecked {
+                try engine.start()
+                player.play()
+            }
+        } catch {
+            playerLock.withLockUnchecked {
+                player.stop()
+                engine.stop()
+            }
+            lock.withLock { state in
+                state.isPlaying = false
+            }
+            throw error
+        }
+
+        lock.withLock { state in
+            guard state.playbackGeneration == generation else { return }
+            state.isPlaying = true
         }
     }
 
@@ -88,6 +115,9 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
         lock.withLock { state in
             state.playbackGeneration &+= 1
             state.pendingBufferCount = 0
+            state.isPlaying = false
+        }
+        playerLock.withLockUnchecked {
             player.stop()
             engine.stop()
         }
@@ -105,29 +135,48 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     }
 
     func setProgram(_ program: Int) {
-        lock.withLock { state in
-            let isPlaying = player.isPlaying
-            if isPlaying {
-                state.playbackGeneration &+= 1
-                state.pendingBufferCount = 0
-                player.stop()
+        let generation = lock.withLock { state -> UInt64? in
+            guard state.isPlaying else {
+                state.currentProgram = program
+                return nil
             }
+            state.playbackGeneration &+= 1
+            state.pendingBufferCount = 0
             state.currentProgram = program
-            if isPlaying {
-                player.play()
-            }
+            state.isPlaying = false
+            return state.playbackGeneration
+        }
+        guard let generation else { return }
+
+        playerLock.withLockUnchecked {
+            player.stop()
+            player.play()
+        }
+        lock.withLock { state in
+            guard state.playbackGeneration == generation else { return }
+            state.isPlaying = true
         }
     }
 
     /// Drops any queued audio (e.g. after a program switch or retune) and
     /// resumes accepting buffers, keeping the engine running.
     func flush() {
-        lock.withLock { state in
-            guard player.isPlaying else { return }
+        let generation = lock.withLock { state -> UInt64? in
+            guard state.isPlaying else { return nil }
             state.playbackGeneration &+= 1
             state.pendingBufferCount = 0
+            state.isPlaying = false
+            return state.playbackGeneration
+        }
+        guard let generation else { return }
+
+        playerLock.withLockUnchecked {
             player.stop()
             player.play()
+        }
+        lock.withLock { state in
+            guard state.playbackGeneration == generation else { return }
+            state.isPlaying = true
         }
     }
 
@@ -149,8 +198,14 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
     /// Accepts interleaved 16-bit signed PCM from nrsc5, converts it to
     /// float, and schedules it on the system audio graph.
     public func feed(_ program: Int, _ samples: UnsafeBufferPointer<Int16>) {
-        guard lock.withLock({ player.isPlaying && $0.currentProgram == program }) else { return }
         guard samples.count >= 2 && samples.count <= (Int(NRSC5_AUDIO_FRAME_SAMPLES) * 2) else { return }
+        guard
+            let generation = lock.withLock({ state -> UInt64? in
+                guard state.isPlaying, state.currentProgram == program else { return nil }
+                return state.playbackGeneration
+            })
+        else { return }
+
         let frames = AVAudioFrameCount(samples.count / 2)
 
         // createSourceBuffer avoids copying the source data, but don't let this buffer
@@ -168,16 +223,20 @@ public final class AudioPlayer: AudioSampleSink, Sendable {
             return
         }
 
-        guard
-            let generation = lock.withLock({ state -> UInt64? in
-                guard player.isPlaying, state.currentProgram == program else { return nil }
-                state.pendingBufferCount += 1
-                return state.playbackGeneration
-            })
-        else { return }
+        playerLock.withLockUnchecked {
+            let shouldSchedule = lock.withLock { state in
+                state.isPlaying
+                    && state.currentProgram == program
+                    && state.playbackGeneration == generation
+            }
+            guard shouldSchedule else { return }
 
-        player.scheduleBuffer(destBuffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
-            self?.didPlayBuffer(generation: generation)
+            lock.withLock { state in
+                state.pendingBufferCount += 1
+            }
+            player.scheduleBuffer(destBuffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+                self?.didPlayBuffer(generation: generation)
+            }
         }
     }
 
@@ -210,6 +269,7 @@ extension AudioPlayer {
             name: NSWorkspace.willSleepNotification,
             object: nil
         )
+
         NSWorkspace.shared.notificationCenter.addObserver(
             self,
             selector: #selector(handleDidWake(_:)),
@@ -231,19 +291,20 @@ extension AudioPlayer {
     }
 
     @objc private func handleWillSleep(_ notification: Notification) {
-        let wasPlaying = lock.withLock { state in
-            state.wasPlayingBeforeSleep = player.isPlaying
-            if player.isPlaying {
-                player.stop()
-            }
-            if engine.isRunning {
-                engine.stop()
-            }
+        let wasPlaying = lock.withLock { state -> Bool in
+            state.wasPlayingBeforeSleep = state.isPlaying
+            state.isPlaying = false
+            state.playbackGeneration &+= 1
+            state.pendingBufferCount = 0
             return state.wasPlayingBeforeSleep
         }
-        if wasPlaying {
-            continuation.yield(.interrupted)
+        guard wasPlaying else { return }
+
+        playerLock.withLockUnchecked {
+            player.stop()
+            engine.stop()
         }
+        continuation.yield(.interrupted)
     }
 
     @objc private func handleDidWake(_ notification: Notification) {
@@ -251,36 +312,33 @@ extension AudioPlayer {
     }
 
     private func recover(reporting successEvent: AudioPlayerEvent) {
-        enum RecoveryResult {
-            case restarted
-            case notRunning
-            case failed(Error)
+        let generation = lock.withLock { state -> UInt64? in
+            guard state.wasPlayingBeforeSleep || state.isPlaying else { return nil }
+            state.playbackGeneration &+= 1
+            state.pendingBufferCount = 0
+            state.isPlaying = false
+            return state.playbackGeneration
         }
+        guard let generation else { return }
 
-        let result = lock.withLock { state -> RecoveryResult in
-            guard state.wasPlayingBeforeSleep || player.isPlaying else {
-                return .notRunning
-            }
-            player.stop()
-            engine.stop()
-
-            do {
+        do {
+            try playerLock.withLockUnchecked {
+                player.stop()
+                engine.stop()
                 try engine.start()
                 player.play()
-                return .restarted
-            } catch {
-                return .failed(error)
             }
-        }
-
-        switch result {
-        case .restarted:
+            lock.withLock { state in
+                guard state.playbackGeneration == generation else { return }
+                state.isPlaying = true
+                state.wasPlayingBeforeSleep = false
+            }
             continuation.yield(successEvent)
-        case .notRunning:
-            break
-        case .failed(let error):
+        } catch {
+            lock.withLock { state in
+                state.isPlaying = false
+            }
             continuation.yield(.resumeFailed(message: error.localizedDescription))
         }
     }
-
 }
